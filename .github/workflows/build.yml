@@ -7,23 +7,29 @@ on:
   pull_request:
   workflow_dispatch:
 
+# L'action peut seulement lire le dépôt, jamais le modifier
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.platformio
           key: platformio-${{ hashFiles('platformio.ini') }}
 
       - name: Installer PlatformIO et esptool
-        run: pip install platformio "esptool==4.8.1"
+        run: pip install "platformio==6.2.0" "esptool==4.8.1"
 
       - name: Compiler
         run: pio run
@@ -39,7 +45,7 @@ jobs:
             0xe000 ~/.platformio/packages/framework-arduinoespressif32/tools/partitions/boot_app0.bin \
             0x10000 $B/firmware.bin
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: mini-arcade-firmware
           path: |
