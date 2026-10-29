@@ -1,0 +1,47 @@
+# Compile le jeu pour l'ESP32 à chaque modification et fournit les fichiers .bin à télécharger
+# (onglet Actions du dépôt > dernière exécution > section Artifacts).
+name: Compilation ESP32
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.platformio
+          key: platformio-${{ hashFiles('platformio.ini') }}
+
+      - name: Installer PlatformIO et esptool
+        run: pip install platformio "esptool==4.8.1"
+
+      - name: Compiler
+        run: pio run
+
+      # Un seul fichier à flasher à l'adresse 0x0 (pratique pour les outils de flashage web)
+      - name: Assembler le fichier complet
+        run: |
+          B=.pio/build/esp32dev
+          esptool.py --chip esp32 merge_bin -o mini-arcade-complet.bin \
+            --flash_mode dio --flash_freq 40m --flash_size 4MB \
+            0x1000 $B/bootloader.bin \
+            0x8000 $B/partitions.bin \
+            0xe000 ~/.platformio/packages/framework-arduinoespressif32/tools/partitions/boot_app0.bin \
+            0x10000 $B/firmware.bin
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mini-arcade-firmware
+          path: |
+            mini-arcade-complet.bin
+            .pio/build/esp32dev/firmware.bin
