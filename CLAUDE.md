@@ -21,5 +21,6 @@ Projet d'apprentissage de Claude Code. Matériel : carte « Shield capteurs v2.1
 ## Règles
 - Matrice : toujours limiter le courant (`MAX_MILLIAMPS`) ; pistes de la carte de 0,5 mm, ne pas faire passer le courant de la matrice par elle.
 - Ne pas utiliser D0, D2, D12 (démarrage) ni D34/D35/D39 pour des sorties.
-- Les réglages de ressenti de l'encodeur (gain, frottement, vitesse max) sont en haut de `src/main.cpp`.
+- Les réglages de ressenti de l'encodeur (gain, frottement, vitesse max) et du jeu sont en haut de `src/main.cpp`.
+- Les 6 niveaux du casse-briques sont dans `include/levels.h`, la police 3x5 de la matrice dans `include/font.h`.
 - Code en français pour les commentaires, noms de variables en anglais.

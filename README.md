@@ -12,20 +12,32 @@ Mini borne d'arcade sur ESP32 avec une matrice LED 16x16.
 
 Le brochage complet est dans `include/config.h`.
 
-## Test actuel
+## Le jeu : casse-briques façon Arkanoid
 
-Un point glisse sur la matrice avec de l'inertie :
+- **Encodeur** : déplace la raquette (avec inertie)
+- **Bouton 1** ou **bouton de l'encodeur** : lancer la balle / valider
+- **Bouton 2** : pause
+- L'OLED affiche le niveau, le score et les vies (3 au départ)
 
-- **Encodeur** : lance le point, qui ralentit tout seul et rebondit sur les bords
-- **Bouton de l'encodeur** : recentre le point
-- **Bouton 1** : +1 au score (affiché sur l'OLED)
-- **Bouton 2** : remet le score à 0
+6 niveaux de difficulté croissante (balle plus rapide, raquette plus petite) :
+
+| # | Niveau | Originalité |
+|---|---|---|
+| 1 | VANESSA | Un grand cœur, balle lente pour se mettre en jambes |
+| 2 | GUILLAUME | Une forteresse de briques solides (2 coups) |
+| 3 | LISA-LOUISE | Les lignes de briques glissent à gauche et à droite |
+| 4 | ANTOINE | Des briques de métal incassables |
+| 5 | LUCIE | Dans le noir : seule la balle éclaire les briques |
+| 6 | EMILIE-ROSE | Une rose qui descend vers la raquette |
+
+Les niveaux se modifient dans `include/levels.h`.
 
 Réglages en direct dans le moniteur série (115200 bauds) :
 
 - `g <gain>` : vitesse ajoutée par cran de l'encodeur
 - `f <frottement>` : freinage (entre 0,80 et 0,999)
-- `m <vitesse max>` : vitesse maximale
+- `m <vitesse max>` : vitesse maximale de la raquette
+- `n <niveau>` : aller directement à un niveau (1 à 6)
 
 ## Commandes (PlatformIO)
 
