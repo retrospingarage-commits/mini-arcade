@@ -22,6 +22,13 @@ buzzer passif HW-508, LED RVB HW-478, OLED SSD1306 0,96" (128x64).
 | OLED I2C | T H AIR 2 | SDA D21 / SCL D22, 0x3C |
 | Libres | EXT (D13, D26), D14 (LORA) | |
 
+## Alimentation
+Un seul chargeur USB 5 V / 2,4 A, câble coupé (rouge = +5V, noir = GND) et dédoublé :
+- gros fils vers la matrice (+5V, GND), sans passer par la carte ;
+- petits fils vers le connecteur BATTERIE (broches 5V et GND) : la diode D1 (1N5822) amène le 5V sur le VIN de
+  l'ESP32 et empêche le chargeur et le port USB du PC de s'alimenter l'un l'autre (on peut flasher chargeur branché).
+- La broche 5V du connecteur RELAIS reste libre.
+
 Le fichier KiCad de la carte nomme mal 4 pastilles de l'empreinte ESP32, mais les pistes gravées arrivent sur les bonnes broches.
 
 ## Règles

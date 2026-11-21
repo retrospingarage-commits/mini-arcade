@@ -7,7 +7,7 @@ constexpr uint16_t MATRIX_W = 16;
 constexpr uint16_t MATRIX_H = 16;
 constexpr uint16_t NUM_LEDS = MATRIX_W * MATRIX_H;
 constexpr bool     MATRIX_SERPENTINE = true;   // à passer à false si l'image est déformée
-constexpr uint16_t MAX_MILLIAMPS = 2000;       // limite logicielle du courant
+constexpr uint16_t MAX_MILLIAMPS = 1500;       // limite logicielle du courant (chargeur 2,4 A partagé avec l'ESP32)
 
 // Encodeur KY-040 / HW-040 (connecteur LORA : 3V3, GND, D18, D19, D23)
 constexpr uint8_t PIN_ENC_A  = 18;  // CLK
