@@ -114,13 +114,13 @@ void redirectHome() {  // portail captif : toute adresse inconnue renvoie vers l
 }
 
 #ifdef HAS_QRCODE
-void drawQr(esp_qrcode_handle_t qr) {  // QR code de connexion au Wi-Fi, 2 pixels par module
-  int size = esp_qrcode_get_size(qr);
-  int scale = size * 2 <= 64 ? 2 : 1;
-  int off = (64 - size * scale) / 2;
-  for (int y = 0; y < size; y++)
-    for (int x = 0; x < size; x++)
-      if (esp_qrcode_get_module(qr, x, y)) oled.drawBox(off + x * scale, off + y * scale, scale, scale);
+int qrSize = 0;
+void drawQr(esp_qrcode_handle_t qr) {  // QR code de connexion, entièrement dans la partie bleue de l'OLED
+  qrSize = esp_qrcode_get_size(qr);
+  int offY = 16 + (48 - qrSize) / 2;  // l'espace entre le jaune et le bleu couperait le QR code
+  for (int y = 0; y < qrSize; y++)
+    for (int x = 0; x < qrSize; x++)
+      if (esp_qrcode_get_module(qr, x, y)) oled.drawPixel(2 + x, offY + y);
 }
 #endif
 
@@ -135,13 +135,12 @@ void drawOled(int stations) {
   cfg.max_qrcode_version = 5;
   cfg.qrcode_ecc_level = ESP_QRCODE_ECC_LOW;
   esp_qrcode_generate(&cfg, wifi.c_str());
-  textX = 66;
+  textX = qrSize + 8;
 #endif
-  oled.setCursor(textX, 11); oled.print(textX ? "Wi-Fi :" : "Réseau Wi-Fi :");  // bande jaune
-  oled.setCursor(textX, 26); oled.print(SSID);
-  oled.setCursor(textX, 38); oled.print("Mot de passe");
-  oled.setCursor(textX, 49); oled.print(password);
-  oled.setCursor(textX, 62);
+  oled.setCursor(0, 11); oled.print("Wi-Fi : "); oled.print(SSID);  // bande jaune
+  oled.setCursor(textX, 28); oled.print("Mot de passe");
+  oled.setCursor(textX, 41); oled.print(password);
+  oled.setCursor(textX, 60);
   if (otaBusy) oled.print("Mise à jour...");
   else if (stations) oled.printf("%d connecté(s)", stations);
   else oled.print("Scanne-moi !");

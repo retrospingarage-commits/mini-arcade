@@ -23,10 +23,10 @@ débloque les activités du menu :
 | Activité | Se débloque avec |
 |---|---|
 | Mood light (7 ambiances) | le Bol Magique |
-| Casse-briques (6 niveaux) | la Feuille Magique |
+| Casse-briques (6 niveaux) | la Feuille Magique (défi du tanuki, un mini casse-briques) |
 | Jukebox des jingles | la Note Magique |
-| Football manga | le Ballon d'Or |
-| Flipper manga | la Bille Étoile |
+| Football manga | le Ballon d'Or (finale au stade) |
+| Flipper manga | la Bille Étoile (record du vieux flipper) |
 | Atelier pixel art (dessin depuis le téléphone par Wi-Fi) et Galerie | une fin heureuse |
 | Mode secret (couleurs animées, niveaux bonus) | la fin légendaire |
 

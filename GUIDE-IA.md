@@ -72,7 +72,7 @@ Commandes utiles dans le moniteur série : `u` débloque tout (pour tester), `r`
 | `include/scenes.h` | les scènes de l'histoire : textes, choix, dessins, couleurs, jingles |
 | `include/pictures.h` | les dessins pixel art 16×16 |
 | `include/activities.h` | la liste des activités du menu et la façon de les lancer |
-| `src/breakout.cpp`, `include/levels.h` | le casse-briques et ses 6 niveaux (+ 1 niveau bonus en mode secret) |
+| `src/breakout.cpp`, `include/levels.h` | le casse-briques et ses 6 niveaux (+ 1 niveau bonus en mode secret, + le niveau TANUKI joué dans l'histoire, scène 5) |
 | `src/football.cpp` | le football manga (aussi en version courte dans l'histoire, scène 26) |
 | `src/pinball.cpp` | le flipper manga (aussi en version courte dans l'histoire, scène 28) |
 | `src/mood.cpp` | la Mood light (7 ambiances, luminosité, veille) |
@@ -88,7 +88,7 @@ quand on revient au menu. Rien ne doit bloquer : pas de `delay()` dans les boucl
 Outils disponibles dans `hw.h` :
 - `btn1.pressed()`, `btn2.pressed()`, `btnEnc.pressed()` : vrai une seule fois par appui.
 - `encoderCount()` : compteur de l'encodeur (4 impulsions par cran ; la différence entre deux lectures donne
-  le sens et la vitesse de rotation).
+  le sens et la vitesse de rotation). Pour un déplacement gauche/droite, multiplier par `ENC_X_SIGN`.
 - `joyX()`, `joyY()` : position du joystick entre -1 et 1 (Y négatif vers le haut), 0 s'il n'est pas branché.
 - `setPixel(x, y, couleur)`, `drawText`, `drawScroll`, `drawPicture` : dessin sur la matrice, puis `FastLED.show()`.
 - `oled` : l'écran OLED (bibliothèque U8g2, police `u8g2_font_6x10_tf` avec accents, 21 caractères par ligne).
@@ -127,9 +127,10 @@ Dans `include/scenes.h`, ajouter une ligne au tableau `SCENES`, dans cet ordre :
    4 = tout près (LED orange qui bat vite) ; -1 = utiliser la couleur ;
 6. jingle (`J_…`) ;
 7. récompense donnée en arrivant : charme, trophée, fin (0 si aucune) ;
-8. mini-jeu (`GAME_NONE`, `GAME_REFLEX`…) et scènes d'arrivée en cas de victoire et de défaite. Un choix dont la
+8. mini-jeu (`GAME_NONE`, `GAME_REFLEX`, `GAME_BREAKOUT`, `GAME_FOOTBALL`, `GAME_PINBALL`) et scènes d'arrivée en cas de victoire et de défaite. Un choix dont la
    cible est `GAME` lance le mini-jeu.
 
+Quand une récompense débloque une activité, l'OLED l'annonce (« Nouveau dans le menu : … »).
 Un choix qui mène à une scène pas encore écrite affiche automatiquement « bientôt ». Après une modification,
 vérifier que chaque scène reste accessible et qu'on peut toujours revenir au village ou au lit.
 

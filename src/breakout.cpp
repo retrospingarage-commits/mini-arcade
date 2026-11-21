@@ -7,8 +7,8 @@
 #include "save.h"
 
 // --- Réglages du ressenti (modifiables en direct par le moniteur série) -----
-float gain     = 0.25f;  // cases/s de vitesse ajoutées par impulsion de l'encodeur
-float friction = 0.97f;  // multiplicateur de vitesse à chaque image (plus petit = freine plus)
+float gain     = 0.3f;   // cases/s de vitesse ajoutées par impulsion de l'encodeur
+float friction = 0.985f; // multiplicateur de vitesse à chaque image : proche de 1 = la raquette glisse longtemps (volant)
 float vMax     = 30.0f;  // cases/s
 // ---------------------------------------------------------------------------
 
@@ -83,6 +83,8 @@ void loadLevel(uint8_t i) {
   padW = LEVELS[i].paddle;
   setState(TITLE);
 }
+
+bool story = false;  // défi du tanuki dans l'Aventure : un seul niveau, puis retour à l'histoire
 
 void newGame(uint8_t level) {
   score = 0;
@@ -195,7 +197,7 @@ void updatePaddle(float dt, bool active) {
   static int32_t lastEnc = 0;
   int32_t c = encoderCount();
   if (!active) { lastEnc = c; padVel = 0; return; }  // on ignore l'encodeur hors du jeu
-  padVel += (c - lastEnc) * gain;
+  padVel += (c - lastEnc) * gain * ENC_X_SIGN;
   lastEnc = c;
   float jx = joyX();
   if (jx) padVel = jx * JOY_SPEED;  // le joystick commande directement la vitesse
@@ -323,7 +325,8 @@ void drawOled() {
   oled.clearBuffer();
   oled.setFont(u8g2_font_6x10_tf);
   oled.setCursor(0, 10);
-  oled.printf("%u/%u %s", levelIdx + 1, levelCount(), lvl().name);
+  if (story) oled.print("Défi du tanuki");
+  else oled.printf("%u/%u %s", levelIdx + 1, levelCount(), lvl().name);
   oled.setFont(u8g2_font_logisoso24_tn);
   oled.setCursor(0, 42);
   oled.print(score);
@@ -335,8 +338,8 @@ void drawOled() {
     case SERVE:     oled.print("Bouton 1 : lancer"); break;
     case PAUSE:     oled.print("PAUSE - axe : menu"); break;
     case CLEAR:     oled.print("Niveau reussi !"); break;
-    case GAME_OVER: oled.print("Perdu ! Bouton : menu"); break;
-    case VICTORY:   oled.print("Bravo ! Bouton : menu"); break;
+    case GAME_OVER: oled.print(story ? "Perdu ! Bouton : suite" : "Perdu ! Bouton : menu"); break;
+    case VICTORY:   oled.print(story ? "Gagné ! Bouton : suite" : "Bravo ! Bouton : menu"); break;
     default: break;
   }
   oled.sendBuffer();
@@ -347,8 +350,16 @@ void drawOled() {
 using namespace breakout;
 
 void breakoutBegin(uint8_t level) {
+  story = false;
   newGame(level);
 }
+
+void breakoutBeginStory() {
+  story = true;
+  newGame(STORY_LEVEL);
+}
+
+bool breakoutWon() { return state == VICTORY; }
 
 bool breakoutLoop(uint32_t now) {
   static uint32_t lastFrame = 0;
@@ -382,7 +393,7 @@ bool breakoutLoop(uint32_t now) {
   if (state == TITLE && now - stateSince > scrollDuration(lvl().name)) setState(SERVE);
   if (state == CLEAR && now - stateSince > 1500) {
     score += 100 * (levelIdx + 1);
-    if (levelIdx + 1 < levelCount()) loadLevel(levelIdx + 1);
+    if (!story && levelIdx + 1 < levelCount()) loadLevel(levelIdx + 1);
     else { play(SND_VICTORY, true); setState(VICTORY); }
   }
 

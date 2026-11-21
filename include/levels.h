@@ -100,6 +100,18 @@ const Level LEVELS[] = {
     ".3.33.3.",
     "3..33..3"},
    {192, 160, 224}, 11.5f, 3, SP_MOVING},
+
+  // TANUKI : le défi du tanuki dans l'Aventure, une grande feuille facile à casser
+  {"TANUKI",
+   {"........",
+    "..1111..",
+    ".111111.",
+    "11111111",
+    ".111111.",
+    "..1111..",
+    "...11..."},
+   {96, 0, 0}, 6.5f, 5, SP_NONE},
 };
 
-constexpr uint8_t NUM_LEVELS = 6;  // niveaux normaux ; le 7e (MOCHI-MAGE) n'existe qu'en mode secret
+constexpr uint8_t NUM_LEVELS  = 6;
+constexpr uint8_t STORY_LEVEL = 7;  // TANUKI : le défi du tanuki dans l'Aventure  // niveaux normaux ; le 7e (MOCHI-MAGE) n'existe qu'en mode secret

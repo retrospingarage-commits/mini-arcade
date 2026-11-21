@@ -140,7 +140,7 @@ void updateFlipper(Flipper& f, bool pressed, float dt) {
 void nudge(int32_t pulses, float dt, uint32_t now) {
   if (abs(pulses) < 2) return;
   float strength = min(1.0f, abs(pulses) / dt / NUDGE_FULL);
-  vx += (pulses > 0 ? 1 : -1) * strength * NUDGE_POWER;
+  vx += (pulses > 0 ? 1 : -1) * ENC_X_SIGN * strength * NUDGE_POWER;
   vy -= strength * NUDGE_POWER * 0.6f;
   tiltMeter += strength;
   fx = max(fx, strength);

@@ -25,7 +25,7 @@ enum Effect : uint8_t { FX_NONE, FX_DARK, FX_FOG, FX_WAVES, FX_RAIN, FX_DRIP, FX
                         FX_STARS, FX_PORTAL, FX_FIREWORKS };
 
 // Mini-jeu lancé par un choix dont la cible est GAME
-enum MiniGame : uint8_t { GAME_NONE, GAME_REFLEX, GAME_FOOTBALL, GAME_PINBALL };
+enum MiniGame : uint8_t { GAME_NONE, GAME_REFLEX, GAME_FOOTBALL, GAME_PINBALL, GAME_BREAKOUT };
 constexpr uint8_t GAME = 250;
 
 struct Choice {
@@ -96,10 +96,10 @@ const Scene SCENES[] = {
   {4, "Slurp ! Le fantôme est ravi et t'offre le Bol Magique. Charme obtenu !",
    {{"Retour au village", 2, ALWAYS}},
    PIC_BOL, FX_NONE, 0xFF5A00, -1, J_FANFARE, CHARM_BOL, 0, 0, GAME_NONE, 0, 0},
-  {5, "Un tanuki te défie à pierre-feuille-ciseaux. Si tu gagnes, cadeau !",
-   {{"Relever le défi", 6, ALWAYS}, {"Refuser poliment", 33, ALWAYS}},
-   PIC_TANUKI, FX_NONE, 0x00C000, -1, J_TAMBOUR, 0, 0, 0, GAME_NONE, 0, 0},
-  {6, "Tu gagnes avec les ciseaux, car le tanuki les avait oubliés ! Feuille Magique obtenue !",
+  {5, "Un tanuki te défie : casse toutes ses briques-feuilles ! Si tu gagnes, cadeau !",
+   {{"Relever le défi", GAME, ALWAYS}, {"Refuser poliment", 33, ALWAYS}},
+   PIC_TANUKI, FX_NONE, 0x00C000, -1, J_TAMBOUR, 0, 0, 0, GAME_BREAKOUT, 6, 5},
+  {6, "Bravo ! Le tanuki, beau joueur, t'offre la Feuille Magique. Charme obtenu !",
    {{"Retour au village", 2, ALWAYS}},
    PIC_FEUILLE, FX_NONE, 0x00FF00, -1, J_FANFARE, CHARM_FEUILLE, 0, 0, GAME_NONE, 0, 0},
   {7, "Une grenouille DJ cherche une voix pour son concert. Tu chantes ?",

@@ -149,7 +149,7 @@ GameResult footballLoop(uint32_t now) {
 
   switch (phase) {
     case AIM:
-      px = constrain(px + pulses * 0.5f + joyX() * PLAYER_SPEED * dt, 0.0f, 15.0f);
+      px = constrain(px + pulses * 0.5f * ENC_X_SIGN + joyX() * PLAYER_SPEED * dt, 0.0f, 15.0f);
       bx = px; by = 12;
       if (firePressed && !charging) { charging = true; chargeStart = now; }
       if (charging) {
@@ -168,7 +168,7 @@ GameResult footballLoop(uint32_t now) {
       break;
 
     case SHOT: {
-      bvx += pulses * CURVE_PER_PULSE + joyX() * 8 * dt;  // effet : on courbe le ballon
+      bvx += pulses * CURVE_PER_PULSE * ENC_X_SIGN + joyX() * 8 * dt;  // effet : on courbe le ballon
       float ny = by + bvy * dt, nx = constrain(bx + bvx * dt, 0.0f, 15.99f);
       // Arrêté seulement si le ballon touche vraiment un des 2 pixels du défenseur ou du gardien
       auto touches = [&](float who) { int c = (int)nx, w = (int)who; return c == w || c == w + 1; };

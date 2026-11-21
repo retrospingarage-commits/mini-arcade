@@ -5,6 +5,7 @@
 #include "adventure.h"
 #include "scenes.h"
 #include "activities.h"
+#include "breakout.h"
 
 namespace {
 
@@ -34,6 +35,8 @@ int32_t       encBase = 0;
 int8_t        joyWas = 0;
 bool          dirty = true;
 uint32_t      rewardUntil = 0;
+const char*   unlocked = nullptr;   // activité qui vient de se débloquer dans le menu (annoncée sur l'OLED)
+uint32_t      unlockedUntil = 0;
 
 // Mini-jeu de réflexe (scène 23) : attendre que la matrice devienne verte, puis appuyer
 enum Phase : uint8_t { SCENE, REFLEX_WAIT, REFLEX_GO, REFLEX_END, EXTERNAL_GAME };  // EXTERNAL_GAME : football ou flipper
@@ -78,7 +81,14 @@ void enterScene(uint8_t id) {
   }
   scene = s;
   phase = SCENE;
+  bool before[ACT_COUNT];
+  for (int i = 0; i < ACT_COUNT; i++) before[i] = isUnlocked((Activity)i);
   bool reward = giveRewards(s);
+  for (int i = 0; i < ACT_COUNT; i++)
+    if (!before[i] && isUnlocked((Activity)i)) {  // on l'annonce : sinon on ne le saurait pas
+      unlocked = activityName((Activity)i);
+      unlockedUntil = millis() + 4000;
+    }
   if (s->id != SOON) progress.scene = s->id;
   progressSave();
 
@@ -95,10 +105,11 @@ void enterScene(uint8_t id) {
 }
 
 void startGame(uint32_t now) {
-  if (scene->game == GAME_FOOTBALL || scene->game == GAME_PINBALL) {  // version courte du jeu complet
-    phase = EXTERNAL_GAME;
+  if (scene->game == GAME_FOOTBALL || scene->game == GAME_PINBALL || scene->game == GAME_BREAKOUT) {
+    phase = EXTERNAL_GAME;  // version courte du jeu complet, qui se débloque ensuite dans le menu
     if (scene->game == GAME_FOOTBALL) footballBegin(true);
-    else pinballBegin(true);
+    else if (scene->game == GAME_PINBALL) pinballBegin(true);
+    else breakoutBeginStory();
     return;
   }
   phase = REFLEX_WAIT;
@@ -159,6 +170,14 @@ void drawOled() {
   for (int i = 0; i < nLines; i++) {
     oled.setCursor(0, i == 0 ? 11 : 15 + i * 9);  // 1re ligne dans la bande jaune, les suivantes dans le bleu
     oled.print(lines[i]);
+  }
+  if (unlocked && millis() < unlockedUntil) {  // annonce d'une activité débloquée, par-dessus le texte
+    oled.setDrawColor(0);
+    oled.drawBox(4, 18, 120, 33);
+    oled.setDrawColor(1);
+    oled.drawFrame(4, 18, 120, 33);
+    drawCentered("Nouveau dans le menu :", 31);
+    drawCentered(unlocked, 45);
   }
   // Barre de choix en bas, en négatif
   oled.drawBox(0, 54, 128, 10);
@@ -314,7 +333,10 @@ bool adventureLoop(uint32_t now) {
   static uint32_t lastFrame = 0;
 
   if (phase == EXTERNAL_GAME) {  // le jeu lit lui-même les boutons et dessine tout
-    GameResult r = scene->game == GAME_FOOTBALL ? footballLoop(now) : pinballLoop(now);
+    GameResult r;
+    if (scene->game == GAME_FOOTBALL)     r = footballLoop(now);
+    else if (scene->game == GAME_PINBALL) r = pinballLoop(now);
+    else r = breakoutLoop(now) ? GAME_RUNNING : breakoutWon() ? GAME_WON : GAME_LOST;
     if (r != GAME_RUNNING) {
       encBase = encoderCount();
       enterScene(r == GAME_WON ? scene->winTarget : scene->loseTarget);
@@ -350,6 +372,7 @@ bool adventureLoop(uint32_t now) {
     lastFrame = now;
     renderMatrix(now);
   }
+  if (unlocked && now >= unlockedUntil) { unlocked = nullptr; dirty = true; }  // fin de l'annonce
   if (dirty) { drawOled(); dirty = false; }
   return true;
 }

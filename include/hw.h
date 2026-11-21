@@ -27,7 +27,8 @@ struct Button {
 };
 extern Button btn1, btn2, btnEnc;  // bouton HW-483, bouton du joystick, bouton de l'encodeur
 
-int32_t encoderCount();  // impulsions depuis le démarrage (4 par cran ; positif dans le sens horaire)
+int32_t encoderCount();  // impulsions depuis le démarrage (4 par cran)
+constexpr int8_t ENC_X_SIGN = -1;  // sens de l'encodeur pour aller à droite dans les jeux (à passer à 1 si c'est inversé)
 
 // Joystick : position de -1 à 1 (0 au centre), toujours 0 s'il n'est pas branché
 extern bool joyOk;

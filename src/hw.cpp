@@ -14,7 +14,7 @@ void setMatrixBrightness(uint8_t level) {
 U8G2_SSD1306_128X64_NONAME_F_HW_I2C oled(U8G2_R0, U8X8_PIN_NONE);
 
 // --- Réglages ---------------------------------------------------------------
-constexpr uint32_t SCROLL_MS     = 45;     // vitesse du texte défilant (ms par pixel)
+constexpr uint32_t SCROLL_MS     = 85;     // vitesse du texte défilant (ms par pixel ; plus grand = plus lent)
 constexpr uint8_t  RGB_LED_LEVEL = 64;     // luminosité max de la LED RVB (0 à 255)
 constexpr float    JOY_DEADZONE  = 0.15f;  // zone morte autour du centre du joystick (0 à 1)
 constexpr bool     JOY_INVERT_X  = false;  // à passer à true si la droite et la gauche sont inversées
