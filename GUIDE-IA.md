@@ -102,7 +102,8 @@ Outils disponibles dans `hw.h` :
 | Activité | Commandes |
 |---|---|
 | Menu | encodeur ou joystick haut/bas : choisir ; bouton ou bouton de l'encodeur : valider ; bouton du joystick puis encodeur : luminosité de la matrice (gardée en mémoire). Veille après 3 min |
-| Réglages (dernière ligne du menu) | Luminosité ; Rejouer l'histoire (garde les déblocages) ; Tout effacer (garde la Galerie et la luminosité) — ces deux-là demandent un 2e appui pour confirmer |
+| Scores | les 5 meilleurs scores de l'Aventure (initiales, points, * = fin légendaire) ; n'importe quel bouton : menu |
+| Réglages (dernière ligne du menu) | Luminosité (échelle progressive à 16 crans, de 1 à 40) ; Veille du menu (3, 10, 30 min ou jamais) ; Rejouer l'histoire (garde les déblocages) ; Tout effacer (garde la Galerie, les scores et les réglages) — ces deux-là demandent un 2e appui pour confirmer |
 | Aventure | encodeur ou joystick gauche/droite : choisir la réponse ; bouton : valider ; bouton du joystick : menu |
 | Casse-briques | encodeur ou joystick : raquette ; bouton ou joystick vers le haut : lancer ; bouton du joystick : pause |
 | Football | encodeur ou joystick : se déplacer ; maintenir le bouton : charger le tir ; tourner pendant le tir : le courber |
@@ -111,6 +112,11 @@ Outils disponibles dans `hw.h` :
 | Jukebox | encodeur : choisir ; bouton : jouer ; bouton du joystick : menu |
 | Atelier | on dessine sur le téléphone ; bouton du joystick : fermer (le Wi-Fi s'éteint) |
 | Galerie | encodeur : durée de chaque dessin ; bouton : suivant ; bouton du joystick : menu |
+
+**Score de l'Aventure** (calculé à chaque fin, dans `src/adventure.cpp`) : fin heureuse 300 (légendaire 1 000), +100 par
+charme et +150 par trophée possédés, bonus de rapidité 400 − 10 par scène traversée, −20 par impasse. S'il entre dans
+les 5 meilleurs, on tape 3 initiales (encodeur : lettre, bouton : suivante). Le classement est rangé à part (espace NVS
+« scores ») : rien ne l'efface, ni « Tout effacer », ni une mise à jour du programme.
 
 **Mode secret** (après la fin légendaire) : 4 couleurs animées dans l'Atelier, niveau MOCHI-MAGE au casse-briques,
 gardien plus rapide et points doublés au football, bumpers étoilés à points doublés au flipper.

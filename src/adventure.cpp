@@ -35,11 +35,20 @@ int32_t       encBase = 0;
 int8_t        joyWas = 0;
 bool          dirty = true;
 uint32_t      rewardUntil = 0;
-const char*   unlocked = nullptr;   // activité qui vient de se débloquer dans le menu (annoncée sur l'OLED)
-uint32_t      unlockedUntil = 0;
+const char*   popupTitle = nullptr;  // annonce par-dessus le texte (activité débloquée, score…)
+char          popupText[24];
+uint32_t      popupUntil = 0;
+
+// Score de la partie et saisie des initiales (3 lettres, comme sur les bornes d'arcade)
+constexpr uint16_t END_POINTS = 300, LEGEND_POINTS = 1000, CHARM_POINTS = 100, TROPHY_POINTS = 150;
+constexpr int      SPEED_BONUS = 400, POINTS_PER_STEP = 10, IMPASSE_PENALTY = 20;
+uint16_t finalScore = 0;
+uint8_t  finalEnding = 0;
+char     initials[4];
+uint8_t  letterPos = 0;
 
 // Mini-jeu de réflexe (scène 23) : attendre que la matrice devienne verte, puis appuyer
-enum Phase : uint8_t { SCENE, REFLEX_WAIT, REFLEX_GO, REFLEX_END, EXTERNAL_GAME };  // EXTERNAL_GAME : football ou flipper
+enum Phase : uint8_t { SCENE, REFLEX_WAIT, REFLEX_GO, REFLEX_END, EXTERNAL_GAME, NAME_ENTRY };  // EXTERNAL_GAME : un jeu complet
 Phase    phase = SCENE;
 uint8_t  stars = 0;
 uint32_t phaseUntil = 0;
@@ -73,6 +82,13 @@ bool giveRewards(const Scene* s) {
   return fresh;
 }
 
+void showPopup(const char* title, const char* text) {
+  popupTitle = title;
+  strncpy(popupText, text, sizeof(popupText) - 1);
+  popupText[sizeof(popupText) - 1] = 0;
+  popupUntil = millis() + 4000;
+}
+
 void enterScene(uint8_t id) {
   const Scene* s = findScene(id);
   if (!s) {
@@ -86,9 +102,28 @@ void enterScene(uint8_t id) {
   bool reward = giveRewards(s);
   for (int i = 0; i < ACT_COUNT; i++)
     if (!before[i] && isUnlocked((Activity)i)) {  // on l'annonce : sinon on ne le saurait pas
-      unlocked = activityName((Activity)i);
-      unlockedUntil = millis() + 4000;
+      showPopup("Nouveau dans le menu :", activityName((Activity)i));
     }
+  if (s->id != SOON) {  // compteurs de la partie, pour le score
+    progress.runSteps++;
+    if (!strncmp(s->text, "IMPASSE", 7)) progress.runImpasses++;
+  }
+  if (s->ending) {  // une fin : on calcule le score de la partie
+    int score = (s->ending & END_LEGENDAIRE ? LEGEND_POINTS : END_POINTS)
+              + CHARM_POINTS * countBits(progress.charms) + TROPHY_POINTS * countBits(progress.trophies)
+              + max(0, SPEED_BONUS - POINTS_PER_STEP * progress.runSteps) - IMPASSE_PENALTY * progress.runImpasses;
+    finalScore = max(score, 0);
+    finalEnding = s->ending;
+    if (scoreRank(finalScore) >= 0) {  // il entre au classement : on demande les initiales
+      lastInitials(initials);
+      letterPos = 0;
+      phase = NAME_ENTRY;
+    } else {
+      char buf[24];
+      snprintf(buf, sizeof(buf), "%u points", finalScore);
+      showPopup("Score de la partie :", buf);
+    }
+  }
   if (s->id != SOON) progress.scene = s->id;
   progressSave();
 
@@ -157,6 +192,21 @@ void drawCentered(const char* s, int baseline) {
 void drawOled() {
   oled.clearBuffer();
   oled.setFont(u8g2_font_6x10_tf);
+  if (phase == NAME_ENTRY) {  // saisie des initiales
+    char buf[24];
+    snprintf(buf, sizeof(buf), "Score : %u !", finalScore);
+    drawCentered(buf, 11);  // bande jaune
+    drawCentered("Tes initiales :", 29);
+    oled.setFont(u8g2_font_10x20_tf);
+    for (int i = 0; i < 3; i++) {
+      char c[2] = {initials[i], 0};
+      oled.setCursor(36 + i * 20, 56);
+      oled.print(c);
+      if (i == letterPos) oled.drawHLine(34 + i * 20, 59, 14);  // lettre en cours
+    }
+    oled.sendBuffer();
+    return;
+  }
   if (phase != SCENE) {  // écran du mini-jeu de réflexe
     char buf[24];
     snprintf(buf, sizeof(buf), "Étoile %d / %d", stars < REFLEX_STARS ? stars + 1 : REFLEX_STARS, REFLEX_STARS);
@@ -171,13 +221,13 @@ void drawOled() {
     oled.setCursor(0, i == 0 ? 11 : 15 + i * 9);  // 1re ligne dans la bande jaune, les suivantes dans le bleu
     oled.print(lines[i]);
   }
-  if (unlocked && millis() < unlockedUntil) {  // annonce d'une activité débloquée, par-dessus le texte
+  if (popupTitle && millis() < popupUntil) {  // annonce par-dessus le texte (activité débloquée, score…)
     oled.setDrawColor(0);
     oled.drawBox(4, 18, 120, 33);
     oled.setDrawColor(1);
     oled.drawFrame(4, 18, 120, 33);
-    drawCentered("Nouveau dans le menu :", 31);
-    drawCentered(unlocked, 45);
+    drawCentered(popupTitle, 31);
+    drawCentered(popupText, 45);
   }
   // Barre de choix en bas, en négatif
   oled.drawBox(0, 54, 128, 10);
@@ -269,6 +319,8 @@ void renderMatrix(uint32_t now) {
     const uint8_t charms[3] = {CHARM_BOL, CHARM_FEUILLE, CHARM_NOTE};
     const CRGB    colors[3] = {CRGB(255, 90, 0), CRGB(0, 200, 0), CRGB(255, 200, 0)};
     for (int i = 0; i < 3; i++) setPixel(13 + i, 0, progress.charms & charms[i] ? colors[i] : CRGB(20, 20, 20));
+  } else if (phase == NAME_ENTRY) {
+    drawEffect(FX_FIREWORKS, now);
   } else if (phase == REFLEX_GO) {
     fill_solid(leds, NUM_LEDS, CRGB(0, 160, 0));
   } else {
@@ -280,6 +332,8 @@ void renderMatrix(uint32_t now) {
     setRgb(CHSV(now / 4, 255, 255));
   } else if (phase == REFLEX_GO) {
     setRgb(CRGB::Green);
+  } else if (phase == NAME_ENTRY) {
+    setRgb(CHSV(now / 4, 255, 255));
   } else {
     setRgb(ledColor(now));
   }
@@ -322,6 +376,7 @@ int wrapText(const char* s, char out[][64], int maxLines) {
 void adventureBegin() {
   encBase = encoderCount();
   scene = nullptr;
+  if (!progress.scene) { progress.runSteps = 0; progress.runImpasses = 0; }  // nouvelle partie
   enterScene(progress.scene ? progress.scene : 1);
 }
 
@@ -346,7 +401,31 @@ bool adventureLoop(uint32_t now) {
   bool ok = btn1.pressed();
   ok |= btnEnc.pressed();
   bool back = btn2.pressed();
-  if (phase != SCENE) {
+  if (phase == NAME_ENTRY) {
+    int32_t d = (encoderCount() - encBase) / 4;
+    if (d) { encBase += d * 4; }
+    float y = joyY();
+    int8_t dir = y > 0.6f ? 1 : y < -0.6f ? -1 : 0;
+    int step = d + (dir && dir != joyWas ? dir : 0);
+    joyWas = dir;
+    if (step) {  // A à Z, puis un espace
+      static const char LETTERS[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ ";
+      const char* at = strchr(LETTERS, initials[letterPos]);
+      int i = at ? at - LETTERS : 0;
+      initials[letterPos] = LETTERS[((i + step) % 27 + 27) % 27];
+      play(SND_TICK);
+      dirty = true;
+    }
+    if (ok && ++letterPos >= 3) {  // 3e lettre validée : on enregistre
+      int rank = scoreAdd(initials, finalScore, finalEnding);
+      char buf[24];
+      snprintf(buf, sizeof(buf), "%s : %u points", initials, finalScore);
+      showPopup(rank == 0 ? "Meilleur score !" : "Bienvenue au classement", buf);
+      phase = SCENE;
+      play(J_FANFARE, true);
+    }
+    if (ok) dirty = true;
+  } else if (phase != SCENE) {
     updateReflex(now, ok);
   } else {
     int32_t d = (encoderCount() - encBase) / 4;  // un cran de l'encodeur = un choix
@@ -363,16 +442,19 @@ bool adventureLoop(uint32_t now) {
     if (ok) {  // le jingle de la scène suivante sert de son de validation
       if (scene == &SCENE_SOON) enterScene(previous);
       else if (visible[selected]->target == GAME) startGame(now);
-      else enterScene(visible[selected]->target);
+      else {
+        if (scene->ending) { progress.runSteps = 0; progress.runImpasses = 0; }  // « Rejouer » : nouvelle partie
+        enterScene(visible[selected]->target);
+      }
     }
   }
-  encBase = phase != SCENE ? encoderCount() : encBase;  // l'encodeur ne compte pas pendant le mini-jeu
+  if (phase != SCENE && phase != NAME_ENTRY) encBase = encoderCount();  // l'encodeur ne compte pas pendant le mini-jeu
 
   if (now - lastFrame >= 33) {  // ~30 images/s
     lastFrame = now;
     renderMatrix(now);
   }
-  if (unlocked && now >= unlockedUntil) { unlocked = nullptr; dirty = true; }  // fin de l'annonce
+  if (popupTitle && now >= popupUntil) { popupTitle = nullptr; dirty = true; }  // fin de l'annonce
   if (dirty) { drawOled(); dirty = false; }
   return true;
 }

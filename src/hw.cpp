@@ -7,6 +7,17 @@ CRGB leds[NUM_LEDS];
 uint8_t oledAddress = 0;  // 0 = OLED pas trouvé au démarrage
 uint8_t matrixBrightness = 15;
 
+int brightnessStep(uint8_t value) {
+  int best = 0;
+  for (int i = 0; i < BRIGHTNESS_STEP_COUNT; i++)
+    if (abs(BRIGHTNESS_STEPS[i] - value) < abs(BRIGHTNESS_STEPS[best] - value)) best = i;
+  return best;
+}
+
+uint8_t brightnessShift(uint8_t value, int steps) {
+  return BRIGHTNESS_STEPS[constrain(brightnessStep(value) + steps, 0, BRIGHTNESS_STEP_COUNT - 1)];
+}
+
 void setMatrixBrightness(uint8_t level) {
   matrixBrightness = constrain(level, BRIGHTNESS_MIN, BRIGHTNESS);
   FastLED.setBrightness(matrixBrightness);

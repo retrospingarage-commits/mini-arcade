@@ -28,10 +28,13 @@ débloque les activités du menu :
 | Football manga | le Ballon d'Or (finale au stade) |
 | Flipper manga | la Bille Étoile (record du vieux flipper) |
 | Atelier pixel art (dessin depuis le téléphone par Wi-Fi) et Galerie | une fin heureuse |
+| Scores et Réglages | toujours disponibles |
 | Mode secret (couleurs animées, niveaux bonus) | la fin légendaire |
 
 Dans le menu, le **bouton du joystick** puis l'**encodeur** règlent la luminosité de la matrice (gardée en mémoire).
-La dernière ligne du menu, **Réglages**, permet aussi de rejouer l'histoire depuis le début ou de tout effacer.
+Chaque fin de l'Aventure donne un **score** ; les 5 meilleurs, avec leurs initiales, sont gardés pour toujours (ligne
+**Scores** du menu). La dernière ligne, **Réglages**, règle la luminosité et la veille, et permet de rejouer l'histoire
+depuis le début ou de tout effacer (les scores restent).
 Les commandes de chaque activité sont dans `GUIDE-IA.md`.
 
 Le code est sous licence MIT (`LICENSE`). `GUIDE-IA.md` explique le matériel et le programme pour qu'une IA

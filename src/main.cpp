@@ -34,6 +34,7 @@ static void start(int a) {
     case ACT_PINBALL:   pinballBegin(false); break;
     case ACT_ATELIER:   atelierBegin(); break;
     case ACT_GALLERY:   galleryBegin(); break;
+    case ACT_SCORES:    scoresBegin(); break;
     default:            openMenu(); break;
   }
 }
@@ -49,6 +50,7 @@ static bool runCurrent(uint32_t now) {
     case ACT_PINBALL:   return pinballLoop(now) == GAME_RUNNING;
     case ACT_ATELIER:   return atelierLoop(now) == GAME_RUNNING;
     case ACT_GALLERY:   return galleryLoop(now) == GAME_RUNNING;
+    case ACT_SCORES:    return scoresLoop(now) == GAME_RUNNING;
     default:            return false;
   }
 }

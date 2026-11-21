@@ -9,7 +9,7 @@ namespace {
 
 const char* const NAMES[] = {"Sakura", "Nuit étoilée", "Océan", "Feu de camp", "Aurore", "Arc-en-ciel", "Lucioles"};
 constexpr int     COUNT = sizeof(NAMES) / sizeof(NAMES[0]);
-constexpr uint8_t LEVEL_MIN = 4;   // luminosité réglable de 4 à BRIGHTNESS (40, la limite de sécurité)
+// luminosité réglable sur l'échelle progressive de hw.h (1 à 40, la limite de sécurité)
 constexpr uint32_t OLED_OFF_MS = 8000;  // l'OLED s'éteint après 8 s sans toucher à rien
 
 struct Particle { float x, y, vx, vy; uint8_t hue; };
@@ -36,7 +36,7 @@ void drawOled() {
   oled.setCursor(0, 46);
   oled.print(brightnessMode ? "> Luminosité" : "  Luminosité");
   oled.drawFrame(0, 50, 128, 8);
-  oled.drawBox(2, 52, (level - LEVEL_MIN) * 124 / (BRIGHTNESS - LEVEL_MIN), 4);
+  oled.drawBox(2, 52, (brightnessStep(level) + 1) * 124 / BRIGHTNESS_STEP_COUNT, 4);
   oled.sendBuffer();
 }
 
@@ -105,7 +105,7 @@ void wake(uint32_t now) {
 
 void moodBegin() {
   mood = progress.mood % COUNT;
-  level = constrain(progress.moodLevel ? progress.moodLevel : 20, LEVEL_MIN, BRIGHTNESS);
+  level = brightnessShift(progress.moodLevel ? progress.moodLevel : 19, 0);
   brightnessMode = sleeping = false;
   oledOn = true;
   lastInput = millis();
@@ -142,7 +142,7 @@ GameResult moodLoop(uint32_t now) {
   }
   if (be) { brightnessMode = !brightnessMode; wake(now); dirty = true; }
   if (d) {
-    if (brightnessMode) level = constrain(level + d * 2, LEVEL_MIN, BRIGHTNESS);
+    if (brightnessMode) level = brightnessShift(level, d);
     else { mood = ((mood + d) % COUNT + COUNT) % COUNT; resetParticles(); }
     wake(now);
     dirty = true;
