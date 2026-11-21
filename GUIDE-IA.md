@@ -62,7 +62,7 @@ Commandes utiles dans le moniteur série : `u` débloque tout (pour tester), `r`
 | `src/hw.cpp`, `include/hw.h` | tout le matériel partagé : matrice, OLED, boutons, encodeur, joystick, buzzer, LED RVB |
 | `src/save.cpp`, `include/save.h` | progression sauvegardée en mémoire permanente (NVS), règles de déblocage du menu |
 | `src/menu.cpp` | le menu sur l'OLED, avec les activités verrouillées |
-| `src/adventure.cpp` | le moteur de l'histoire (affichage, choix, récompenses) |
+| `src/adventure.cpp` | le moteur de l'histoire (affichage, choix, récompenses, effets animés, LED « chaud-froid », mini-jeu de réflexe) |
 | `include/scenes.h` | les scènes de l'histoire : textes, choix, dessins, couleurs, jingles |
 | `include/pictures.h` | les dessins pixel art 16×16 |
 | `src/breakout.cpp`, `include/levels.h` | le casse-briques et ses 6 niveaux |
@@ -85,10 +85,21 @@ Outils disponibles dans `hw.h` :
 ## 5. Ajouter quelque chose
 
 ### Une scène de l'histoire
-Dans `include/scenes.h`, ajouter une ligne au tableau `SCENES` :
-numéro, texte (100 caractères maximum), 1 à 4 choix `{"libellé", scène cible, condition}` (libellé de 20
-caractères maximum), dessin, couleur de la LED (`0xRRGGBB`), jingle, puis la récompense éventuelle (charme,
-trophée, fin). Un choix qui mène à une scène pas encore écrite affiche automatiquement « bientôt ».
+Dans `include/scenes.h`, ajouter une ligne au tableau `SCENES`, dans cet ordre :
+1. numéro de la scène ;
+2. texte : 100 caractères maximum, et il doit tenir en 5 lignes de 21 caractères à l'écran ;
+3. jusqu'à 5 choix `{"libellé", scène cible, condition}` (libellé de 20 caractères maximum ; 4 visibles au plus
+   à la fois ; la condition `ALWAYS`, `IF_ALL_CHARMS`, `UNLESS_BOL`… cache le choix selon la progression) ;
+4. dessin (`PIC_…`, ou `PIC_NONE`) et effet animé (`FX_FOG` brume, `FX_WAVES` vagues, `FX_RAINBOW`… ou `FX_NONE`) ;
+5. couleur de la LED (`0xRRGGBB`) et « chaleur » de -1 à 4 : sur un chemin, 0 = loin du but (LED bleue),
+   4 = tout près (LED orange qui bat vite) ; -1 = utiliser la couleur ;
+6. jingle (`J_…`) ;
+7. récompense donnée en arrivant : charme, trophée, fin (0 si aucune) ;
+8. mini-jeu (`GAME_NONE`, `GAME_REFLEX`…) et scènes d'arrivée en cas de victoire et de défaite. Un choix dont la
+   cible est `GAME` lance le mini-jeu.
+
+Un choix qui mène à une scène pas encore écrite affiche automatiquement « bientôt ». Après une modification,
+vérifier que chaque scène reste accessible et qu'on peut toujours revenir au village ou au lit.
 
 ### Un dessin
 Dans `include/pictures.h`, 16 lignes de 16 lettres (une lettre par pixel ; les couleurs sont dans

@@ -1,24 +1,31 @@
-// Moteur de l'Aventure : affiche une scène (texte sur l'OLED, dessin sur la matrice, LED, jingle),
+// Moteur de l'Aventure : affiche une scène (texte sur l'OLED, dessin et effet animé sur la matrice, LED, jingle),
 // laisse choisir avec l'encodeur ou le joystick, donne les récompenses et sauvegarde la progression.
+// Sur les chemins d'errance, la LED « chauffe » (bleu → orange) quand on se rapproche du but.
 // Les scènes elles-mêmes sont dans include/scenes.h.
 #include "adventure.h"
 #include "scenes.h"
 
 namespace {
 
-constexpr int LINE_CHARS = 21;  // caractères par ligne sur l'OLED (police 6x10)
-constexpr int TEXT_LINES = 5;   // lignes de texte au-dessus de la barre de choix
-constexpr uint8_t SOON   = 0;   // scène « bientôt » : la cible n'est pas encore écrite
+constexpr int      LINE_CHARS = 21;   // caractères par ligne sur l'OLED (police 6x10)
+constexpr int      TEXT_LINES = 5;    // lignes de texte au-dessus de la barre de choix
+constexpr uint8_t  SOON       = 0;    // scène « bientôt » : la cible n'est pas encore écrite
+constexpr uint8_t  REFLEX_STARS = 3;  // étoiles à attraper au mini-jeu de réflexe
+const uint16_t     REFLEX_WINDOW[REFLEX_STARS] = {900, 700, 550};  // temps pour appuyer (ms), de plus en plus court
 
-const Note SND_TICK[] = {{1200, 8}, {0, 0}};
+const Note SND_TICK[]  = {{1200, 8}, {0, 0}};
+const Note SND_GO[]    = {{1760, 60}, {0, 0}};
+const Note SND_STAR[]  = {{1319, 60}, {1760, 120}, {0, 0}};
+const Note SND_MISS[]  = {{200, 300}, {0, 0}};
 
 const Scene SCENE_SOON = {SOON, "Cette partie de l'histoire arrive bientôt ! Mochi s'impatiente.",
-                          {{"Revenir", 0, ALWAYS}}, PIC_CADENAS, 0x202020, J_BIENTOT, 0, 0, 0};
+                          {{"Revenir", 0, ALWAYS}}, PIC_CADENAS, FX_NONE, 0x202020, -1, J_BIENTOT, 0, 0, 0,
+                          GAME_NONE, 0, 0};
 const Choice CONTINUE = {"Continuer", 2, ALWAYS};  // secours si aucun choix n'est visible
 
 const Scene*  scene = nullptr;
 uint8_t       previous = 1;     // scène d'où l'on vient (pour revenir de la scène « bientôt »)
-const Choice* visible[4];
+const Choice* visible[5];
 uint8_t       nVisible = 0, selected = 0;
 char          lines[TEXT_LINES][64];
 int           nLines = 0;
@@ -26,6 +33,13 @@ int32_t       encBase = 0;
 int8_t        joyWas = 0;
 bool          dirty = true;
 uint32_t      rewardUntil = 0;
+
+// Mini-jeu de réflexe (scène 23) : attendre que la matrice devienne verte, puis appuyer
+enum Phase : uint8_t { SCENE, REFLEX_WAIT, REFLEX_GO, REFLEX_END };
+Phase    phase = SCENE;
+uint8_t  stars = 0;
+uint32_t phaseUntil = 0;
+bool     reflexWon = false;
 
 const Scene* findScene(uint8_t id) {
   for (const Scene& s : SCENES)
@@ -58,17 +72,18 @@ bool giveRewards(const Scene* s) {
 void enterScene(uint8_t id) {
   const Scene* s = findScene(id);
   if (!s) {
-    previous = scene ? scene->id : 1;
+    if (scene && scene != &SCENE_SOON) previous = scene->id;
     s = &SCENE_SOON;
   }
   scene = s;
+  phase = SCENE;
   bool reward = giveRewards(s);
   if (s->id != SOON) progress.scene = s->id;
   progressSave();
 
   nVisible = 0;
   for (const Choice& c : s->choices)
-    if (c.label && isVisible(c.cond)) visible[nVisible++] = &c;
+    if (c.label && isVisible(c.cond) && nVisible < 4) visible[nVisible++] = &c;
   if (!nVisible) visible[nVisible++] = &CONTINUE;
   selected = 0;
 
@@ -78,6 +93,41 @@ void enterScene(uint8_t id) {
   dirty = true;
 }
 
+void startGame(uint32_t now) {
+  if (scene->game != GAME_REFLEX) {  // football et flipper : pas encore programmés
+    enterScene(SOON);
+    return;
+  }
+  phase = REFLEX_WAIT;
+  stars = 0;
+  phaseUntil = now + random(1500, 4000);
+  dirty = true;
+}
+
+void updateReflex(uint32_t now, bool pressed) {
+  switch (phase) {
+    case REFLEX_WAIT:
+      if (pressed) { reflexWon = false; phase = REFLEX_END; phaseUntil = now + 1200; play(SND_MISS, true); dirty = true; }
+      else if (now >= phaseUntil) { phase = REFLEX_GO; phaseUntil = now + REFLEX_WINDOW[stars]; play(SND_GO, true); dirty = true; }
+      break;
+    case REFLEX_GO:
+      if (pressed) {
+        stars++;
+        play(SND_STAR, true);
+        if (stars >= REFLEX_STARS) { reflexWon = true; phase = REFLEX_END; phaseUntil = now + 800; }
+        else { phase = REFLEX_WAIT; phaseUntil = now + random(1200, 3500); }
+        dirty = true;
+      } else if (now >= phaseUntil) {
+        reflexWon = false; phase = REFLEX_END; phaseUntil = now + 1200; play(SND_MISS, true); dirty = true;
+      }
+      break;
+    case REFLEX_END:
+      if (now >= phaseUntil) enterScene(reflexWon ? scene->winTarget : scene->loseTarget);
+      break;
+    default: break;
+  }
+}
+
 void moveSelection(int d) {
   if (nVisible < 2) return;
   selected = ((selected + d) % nVisible + nVisible) % nVisible;
@@ -85,9 +135,24 @@ void moveSelection(int d) {
   dirty = true;
 }
 
+void drawCentered(const char* s, int baseline) {
+  oled.setCursor((128 - oled.getUTF8Width(s)) / 2, baseline);
+  oled.print(s);
+}
+
 void drawOled() {
   oled.clearBuffer();
   oled.setFont(u8g2_font_6x10_tf);
+  if (phase != SCENE) {  // écran du mini-jeu de réflexe
+    char buf[24];
+    snprintf(buf, sizeof(buf), "Étoile %d / %d", stars < REFLEX_STARS ? stars + 1 : REFLEX_STARS, REFLEX_STARS);
+    drawCentered(buf, 14);
+    if (phase == REFLEX_WAIT)    drawCentered("Attends le vert...", 38);
+    else if (phase == REFLEX_GO) drawCentered("MAINTENANT !", 38);
+    else                         drawCentered(reflexWon ? "Bravo !" : "Raté... encore !", 38);
+    oled.sendBuffer();
+    return;
+  }
   for (int i = 0; i < nLines; i++) {
     oled.setCursor(0, 9 + i * 10);
     oled.print(lines[i]);
@@ -95,9 +160,7 @@ void drawOled() {
   // Barre de choix en bas, en négatif
   oled.drawBox(0, 53, 128, 11);
   oled.setDrawColor(0);
-  const char* label = visible[selected]->label;
-  oled.setCursor((128 - oled.getUTF8Width(label)) / 2, 62);
-  oled.print(label);
+  drawCentered(visible[selected]->label, 62);
   if (nVisible > 1) {
     oled.setCursor(1, 62);   oled.print("<");
     oled.setCursor(122, 62); oled.print(">");
@@ -106,18 +169,97 @@ void drawOled() {
   oled.sendBuffer();
 }
 
+// --- Effets animés de la matrice --------------------------------------------
+void drawEffect(Effect fx, uint32_t now) {
+  switch (fx) {
+    case FX_DARK:  // ruelle sombre
+      fadeToBlackBy(leds, NUM_LEDS, 200);
+      break;
+    case FX_FOG:   // brume qui ondule
+      for (int y = 0; y < 16; y++)
+        for (int x = 0; x < 16; x++)
+          nblend(leds[XY(x, y)], CRGB(70, 70, 80), inoise8(x * 40, y * 40, now / 4));
+      break;
+    case FX_WAVES:  // vagues en bas de l'image
+      for (int y = 9; y < 16; y++)
+        for (int x = 0; x < 16; x++) {
+          uint8_t v = sin8(x * 24 + y * 40 + now / 6);
+          if (y > 10 || v > 200) setPixel(x, y, CHSV(150, 220, 60 + v / 2));
+        }
+      break;
+    case FX_RAIN:  // larmes qui tombent
+      for (int i = 0; i < 8; i++) setPixel((i * 5 + 3) % 16, (now / 80 + i * 3) % 16, CRGB(0, 80, 255));
+      break;
+    case FX_DRIP: {  // tout devient blanc, de haut en bas
+      int rows = (now / 120) % 18;
+      for (int y = 0; y < rows && y < 16; y++)
+        for (int x = 0; x < 16; x++) setPixel(x, y, CRGB(200, 200, 200));
+      break;
+    }
+    case FX_BOUNCE:  // une balle qui rebondit
+      setPixel((now / 90) % 16, 14 - quadwave8(now / 4) * 12 / 255, CRGB::White);
+      break;
+    case FX_CONFETTI:
+      for (int i = 0; i < 18; i++) leds[random16(NUM_LEDS)] = CHSV(random8(), 220, 255);
+      break;
+    case FX_RAINBOW:
+      for (int y = 0; y < 16; y++)
+        for (int x = 0; x < 16; x++) setPixel(x, y, CHSV(x * 10 + y * 6 + now / 8, 255, 255));
+      break;
+    case FX_STARS:
+    case FX_PORTAL:
+      for (int i = 0; i < NUM_LEDS; i++) leds[i] = CRGB(0, 0, 12);
+      for (int i = 0; i < 12; i++) setPixel((i * 7 + 3) % 16, (i * 11 + 5) % 16, CHSV(160, 60, sin8(now / 4 + i * 40)));
+      if (fx == FX_PORTAL)  // anneau d'étoiles qui tourne
+        for (int a = 0; a < 16; a++) {
+          uint8_t angle = a * 16 + now / 6;
+          setPixel(8 + ((int)cos8(angle) - 128) * 6 / 128, 8 + ((int)sin8(angle) - 128) * 6 / 128,
+                   CHSV(a * 16 + now / 4, 200, 255));
+        }
+      break;
+    case FX_FIREWORKS:  // trois bouquets qui éclatent
+      for (int k = 0; k < 3; k++) {
+        uint32_t t = now + k * 233;
+        uint16_t seed = t / 700 * 7 + k * 13;
+        int cx = seed * 37 % 12 + 2, cy = seed * 53 % 10 + 2, r = (t % 700) / 120;
+        static const int8_t DIRS[8][2] = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
+        for (auto& d : DIRS) setPixel(cx + d[0] * r, cy + d[1] * r, CHSV(seed * 40, 200, 255 - r * 35));
+      }
+      break;
+    default: break;
+  }
+}
+
+// Couleur de la LED : chaleur (bleu → orange) sur les chemins, couleur de la scène sinon
+CRGB ledColor(uint32_t now) {
+  if (scene->heat < 0) return CRGB(scene->led);
+  CRGB c = blend(CRGB(0, 60, 255), CRGB(255, 50, 0), scene->heat * 63);
+  uint8_t pulse = 120 + sin8(now / (12 - scene->heat * 2)) / 2;  // bat plus vite quand c'est chaud
+  return c.nscale8(pulse);
+}
+
 void renderMatrix(uint32_t now) {
   FastLED.clear();
-  drawPicture(scene->picture);
-  // Barre d'état : les 3 charmes en haut à droite (éteints tant qu'ils ne sont pas gagnés)
-  const uint8_t charms[3] = {CHARM_BOL, CHARM_FEUILLE, CHARM_NOTE};
-  const CRGB    colors[3] = {CRGB(255, 90, 0), CRGB(0, 200, 0), CRGB(255, 200, 0)};
-  for (int i = 0; i < 3; i++) setPixel(13 + i, 0, progress.charms & charms[i] ? colors[i] : CRGB(20, 20, 20));
+  if (phase == SCENE) {
+    drawPicture(scene->picture);
+    drawEffect(scene->effect, now);
+    // Barre d'état : les 3 charmes en haut à droite (éteints tant qu'ils ne sont pas gagnés)
+    const uint8_t charms[3] = {CHARM_BOL, CHARM_FEUILLE, CHARM_NOTE};
+    const CRGB    colors[3] = {CRGB(255, 90, 0), CRGB(0, 200, 0), CRGB(255, 200, 0)};
+    for (int i = 0; i < 3; i++) setPixel(13 + i, 0, progress.charms & charms[i] ? colors[i] : CRGB(20, 20, 20));
+  } else if (phase == REFLEX_GO) {
+    fill_solid(leds, NUM_LEDS, CRGB(0, 160, 0));
+  } else {
+    drawEffect(FX_STARS, now);
+    for (int i = 0; i < stars; i++) setPixel(6 + i * 2, 15, CRGB(255, 200, 0));  // étoiles déjà attrapées
+  }
   if (now < rewardUntil) {  // pluie d'étincelles quand on gagne quelque chose
     for (int i = 0; i < 6; i++) leds[random16(NUM_LEDS)] = CHSV(random8(), 180, 255);
     setRgb(CHSV(now / 4, 255, 255));
+  } else if (phase == REFLEX_GO) {
+    setRgb(CRGB::Green);
   } else {
-    setRgb(CRGB(scene->led));
+    setRgb(ledColor(now));
   }
   FastLED.show();
 }
@@ -167,25 +309,33 @@ void adventureGoto(uint8_t sceneId) {
 bool adventureLoop(uint32_t now) {
   static uint32_t lastFrame = 0;
 
-  int32_t d = (encoderCount() - encBase) / 4;  // un cran de l'encodeur = un choix
-  if (d) {
-    encBase += d * 4;
-    moveSelection(d);
-  }
-  float x = joyX();
-  int8_t dir = x > 0.6f ? 1 : x < -0.6f ? -1 : 0;
-  if (dir && dir != joyWas) moveSelection(dir);
-  joyWas = dir;
-
   bool ok = btn1.pressed();
   ok |= btnEnc.pressed();
-  if (btn2.pressed()) return false;  // bouton du joystick : retour au menu (la progression est gardée)
-  if (ok) {  // le jingle de la scène suivante sert de son de validation
-    uint8_t target = scene == &SCENE_SOON ? previous : visible[selected]->target;
-    enterScene(target);
-  }
+  bool back = btn2.pressed();
 
-  if (now - lastFrame >= 33) {  // ~30 images/s suffisent pour un dessin fixe
+  if (phase != SCENE) {
+    updateReflex(now, ok);
+  } else {
+    int32_t d = (encoderCount() - encBase) / 4;  // un cran de l'encodeur = un choix
+    if (d) {
+      encBase += d * 4;
+      moveSelection(d);
+    }
+    float x = joyX();
+    int8_t dir = x > 0.6f ? 1 : x < -0.6f ? -1 : 0;
+    if (dir && dir != joyWas) moveSelection(dir);
+    joyWas = dir;
+
+    if (back) return false;  // bouton du joystick : retour au menu (la progression est gardée)
+    if (ok) {  // le jingle de la scène suivante sert de son de validation
+      if (scene == &SCENE_SOON) enterScene(previous);
+      else if (visible[selected]->target == GAME) startGame(now);
+      else enterScene(visible[selected]->target);
+    }
+  }
+  encBase = phase != SCENE ? encoderCount() : encBase;  // l'encodeur ne compte pas pendant le mini-jeu
+
+  if (now - lastFrame >= 33) {  // ~30 images/s
     lastFrame = now;
     renderMatrix(now);
   }
