@@ -48,7 +48,8 @@ void progressUnlockAll() {
 
 bool isUnlocked(Activity a) {
   switch (a) {
-    case ACT_ADVENTURE: return true;
+    case ACT_ADVENTURE:
+    case ACT_SETTINGS:  return true;
     case ACT_MOOD:      return progress.charms & CHARM_BOL;
     case ACT_BREAKOUT:  return progress.charms & CHARM_FEUILLE;
     case ACT_JUKEBOX:   return progress.charms & CHARM_NOTE;
@@ -62,7 +63,7 @@ bool isUnlocked(Activity a) {
 
 const char* activityName(Activity a) {
   static const char* const NAMES[ACT_COUNT] = {
-    "Aventure", "Mood light", "Casse-briques", "Jukebox", "Football", "Flipper", "Atelier", "Galerie"};
+    "Aventure", "Mood light", "Casse-briques", "Jukebox", "Football", "Flipper", "Atelier", "Galerie", "Réglages"};
   return a < ACT_COUNT ? NAMES[a] : "";
 }
 

@@ -19,6 +19,13 @@ int8_t      joyWas = 0;
 bool        dirty = true;
 const char* message = nullptr;  // message affiché un instant (activité verrouillée ou pas encore prête)
 bool        adjusting = false;  // réglage de la luminosité (bouton du joystick dans le menu)
+
+// Réglages : la dernière ligne du menu
+const char* const SETTINGS[] = {"Luminosité", "Rejouer l'histoire", "Tout effacer", "Retour"};
+constexpr int     SETTINGS_COUNT = 4;
+bool        inSettings = false;
+uint8_t     setCursor = 0;
+int8_t      confirming = -1;    // réglage qui attend un 2e appui pour confirmer (-1 = aucun)
 uint32_t    messageUntil = 0;
 
 constexpr uint32_t SLEEP_MS = 180000;  // veille après 3 minutes sans toucher à rien dans le menu
@@ -37,6 +44,16 @@ void drawOled(uint32_t now) {
   oled.clearBuffer();
   oled.setFont(u8g2_font_6x10_tf);
   oled.setCursor(0, 11);  // titre dans la bande jaune (16 lignes du haut)
+  if (inSettings) {
+    oled.print("Réglages");
+    for (int i = 0; i < SETTINGS_COUNT; i++) {
+      int baseline = 26 + i * 12;
+      if (i == setCursor) { oled.drawBox(0, baseline - 9, 128, 11); oled.setDrawColor(0); }
+      oled.setCursor(4, baseline);
+      oled.print(SETTINGS[i]);
+      oled.setDrawColor(1);
+    }
+  } else {
   oled.print("MENU");
   oled.setCursor(62, 11);
   oled.printf("Charmes %d/3", countBits(progress.charms & ALL_CHARMS));
@@ -54,6 +71,7 @@ void drawOled(uint32_t now) {
     if (!isUnlocked(a)) drawLock(116, baseline);
     oled.setDrawColor(1);
   }
+  }
 
   if (adjusting) {  // bulle du réglage de la luminosité
     oled.setDrawColor(0);
@@ -64,6 +82,13 @@ void drawOled(uint32_t now) {
     oled.print("Luminosité");
     oled.drawFrame(14, 38, 100, 9);
     oled.drawBox(16, 40, (matrixBrightness - BRIGHTNESS_MIN) * 96 / (BRIGHTNESS - BRIGHTNESS_MIN), 5);
+  } else if (confirming >= 0) {  // une remise à zéro attend sa confirmation
+    oled.setDrawColor(0);
+    oled.drawBox(6, 18, 116, 36);
+    oled.setDrawColor(1);
+    oled.drawFrame(6, 18, 116, 36);
+    oled.setCursor(12, 32); oled.print("Appuie encore pour");
+    oled.setCursor(12, 45); oled.print("confirmer");
   } else if (message && now < messageUntil) {  // bulle par-dessus le menu
     oled.setDrawColor(0);
     oled.drawBox(6, 22, 116, 24);
@@ -79,7 +104,7 @@ void renderMatrix(uint32_t now) {
   Activity a = (Activity)cursor;
   FastLED.clear();
   static const Picture ICONS[ACT_COUNT] = {PIC_CHAT, PIC_NONE, PIC_BRIQUES, PIC_NOTE, PIC_STADE, PIC_FLIPPER,
-                                           PIC_NONE, PIC_BOCAUX};
+                                           PIC_NONE, PIC_BOCAUX, PIC_NONE};
   if (!isUnlocked(a))             drawPicture(PIC_CADENAS);
   else if (ICONS[a] != PIC_NONE)  drawPicture(ICONS[a]);
   else for (int i = 0; i < 12; i++) leds[random16(NUM_LEDS)] = CHSV(random8(), 200, 200);  // étincelles
@@ -92,8 +117,31 @@ void renderMatrix(uint32_t now) {
 }
 
 void move(int d) {
-  cursor = ((cursor + d) % ACT_COUNT + ACT_COUNT) % ACT_COUNT;
+  if (inSettings) {
+    setCursor = ((setCursor + d) % SETTINGS_COUNT + SETTINGS_COUNT) % SETTINGS_COUNT;
+    confirming = -1;  // bouger annule une confirmation en attente
+  } else {
+    cursor = ((cursor + d) % ACT_COUNT + ACT_COUNT) % ACT_COUNT;
+  }
   play(SND_TICK);
+  dirty = true;
+}
+
+void chooseSetting(uint32_t now) {
+  switch (setCursor) {
+    case 0: adjusting = true; play(SND_TICK); break;
+    case 1:
+    case 2:
+      if (confirming != setCursor) { confirming = setCursor; play(SND_LOCKED); break; }
+      if (setCursor == 1) { progress.scene = 0; progressSave(); message = "Histoire au début !"; }
+      else { progressReset(); cursor = 0; message = "Tout est effacé !"; }
+      messageUntil = now + 2000;
+      confirming = -1;
+      inSettings = false;
+      play(SND_OK);
+      break;
+    default: inSettings = false; play(SND_TICK); break;
+  }
   dirty = true;
 }
 
@@ -145,13 +193,20 @@ int menuLoop(uint32_t now) {
       play(SND_OK);
       dirty = true;
     }
+  } else if (inSettings) {  // bouton du joystick : sortir des réglages
+    if (b2) { inSettings = false; confirming = -1; dirty = true; }
+    else if (ok) chooseSetting(now);
   } else if (b2) {  // bouton du joystick : réglage de la luminosité
     adjusting = true;
     play(SND_TICK);
     dirty = true;
   } else if (ok) {
     Activity a = (Activity)cursor;
-    if (!isUnlocked(a)) {
+    if (a == ACT_SETTINGS) {
+      inSettings = true; setCursor = 0; confirming = -1;
+      play(SND_TICK);
+      dirty = true;
+    } else if (!isUnlocked(a)) {
       message = "Joue à l'Aventure !";
       play(SND_LOCKED);
     } else if (!isReady(a)) {

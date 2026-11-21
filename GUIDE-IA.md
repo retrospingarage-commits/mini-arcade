@@ -102,6 +102,7 @@ Outils disponibles dans `hw.h` :
 | Activité | Commandes |
 |---|---|
 | Menu | encodeur ou joystick haut/bas : choisir ; bouton ou bouton de l'encodeur : valider ; bouton du joystick puis encodeur : luminosité de la matrice (gardée en mémoire). Veille après 3 min |
+| Réglages (dernière ligne du menu) | Luminosité ; Rejouer l'histoire (garde les déblocages) ; Tout effacer (garde la Galerie et la luminosité) — ces deux-là demandent un 2e appui pour confirmer |
 | Aventure | encodeur ou joystick gauche/droite : choisir la réponse ; bouton : valider ; bouton du joystick : menu |
 | Casse-briques | encodeur ou joystick : raquette ; bouton ou joystick vers le haut : lancer ; bouton du joystick : pause |
 | Football | encodeur ou joystick : se déplacer ; maintenir le bouton : charger le tir ; tourner pendant le tir : le courber |

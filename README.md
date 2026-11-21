@@ -31,6 +31,7 @@ débloque les activités du menu :
 | Mode secret (couleurs animées, niveaux bonus) | la fin légendaire |
 
 Dans le menu, le **bouton du joystick** puis l'**encodeur** règlent la luminosité de la matrice (gardée en mémoire).
+La dernière ligne du menu, **Réglages**, permet aussi de rejouer l'histoire depuis le début ou de tout effacer.
 Les commandes de chaque activité sont dans `GUIDE-IA.md`.
 
 Le code est sous licence MIT (`LICENSE`). `GUIDE-IA.md` explique le matériel et le programme pour qu'une IA

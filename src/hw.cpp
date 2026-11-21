@@ -156,6 +156,7 @@ void hwBegin() {
   pinMode(PIN_ENC_SW, INPUT_PULLUP);
   pinMode(PIN_BTN1, INPUT_PULLUP);
   pinMode(PIN_BTN2, INPUT_PULLUP);
+  encState = (digitalRead(PIN_ENC_A) << 1) | digitalRead(PIN_ENC_B);  // position de départ : le 1er cran compte
   attachInterrupt(PIN_ENC_A, onEnc, CHANGE);
   attachInterrupt(PIN_ENC_B, onEnc, CHANGE);
 

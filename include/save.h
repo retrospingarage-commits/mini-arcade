@@ -26,7 +26,9 @@ void progressUnlockAll();  // pour tester : tous les charmes, trophées et fins
 
 // Activités du menu, dans l'ordre d'affichage
 enum Activity : uint8_t {
-  ACT_ADVENTURE, ACT_MOOD, ACT_BREAKOUT, ACT_JUKEBOX, ACT_FOOTBALL, ACT_PINBALL, ACT_ATELIER, ACT_GALLERY, ACT_COUNT
+  ACT_ADVENTURE, ACT_MOOD, ACT_BREAKOUT, ACT_JUKEBOX, ACT_FOOTBALL, ACT_PINBALL, ACT_ATELIER, ACT_GALLERY,
+  ACT_SETTINGS,  // Réglages : géré par le menu lui-même (luminosité, recommencer, tout effacer)
+  ACT_COUNT
 };
 bool        isUnlocked(Activity a);
 const char* activityName(Activity a);
