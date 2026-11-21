@@ -16,9 +16,11 @@ Le brochage complet est dans `include/config.h`, l'alimentation est décrite dan
 
 ## Le jeu
 
-L'histoire **« Les Couleurs du Roi Gluant »** est au cœur de la borne : 43 scènes, des chemins où l'on peut se
-perdre (la LED RVB « chauffe » quand on se rapproche du but), 3 charmes, 2 trophées, 4 fins. En la jouant, on
-débloque les activités du menu :
+L'histoire **« Les Couleurs du Roi Gluant »** est au cœur de la borne : 45 scènes, des chemins où l'on peut se
+perdre (la LED RVB « chauffe » quand on se rapproche du but), 3 charmes, 2 trophées. Le château du Roi Gluant
+s'ouvre avec 2 charmes, et il faut battre le roi en combat (chaque charme y donne un pouvoir). Ensuite, on choisit sa
+fin : « La Fête des Couleurs », « La Cheffe pâtissière », « La Pluie arc-en-ciel », ou, avec les 3 charmes et les
+2 trophées, « La Légende étoilée ». En la jouant, on débloque les activités du menu :
 
 | Activité | Se débloque avec |
 |---|---|

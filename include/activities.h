@@ -15,6 +15,10 @@ GameResult footballLoop(uint32_t now);
 void       pinballBegin(bool story);
 GameResult pinballLoop(uint32_t now);
 
+// Combat final de l'Aventure contre le Roi Gluant ; charms = charmes obtenus (chacun donne un pouvoir).
+void       bossBegin(uint8_t charms);
+GameResult bossLoop(uint32_t now);
+
 void       moodBegin();      // Mood light : ambiances lumineuses
 GameResult moodLoop(uint32_t now);
 void       jukeboxBegin();   // Jukebox : réécouter les jingles de l'histoire

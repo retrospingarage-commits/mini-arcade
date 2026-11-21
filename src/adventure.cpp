@@ -31,6 +31,7 @@ const Choice* visible[5];
 uint8_t       nVisible = 0, selected = 0;
 char          lines[TEXT_LINES][64];
 int           nLines = 0;
+bool          hasTitle = false;  // la 1re ligne est un titre (fins de l'histoire)
 int32_t       encBase = 0;
 int8_t        joyWas = 0;
 bool          dirty = true;
@@ -63,6 +64,10 @@ const Scene* findScene(uint8_t id) {
 bool isVisible(Cond c) {
   switch (c) {
     case IF_ALL_CHARMS:      return (progress.charms & ALL_CHARMS) == ALL_CHARMS;
+    case IF_TWO_CHARMS:      return countBits(progress.charms) >= 2;
+    case UNLESS_TWO_CHARMS:  return countBits(progress.charms) < 2;
+    case IF_LEGEND:          return (progress.charms & ALL_CHARMS) == ALL_CHARMS
+                                    && (progress.trophies & (TROPHY_BALLON | TROPHY_BILLE)) == (TROPHY_BALLON | TROPHY_BILLE);
     case UNLESS_BOL:         return !(progress.charms & CHARM_BOL);
     case UNLESS_FEUILLE:     return !(progress.charms & CHARM_FEUILLE);
     case UNLESS_NOTE:        return !(progress.charms & CHARM_NOTE);
@@ -133,17 +138,25 @@ void enterScene(uint8_t id) {
   if (!nVisible) visible[nVisible++] = &CONTINUE;
   selected = 0;
 
-  nLines = wrapText(s->text, lines, TEXT_LINES);
+  const char* bar = strchr(s->text, '|');  // « Titre|texte » : titre centré dans la bande jaune
+  hasTitle = bar != nullptr;
+  if (hasTitle) {
+    int n = min((int)(bar - s->text), 63);
+    memcpy(lines[0], s->text, n);
+    lines[0][n] = 0;
+    nLines = 1 + wrapText(bar + 1, lines + 1, TEXT_LINES - 1);
+  } else nLines = wrapText(s->text, lines, TEXT_LINES);
   play(s->jingle, true);
   rewardUntil = reward ? millis() + 2500 : 0;
   dirty = true;
 }
 
 void startGame(uint32_t now) {
-  if (scene->game == GAME_FOOTBALL || scene->game == GAME_PINBALL || scene->game == GAME_BREAKOUT) {
+  if (scene->game == GAME_FOOTBALL || scene->game == GAME_PINBALL || scene->game == GAME_BREAKOUT || scene->game == GAME_BOSS) {
     phase = EXTERNAL_GAME;  // version courte du jeu complet, qui se débloque ensuite dans le menu
     if (scene->game == GAME_FOOTBALL) footballBegin(true);
     else if (scene->game == GAME_PINBALL) pinballBegin(true);
+    else if (scene->game == GAME_BOSS) bossBegin(progress.charms);
     else breakoutBeginStory();
     return;
   }
@@ -218,6 +231,7 @@ void drawOled() {
     return;
   }
   for (int i = 0; i < nLines; i++) {
+    if (i == 0 && hasTitle) { drawCentered(lines[0], 11); continue; }
     oled.setCursor(0, i == 0 ? 11 : 15 + i * 9);  // 1re ligne dans la bande jaune, les suivantes dans le bleu
     oled.print(lines[i]);
   }
@@ -391,6 +405,7 @@ bool adventureLoop(uint32_t now) {
     GameResult r;
     if (scene->game == GAME_FOOTBALL)     r = footballLoop(now);
     else if (scene->game == GAME_PINBALL) r = pinballLoop(now);
+    else if (scene->game == GAME_BOSS)    r = bossLoop(now);
     else r = breakoutLoop(now) ? GAME_RUNNING : breakoutWon() ? GAME_WON : GAME_LOST;
     if (r != GAME_RUNNING) {
       encBase = encoderCount();

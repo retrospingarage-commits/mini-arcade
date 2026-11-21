@@ -1,6 +1,6 @@
 #pragma once
 // Les scènes de l'Aventure « Les Couleurs du Roi Gluant » (section 6 du cahier des charges).
-// Une scène = un texte (100 caractères max, 5 lignes de 21 caractères à l'écran), 1 à 5 choix (20 caractères
+// Une scène = un texte (100 caractères max ; « Titre|texte » affiche un titre centré dans la bande jaune, 5 lignes de 21 caractères à l'écran), 1 à 5 choix (20 caractères
 // max, 4 visibles au plus à la fois), un dessin, un effet animé, une couleur de LED ou une « chaleur »,
 // un jingle, une récompense éventuelle et un mini-jeu éventuel.
 // Une cible qui n'existe pas encore mène à une scène « bientôt » qui ramène en arrière.
@@ -12,6 +12,9 @@
 enum Cond : uint8_t {
   ALWAYS,
   IF_ALL_CHARMS,       // « si 3 charmes »
+  IF_TWO_CHARMS,       // au moins 2 charmes (pour briser les sceaux du château)
+  UNLESS_TWO_CHARMS,
+  IF_LEGEND,           // 3 charmes et 2 trophées (portail de la fin légendaire)
   UNLESS_BOL,          // disparaît une fois le charme ou le trophée obtenu
   UNLESS_FEUILLE,
   UNLESS_NOTE,
@@ -25,7 +28,7 @@ enum Effect : uint8_t { FX_NONE, FX_DARK, FX_FOG, FX_WAVES, FX_RAIN, FX_DRIP, FX
                         FX_STARS, FX_PORTAL, FX_FIREWORKS };
 
 // Mini-jeu lancé par un choix dont la cible est GAME
-enum MiniGame : uint8_t { GAME_NONE, GAME_REFLEX, GAME_FOOTBALL, GAME_PINBALL, GAME_BREAKOUT };
+enum MiniGame : uint8_t { GAME_NONE, GAME_REFLEX, GAME_FOOTBALL, GAME_PINBALL, GAME_BREAKOUT, GAME_BOSS };
 constexpr uint8_t GAME = 250;
 
 struct Choice {
@@ -108,22 +111,22 @@ const Scene SCENES[] = {
   {8, "Tu chantes faux, mais tout le monde adore ! Note Magique obtenue !",
    {{"Retour au village", 2, ALWAYS}},
    PIC_NOTE, FX_NONE, 0xFFC800, -1, J_MELODIE, CHARM_NOTE, 0, 0, GAME_NONE, 0, 0},
-  {9, "Le château de mochi se dresse, tout gluant. Plusieurs entrées s'offrent à toi.",
-   {{"Porte principale", 10, ALWAYS}, {"Passage secret", 12, ALWAYS}, {"Retour au village", 2, ALWAYS}},
+  {9, "Le château de mochi se dresse, tout gluant. Sa porte est fermée par 3 sceaux de couleur.",
+   {{"Briser les sceaux", 10, IF_TWO_CHARMS}, {"Toucher les sceaux", 45, UNLESS_TWO_CHARMS}, {"Retour au village", 2, ALWAYS}},
    PIC_CHATEAU, FX_NONE, 0xFFFFFF, -1, J_VENT, 0, 0, 0, GAME_NONE, 0, 0},
   {10, "Un garde mochi bloque la porte : Fais-moi rire ou rebrousse chemin !",
    {{"Raconter une blague", 11, ALWAYS}, {"Foncer dans la porte", 17, ALWAYS}},
    PIC_GARDE, FX_NONE, 0xFFFFFF, -1, J_ROULEMENT, 0, 0, 0, GAME_NONE, 0, 0},
-  {11, "Le Roi Gluant boude devant un gâteau géant, le seul truc coloré. C'est lui qui a volé les couleurs !",
-   {{"Négocier", 13, ALWAYS}, {"Combattre", 14, ALWAYS}, {"Goûter le gâteau", 19, ALWAYS}, {"Portail d'étoiles", 21, IF_ALL_CHARMS}},
-   PIC_ROI, FX_NONE, 0xFF3C8C, -1, J_MARCHE, 0, 0, 0, GAME_NONE, 0, 0},
-  {12, "Cuisine secrète ! Des bocaux de couleurs brillent sur l'étagère.",
-   {{"Ouvrir les bocaux", 20, ALWAYS}, {"Retour au château", 9, ALWAYS}},
+  {11, "Le Roi Gluant trône près d'un gâteau géant. C'est lui, le voleur de couleurs ! En garde !",
+   {{"Combattre !", GAME, ALWAYS}, {"Fuir", 9, ALWAYS}},
+   PIC_ROI, FX_NONE, 0xFF3C8C, -1, J_MARCHE, 0, 0, 0, GAME_BOSS, 46, 14},
+  {12, "Cuisine secrète ! Les bocaux de couleurs volées brillent sur l'étagère.",
+   {{"Ouvrir les bocaux", 20, ALWAYS}, {"Retour au roi", 46, ALWAYS}},
    PIC_BOCAUX, FX_NONE, 0xFF60FF, -1, J_TINTEMENT, 0, 0, 0, GAME_NONE, 0, 0},
-  {13, "Le roi sanglote : Personne ne vient à mon anniversaire ! Snif.",
-   {{"Inviter le village", 18, ALWAYS}, {"Hausser les épaules", 11, ALWAYS}},
+  {13, "Le roi sanglote : Personne ne vient jamais à mon anniversaire ! Snif.",
+   {{"Inviter le village", 18, ALWAYS}, {"Hausser les épaules", 46, ALWAYS}},
    PIC_ROI, FX_RAIN, 0x0028FF, -1, J_TROMBONE, 0, 0, 0, GAME_NONE, 0, 0},
-  {14, "IMPASSE. Tu sautes sur le roi et restes collée dans le mochi ! Tout devient blanc.",
+  {14, "IMPASSE. Le roi t'a engluée dans le mochi ! Tout devient blanc... Réveille-toi !",
    {{"Se réveiller", 1, ALWAYS}},
    PIC_NONE, FX_DRIP, 0xFFFFFF, -1, J_BOING, 0, 0, 0, GAME_NONE, 0, 0},
   {15, "IMPASSE. Le fantôme crache des flammes ! Tu t'évanouis... c'était un rêve ?",
@@ -135,17 +138,17 @@ const Scene SCENES[] = {
   {17, "IMPASSE. Boing ! Tu rebondis sur le ventre du garde jusqu'à ton lit.",
    {{"Se réveiller", 1, ALWAYS}},
    PIC_GARDE, FX_BOUNCE, 0xFFFFFF, -1, J_BOING, 0, 0, 0, GAME_NONE, 0, 0},
-  {18, "FIN HEUREUSE 1, La Fête. Tout le village danse ! Le roi rend les couleurs.",
+  {18, "La Fête des Couleurs|Tout le village danse à l'anniversaire du roi, qui rend les couleurs !",
    {{"Rejouer", 1, ALWAYS}},
    PIC_NONE, FX_CONFETTI, 0xFFFFFF, -1, J_FETE, 0, 0, END_FETE, GAME_NONE, 0, 0},
-  {19, "FIN HEUREUSE 2, La Pâtissière. Le gâteau est divin ! Le roi t'engage : Cheffe pâtissière royale !",
+  {19, "La Cheffe pâtissière|Divin ! Le roi rend les couleurs et t'engage : Cheffe pâtissière royale !",
    {{"Rejouer", 1, ALWAYS}},
    PIC_GATEAU, FX_NONE, 0xFF3C8C, -1, J_GOURMAND, 0, 0, END_PATISSIERE, GAME_NONE, 0, 0},
-  {20, "FIN HEUREUSE 3, L'Arc-en-ciel. Les bocaux s'ouvrent : les couleurs filent sur Pixelville !",
+  {20, "La Pluie arc-en-ciel|Les bocaux s'ouvrent : les couleurs filent sur tout Pixelville !",
    {{"Rejouer", 1, ALWAYS}},
    PIC_NONE, FX_RAINBOW, 0xFFFFFF, -1, J_HARPE, 0, 0, END_ARC_EN_CIEL, GAME_NONE, 0, 0},
-  {21, "WIZARD MODE ! Les 3 charmes brillent. Un portail d'étoiles s'ouvre. Mochi : Prépare-toi !",
-   {{"Entrer", 22, ALWAYS}, {"Pas prête", 11, ALWAYS}},
+  {21, "WIZARD MODE ! Tes charmes et trophées brillent. Un portail d'étoiles s'ouvre. Mochi : Prépare-toi !",
+   {{"Entrer", 22, ALWAYS}, {"Pas prête", 46, ALWAYS}},
    PIC_NONE, FX_PORTAL, 0x8C00FF, -1, J_SPECIAL, 0, 0, 0, GAME_NONE, 0, 0},
   {22, "Le gardien des étoiles demande : Qu'est-ce qui rend un gâteau meilleur ?",
    {{"Le partage", 23, ALWAYS}, {"Plus de sucre", 21, ALWAYS}},
@@ -153,7 +156,7 @@ const Scene SCENES[] = {
   {23, "Le Mochi-Mage lance 3 étoiles. Appuie sur le bouton quand la matrice devient verte !",
    {{"Je suis prête !", GAME, ALWAYS}},
    PIC_NONE, FX_STARS, 0x8C00FF, -1, J_SPECIAL, 0, 0, 0, GAME_REFLEX, 24, 21},
-  {24, "FIN LÉGENDAIRE ! Le Mochi-Mage devient ton ami et invente des couleurs jamais vues !",
+  {24, "La Légende étoilée|Le Mochi-Mage devient ton ami et invente des couleurs jamais vues !",
    {{"Rejouer", 1, ALWAYS}},
    PIC_NONE, FX_FIREWORKS, 0xFFFFFF, -1, J_LEGENDE, 0, 0, END_LEGENDAIRE, GAME_NONE, 0, 0},
   {25, "IMPASSE. Tu dors 100 ans. Mochi a mangé ton goûter. Quel réveil !",
@@ -213,6 +216,12 @@ const Scene SCENES[] = {
   {44, "Tu marches, tu marches... et te revoilà au début du pont. Mochi : C'est la brume qui triche !",
    {{"Réessayer", 36, ALWAYS}},
    PIC_NONE, FX_FOG, 0x000000, 1, J_RONDS, 0, 0, 0, GAME_NONE, 0, 0},
+  {45, "Les sceaux restent gris. Mochi : Il nous faut au moins 2 charmes pour les briser !",
+   {{"Retour au village", 2, ALWAYS}},
+   PIC_CHATEAU, FX_NONE, 0x505050, -1, J_TROMBONE, 0, 0, 0, GAME_NONE, 0, 0},
+  {46, "Vaincu, le roi fond en larmes de mochi : Snif... Je voulais juste des couleurs à moi !",
+   {{"Le consoler", 13, ALWAYS}, {"Goûter son gâteau", 19, ALWAYS}, {"Fouiller le château", 12, ALWAYS}, {"Portail d'étoiles", 21, IF_LEGEND}},
+   PIC_ROI, FX_RAIN, 0xFF3C8C, -1, J_TROMBONE, 0, 0, 0, GAME_NONE, 0, 0},
 };
 
 constexpr uint8_t NUM_SCENES = sizeof(SCENES) / sizeof(SCENES[0]);
