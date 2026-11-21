@@ -107,7 +107,7 @@ Outils disponibles dans `hw.h` :
 | Réglages (dernière ligne du menu) | Luminosité (échelle progressive à 16 crans, de 1 à 40) ; Veille du menu (3, 10, 30 min ou jamais) ; Rejouer l'histoire (garde les déblocages) ; Tout effacer (garde la Galerie, les scores et les réglages) — ces deux-là demandent un 2e appui pour confirmer |
 | Aventure | encodeur ou joystick gauche/droite : choisir la réponse ; bouton : valider ; bouton du joystick : menu |
 | Casse-briques | encodeur ou joystick : raquette ; bouton ou joystick vers le haut : lancer ; bouton du joystick : pause |
-| Football | encodeur ou joystick : se déplacer ; maintenir le bouton : charger le tir ; tourner pendant le tir : le courber |
+| Football | encodeur ou joystick : se déplacer ; maintenir le bouton : charger le tir, et pendant la charge tourner l'encodeur ou pousser le joystick : viser en biais (ligne de points) ; relâcher : tirer ; tourner pendant le tir : le courber. Le gardien « lit » une partie des tirs (de plus en plus avec les niveaux) : réglages en haut de `src/football.cpp` |
 | Flipper | bouton : flipper gauche ; joystick (toute action) : flipper droit ; tourner l'encodeur : secouer (vite = fort, trop = TILT) ; bouton de l'encodeur : pause, deux fois : menu |
 | Mood light | encodeur : ambiance ; bouton de l'encodeur : réglage de la luminosité ; bouton : veille ; bouton du joystick : menu |
 | Jukebox | encodeur : choisir ; bouton : jouer ; bouton du joystick : menu |
