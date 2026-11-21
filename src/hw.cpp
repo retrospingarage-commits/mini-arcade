@@ -147,7 +147,7 @@ void hwBegin() {
   pinMode(PIN_ENC_B, INPUT_PULLUP);
   pinMode(PIN_ENC_SW, INPUT_PULLUP);
   pinMode(PIN_BTN1, INPUT_PULLUP);
-  pinMode(PIN_BTN2, INPUT);  // GPIO36 : pull-up externe uniquement
+  pinMode(PIN_BTN2, INPUT_PULLUP);
   attachInterrupt(PIN_ENC_A, onEnc, CHANGE);
   attachInterrupt(PIN_ENC_B, onEnc, CHANGE);
 

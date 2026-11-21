@@ -19,11 +19,12 @@ Une carte ESP32 (DevKit 30 broches, puce WROOM-32D) posée sur une carte d'exten
 | LED RVB HW-478 (une seule LED, cathode commune, résistances 220 Ω / 100 Ω / 100 Ω) | ambiance | R D17, V D27, B D33 | RELAIS |
 | Encodeur rotatif HW-040 (KY-040) : rotation sans fin + bouton | commande principale | A D18, B D19, bouton D23 | LORA |
 | Bouton poussoir HW-483 | « bouton 1 » | D15 | PLUVIO 1 |
-| Joystick 2 axes analogiques + bouton | commande secondaire | X D32, Y D34, bouton D36 (VP) | HUM SOL 1, HUM SOL 2, PLUVIO 2 |
+| Joystick 2 axes analogiques + bouton | commande secondaire | X D32, Y D34, bouton D26 | HUM SOL 1, HUM SOL 2, EXT |
 | Buzzer passif HW-508 | sons et mélodies, une note à la fois | D13 | EXT (signal), TEMP SOL 2 (GND et 3V3) |
 
-Broches encore libres : D26 (connecteur EXT), D25 et D14 (connecteur LORA), D16 (connecteur RELAIS). D14 sait
-détecter un toucher (pastille tactile), D25 et D26 peuvent sortir un signal audio analogique.
+Broches encore libres : D25 et D14 (connecteur LORA), D16 (connecteur RELAIS), D36/VP (connecteur PLUVIO 2, entrée
+seule, avec une 10K de tirage soudée). D14 sait détecter un toucher (pastille tactile), D25 peut sortir un signal
+audio analogique.
 
 La source de vérité du brochage est `include/config.h`.
 
@@ -34,8 +35,8 @@ La source de vérité du brochage est `include/config.h`.
    par un seul chargeur USB de 2,4 A : au-delà, il chauffe ou coupe.
 2. **Broches interdites en sortie** : D0, D2 et D12 (elles décident du démarrage de l'ESP32), et D34, D35,
    D36, D39 (entrées seulement).
-3. **D36 (VP)** n'a pas de résistance de tirage interne : le bouton du joystick fonctionne grâce à une
-   résistance de 10 kΩ soudée sur la carte. Ne pas demander `INPUT_PULLUP` sur cette broche.
+3. **D36 (VP)** n'a pas de résistance de tirage interne : s'il sert un jour, il faut la résistance de 10 kΩ soudée
+   près de PLUVIO 2. Ne pas demander `INPUT_PULLUP` sur cette broche.
 4. **Joystick** : il est alimenté en 3,3 V, jamais en 5 V.
 5. **Alimentation** : ne jamais brancher en même temps le chargeur et un ordinateur sur la borne.
 6. **Wi-Fi** : réseau propre à la borne (« Mini-arcade »), allumé seulement dans l'Atelier, sans accès à

@@ -20,7 +20,7 @@ constexpr uint8_t PIN_BUZZER = 13;
 
 // Boutons de jeu (connecteurs PLUVIO 1 et 2, 10K vers 3V3 + 100nF si soudés)
 constexpr uint8_t PIN_BTN1 = 15;    // PLUVIO 1 : bouton HW-483 (strapping : OK avec pull-up)
-constexpr uint8_t PIN_BTN2 = 36;    // PLUVIO 2 (VP) : bouton du joystick. PAS de pull-up interne, la 10K est obligatoire
+constexpr uint8_t PIN_BTN2 = 26;    // EXT (D26), à côté du joystick : bouton du joystick (pull-up interne)
 
 // Joystick analogique (connecteurs HUM SOL 1 et 2, via les 1K soudées) : à alimenter en 3V3, PAS en 5V
 constexpr uint8_t PIN_JOY_X = 32;   // HUM SOL 1 (S1)

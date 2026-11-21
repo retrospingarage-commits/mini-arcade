@@ -17,10 +17,10 @@ buzzer passif HW-508, LED RVB HW-478, OLED SSD1306 0,96" (128x64).
 | Encodeur A / B / bouton | LORA | D18 / D19 / D23 (+ 3V3, GND) |
 | Buzzer passif | EXT (signal S) + TEMP SOL 2 (GND, 3V3) | D13 ; fil D4 de TEMP SOL 2 laissé vide |
 | Bouton 1 (HW-483) | PLUVIO 1 | D15 |
-| Bouton 2 (bouton du joystick) | PLUVIO 2 | D36 (VP, entrée seule, 10K externe obligatoire) |
+| Bouton 2 (bouton du joystick) | EXT | D26 (pull-up interne) ; PLUVIO 2 (VP) n'est plus utilisé |
 | Joystick X / Y | HUM SOL 1 / HUM SOL 2 | D32 / D34 (via les 1K ; joystick alimenté en 3V3, pas en 5V) |
 | OLED I2C | T H AIR 2 | SDA D21 / SCL D22, 0x3C |
-| Libres | D26 (EXT), D25 et D14 (LORA), D16 (RELAIS) | |
+| Libres | D25 et D14 (LORA), D16 (RELAIS), VP (PLUVIO 2) | |
 
 TEMP SOL 1, 2 et 3 partagent la même broche D4 : un seul appareil peut y envoyer un signal (la matrice).
 
