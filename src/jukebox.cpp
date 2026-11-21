@@ -16,7 +16,7 @@ const Track TRACKS[] = {
   {"Hymne du stade", J_HYMNE}, {"La Légende", J_LEGENDE},
 };
 constexpr int COUNT = sizeof(TRACKS) / sizeof(TRACKS[0]);
-constexpr int VISIBLE = 5;
+constexpr int VISIBLE = 4;  // lignes visibles dans la partie bleue de l'OLED
 
 int      cursor = 0;
 uint8_t  bars[16];
@@ -27,13 +27,12 @@ bool     dirty;
 void drawOled() {
   oled.clearBuffer();
   oled.setFont(u8g2_font_6x10_tf);
-  oled.setCursor(0, 9);
+  oled.setCursor(0, 11);  // titre dans la bande jaune
   oled.print("Jukebox");
-  oled.drawHLine(0, 11, 128);
   int top = constrain(cursor - VISIBLE / 2, 0, COUNT - VISIBLE);
   for (int i = 0; i < VISIBLE; i++) {
-    int baseline = 21 + i * 10;
-    if (top + i == cursor) { oled.drawBox(0, baseline - 8, 128, 10); oled.setDrawColor(0); }
+    int baseline = 26 + i * 12;
+    if (top + i == cursor) { oled.drawBox(0, baseline - 9, 128, 11); oled.setDrawColor(0); }
     oled.setCursor(4, baseline);
     oled.print(TRACKS[top + i].name);
     oled.setDrawColor(1);

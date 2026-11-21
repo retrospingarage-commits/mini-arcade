@@ -137,10 +137,10 @@ void drawOled(int stations) {
   esp_qrcode_generate(&cfg, wifi.c_str());
   textX = 66;
 #endif
-  oled.setCursor(textX, 10); oled.print(textX ? "Wi-Fi :" : "Réseau Wi-Fi :");
-  oled.setCursor(textX, 21); oled.print(SSID);
-  oled.setCursor(textX, 35); oled.print("Mot de passe");
-  oled.setCursor(textX, 46); oled.print(password);
+  oled.setCursor(textX, 11); oled.print(textX ? "Wi-Fi :" : "Réseau Wi-Fi :");  // bande jaune
+  oled.setCursor(textX, 26); oled.print(SSID);
+  oled.setCursor(textX, 38); oled.print("Mot de passe");
+  oled.setCursor(textX, 49); oled.print(password);
   oled.setCursor(textX, 62);
   if (otaBusy) oled.print("Mise à jour...");
   else if (stations) oled.printf("%d connecté(s)", stations);

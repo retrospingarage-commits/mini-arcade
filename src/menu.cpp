@@ -7,7 +7,7 @@
 
 namespace {
 
-constexpr int VISIBLE_ITEMS = 5;  // lignes de menu visibles sous le titre
+constexpr int VISIBLE_ITEMS = 4;  // lignes de menu visibles dans la partie bleue de l'OLED
 
 const Note SND_TICK[]   = {{1200, 8}, {0, 0}};
 const Note SND_LOCKED[] = {{150, 150}, {0, 0}};
@@ -36,18 +36,17 @@ void drawLock(int x, int baseline) {  // petit cadenas de 7x8 pixels
 void drawOled(uint32_t now) {
   oled.clearBuffer();
   oled.setFont(u8g2_font_6x10_tf);
-  oled.setCursor(0, 9);
+  oled.setCursor(0, 11);  // titre dans la bande jaune (16 lignes du haut)
   oled.print("MENU");
-  oled.setCursor(62, 9);
+  oled.setCursor(62, 11);
   oled.printf("Charmes %d/3", countBits(progress.charms & ALL_CHARMS));
-  oled.drawHLine(0, 11, 128);
 
   int top = constrain((int)cursor - VISIBLE_ITEMS / 2, 0, ACT_COUNT - VISIBLE_ITEMS);
   for (int i = 0; i < VISIBLE_ITEMS; i++) {
     Activity a = (Activity)(top + i);
-    int baseline = 21 + i * 10;
+    int baseline = 26 + i * 12;
     if (a == cursor) {  // ligne choisie en négatif
-      oled.drawBox(0, baseline - 8, 128, 10);
+      oled.drawBox(0, baseline - 9, 128, 11);
       oled.setDrawColor(0);
     }
     oled.setCursor(4, baseline);

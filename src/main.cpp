@@ -3,7 +3,8 @@
 // Commandes du moniteur série (115200) :
 //   g <gain>  f <frottement>  m <vitesse max>  : ressenti de la raquette du casse-briques
 //   n <niveau 1-6> : casse-briques à ce niveau    a <scène> : Aventure à cette scène
-//   s : son oui/non    u : tout débloquer (test)    r : effacer la progression    l <2-40> : luminosité
+//   s : son oui/non    b : tester le buzzer    u : tout débloquer (test)    r : effacer la progression
+//   l <2-40> : luminosité
 #include "hw.h"
 #include "save.h"
 #include "menu.h"
@@ -11,6 +12,7 @@
 #include "breakout.h"
 #include "activities.h"
 
+static const Note TEST_MELODY[] = {{523, 200}, {659, 200}, {784, 200}, {1047, 400}, {0, 0}};  // commande « b »
 static int  current = -1;  // activité en cours (Activity), -1 = menu
 static bool inMenu = true;
 
@@ -66,6 +68,7 @@ static void handleSerial() {
       case 's': soundOn = !soundOn; if (!soundOn) ledcWriteTone(PIN_BUZZER, 0); break;
       case 'u': progressUnlockAll(); openMenu(); break;
       case 'r': progressReset(); openMenu(); break;
+      case 'b': soundOn = true; play(TEST_MELODY, true); break;
       case 'l': setMatrixBrightness(v); progress.brightness = matrixBrightness; progressSave(); break;
     }
     Serial.printf("gain=%.2f friction=%.3f vmax=%.0f son=%s joystick=%s charmes=%d trophees=%d fins=%d scene=%d\n",

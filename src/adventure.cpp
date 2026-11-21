@@ -157,11 +157,11 @@ void drawOled() {
     return;
   }
   for (int i = 0; i < nLines; i++) {
-    oled.setCursor(0, 9 + i * 10);
+    oled.setCursor(0, i == 0 ? 11 : 15 + i * 9);  // 1re ligne dans la bande jaune, les suivantes dans le bleu
     oled.print(lines[i]);
   }
   // Barre de choix en bas, en négatif
-  oled.drawBox(0, 53, 128, 11);
+  oled.drawBox(0, 54, 128, 10);
   oled.setDrawColor(0);
   drawCentered(visible[selected]->label, 62);
   if (nVisible > 1) {
@@ -281,13 +281,14 @@ int wrapText(const char* s, char out[][64], int maxLines) {
     while (*p && count < LINE_CHARS) {
       const char* next = p + 1;
       while ((*next & 0xC0) == 0x80) next++;  // octets suivants d'un caractère accentué
-      if (*p == ' ') cut = p;                 // couper avant l'espace
+      bool beforePunct = p[1] && strchr("!?:;", p[1]);  // « obtenue ! » : le ! reste avec son mot
+      if (*p == ' ' && !beforePunct) cut = p;  // couper avant l'espace
       else if (*p == '-') cut = next;         // couper après le tiret
       count++;
       p = next;
     }
     const char* end;
-    if (!*p || *p == ' ') end = p;            // fin du texte, ou la ligne tombe pile sur un espace
+    if (!*p || (*p == ' ' && !(p[1] && strchr("!?:;", p[1])))) end = p;  // fin du texte, ou pile sur un espace
     else end = cut && cut > s ? cut : p;      // sinon on revient à la dernière coupure possible
     int len = end - s;
     if (len > 63) len = 63;
