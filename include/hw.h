@@ -41,7 +41,7 @@ extern bool soundOn;
 void play(const Note* m, bool priority = false);  // une mélodie prioritaire n'est pas coupée par un bruitage
 void updateSound(uint32_t now);                   // à appeler à chaque tour de loop()
 uint16_t currentFreq();                           // fréquence de la note en cours (0 = silence)
-void tone(uint16_t freq, uint16_t ms);            // un bip simple, sans mélodie
+void beep(uint16_t freq, uint16_t ms);            // un bip simple, sans mélodie
 
 constexpr uint8_t BRIGHTNESS = 40;  // luminosité normale de la matrice (règle de sécurité : 40 au maximum)
 

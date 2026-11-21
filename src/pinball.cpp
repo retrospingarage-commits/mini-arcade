@@ -145,7 +145,7 @@ void nudge(int32_t pulses, float dt, uint32_t now) {
   tiltMeter += strength;
   fx = max(fx, strength);
   fxUntil = now + 250 + (uint32_t)(strength * 400);
-  tone(200 + strength * 1200, 40);
+  beep(200 + strength * 1200, 40);
   if (tiltMeter > TILT_LIMIT && !tilted) {
     tilted = true;
     message = "TILT !";

@@ -79,7 +79,7 @@ void play(const Note* m, bool priority) {
 static uint16_t curFreq = 0;
 uint16_t currentFreq() { return curFreq; }
 
-void tone(uint16_t freq, uint16_t ms) {
+void beep(uint16_t freq, uint16_t ms) {
   static Note single[2];
   single[0] = {freq, ms};
   single[1] = {0, 0};

@@ -105,7 +105,7 @@ void handleFill() {
 void handleSave() {
   int n = gallerySave(canvas);
   server.send(200, "text/plain; charset=utf-8", String("Enregistré ! ") + n + " dessin(s) dans la Galerie.");
-  tone(1568, 120);
+  beep(1568, 120);
 }
 
 void redirectHome() {  // portail captif : toute adresse inconnue renvoie vers la page de dessin
