@@ -4,7 +4,7 @@
 
 // Charmes (quêtes secondaires), trophées (défis) et fins, sous forme de bits
 enum : uint8_t { CHARM_BOL = 1, CHARM_FEUILLE = 2, CHARM_NOTE = 4, ALL_CHARMS = 7 };
-enum : uint8_t { TROPHY_BALLON = 1, TROPHY_BILLE = 2 };
+enum : uint8_t { TROPHY_BALLON = 1, TROPHY_BILLE = 2, TROPHY_VOLANT = 4, ALL_TROPHIES = 7 };
 enum : uint8_t { END_FETE = 1, END_PATISSIERE = 2, END_ARC_EN_CIEL = 4, END_LEGENDAIRE = 8, HAPPY_ENDS = 7 };
 
 struct Progress {
@@ -19,6 +19,8 @@ struct Progress {
   uint16_t runSteps;         // partie d'Aventure en cours : scènes traversées depuis la scène 1
   uint8_t  runImpasses;      //   et impasses rencontrées (servent au score)
   uint8_t  sleepMode;        // veille du menu : 0 = 3 min, 1 = 10 min, 2 = 30 min, 3 = jamais
+  uint8_t  raceBestPlace;    // meilleure place à la Course (0 = jamais courue)
+  uint16_t raceBestTime;     //   et son temps, en dixièmes de seconde
   char     player[4];        // prénom en 3 lettres, demandé au début de l'Aventure ("" = pas encore demandé)
 };
 extern Progress progress;
@@ -30,7 +32,7 @@ void progressUnlockAll();  // pour tester : tous les charmes, trophées et fins
 
 // Activités du menu, dans l'ordre d'affichage
 enum Activity : uint8_t {
-  ACT_ADVENTURE, ACT_MOOD, ACT_BREAKOUT, ACT_JUKEBOX, ACT_FOOTBALL, ACT_PINBALL, ACT_ATELIER, ACT_GALLERY,
+  ACT_ADVENTURE, ACT_MOOD, ACT_BREAKOUT, ACT_JUKEBOX, ACT_FOOTBALL, ACT_PINBALL, ACT_RACE, ACT_ATELIER, ACT_GALLERY,
   ACT_SCORES,    // meilleurs scores de l'Aventure
   ACT_SETTINGS,  // Réglages : géré par le menu lui-même (luminosité, veille, recommencer, tout effacer)
   ACT_COUNT

@@ -14,12 +14,13 @@ enum Cond : uint8_t {
   IF_ALL_CHARMS,       // « si 3 charmes »
   IF_TWO_CHARMS,       // au moins 2 charmes (pour briser les sceaux du château)
   UNLESS_TWO_CHARMS,
-  IF_LEGEND,           // 3 charmes et 2 trophées (portail de la fin légendaire)
+  IF_LEGEND,           // 3 charmes et 3 trophées (portail de la fin légendaire)
   UNLESS_BOL,          // disparaît une fois le charme ou le trophée obtenu
   UNLESS_FEUILLE,
   UNLESS_NOTE,
   UNLESS_BALLON,
   UNLESS_BILLE,
+  UNLESS_VOLANT,
   UNLESS_MARKET_DONE,  // le marché disparaît de la place quand le Bol et la Bille Étoile sont obtenus
 };
 
@@ -28,7 +29,7 @@ enum Effect : uint8_t { FX_NONE, FX_DARK, FX_FOG, FX_WAVES, FX_RAIN, FX_DRIP, FX
                         FX_STARS, FX_PORTAL, FX_FIREWORKS };
 
 // Mini-jeu lancé par un choix dont la cible est GAME
-enum MiniGame : uint8_t { GAME_NONE, GAME_REFLEX, GAME_FOOTBALL, GAME_PINBALL, GAME_BREAKOUT, GAME_BOSS };
+enum MiniGame : uint8_t { GAME_NONE, GAME_REFLEX, GAME_FOOTBALL, GAME_PINBALL, GAME_BREAKOUT, GAME_BOSS, GAME_RACE };
 constexpr uint8_t GAME = 250;
 
 struct Choice {
@@ -195,8 +196,8 @@ const Scene SCENES[] = {
   {36, "Le pont grince. Au milieu, la brume est si épaisse qu'on n'y voit plus rien !",
    {{"Suivre la basse", 7, ALWAYS}, {"Tout droit", 44, ALWAYS}, {"Faire demi-tour", 35, ALWAYS}},
    PIC_PONT, FX_FOG, 0x000000, 3, J_MYSTERE, 0, 0, 0, GAME_NONE, 0, 0},
-  {38, "La route monte vers un château blanc et gluant. Un panneau tout gris indique : Stade.",
-   {{"Vers le château", 39, ALWAYS}, {"Vers le stade", 26, UNLESS_BALLON}, {"Retour au village", 2, ALWAYS}},
+  {38, "La route monte vers un château blanc et gluant. Des panneaux tout gris : Stade, Circuit.",
+   {{"Vers le château", 39, ALWAYS}, {"Vers le stade", 26, UNLESS_BALLON}, {"Vers le circuit", 50, UNLESS_VOLANT}, {"Retour au village", 2, ALWAYS}},
    PIC_ROUTE, FX_NONE, 0x000000, 2, J_PAS, 0, 0, 0, GAME_NONE, 0, 0},
   {39, "Des mochis géants bloquent la route. Mochi : Saute dessus, ~, ils sont tout mous !",
    {{"Sauter dessus", 40, ALWAYS}, {"Les contourner", 9, ALWAYS}, {"Faire demi-tour", 38, ALWAYS}},
@@ -225,6 +226,15 @@ const Scene SCENES[] = {
   {49, "... puis bats le roi pour rendre les couleurs. Chaque charme te donnera un pouvoir !",
    {{"C'est parti !", 1, ALWAYS}},
    PIC_ROI, FX_NONE, 0xFF3C8C, -1, J_FANFARE, 0, 0, 0, GAME_NONE, 0, 0},
+  {50, "Les tanukis font la course en karts ! Mochi : Ils te prêtent un bolide, ~. Tu cours ?",
+   {{"Courir !", GAME, ALWAYS}, {"Retour à la route", 38, ALWAYS}},
+   PIC_KART, FX_NONE, 0xFF3C8C, -1, J_ROULEMENT, 0, 0, 0, GAME_RACE, 51, 52},
+  {51, "1re place ! Les tanukis t'offrent le Volant d'Or : la course est débloquée !",
+   {{"Retour à la route", 38, ALWAYS}},
+   PIC_VOLANT, FX_CONFETTI, 0xFFC800, -1, J_HYMNE, 0, TROPHY_VOLANT, 0, GAME_NONE, 0, 0},
+  {52, "Les tanukis rient : Pas mal ! Mais seule la 1re place gagne le Volant d'Or.",
+   {{"Revanche !", 50, ALWAYS}, {"Retour à la route", 38, ALWAYS}},
+   PIC_KART, FX_NONE, 0x0028FF, -1, J_TROMBONE, 0, 0, 0, GAME_NONE, 0, 0},
   {45, "Les sceaux restent gris. Mochi : ~, il nous faut au moins 2 charmes pour les briser !",
    {{"Retour au village", 2, ALWAYS}},
    PIC_CHATEAU, FX_NONE, 0x505050, -1, J_TROMBONE, 0, 0, 0, GAME_NONE, 0, 0},

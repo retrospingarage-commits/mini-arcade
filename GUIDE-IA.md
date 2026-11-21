@@ -77,6 +77,7 @@ Commandes utiles dans le moniteur série : `u` débloque tout (pour tester), `r`
 | `src/football.cpp` | le football manga (aussi en version courte dans l'histoire, scène 26) |
 | `src/boss.cpp` | le combat final contre le Roi Gluant (scène 11) ; ses réglages (vie du roi, vitesse des bulles…) sont en haut du fichier |
 | `src/pinball.cpp` | le flipper manga (aussi en version courte dans l'histoire, scène 28) |
+| `src/race.cpp` | la course manga (aussi en version courte dans l'histoire, scène 50) ; vitesses des rivales et réglages du turbo en haut du fichier |
 | `src/mood.cpp` | la Mood light (7 ambiances, luminosité, veille) |
 | `src/jukebox.cpp` | le Jukebox des jingles, avec égaliseur |
 | `src/atelier.cpp` | l'Atelier pixel art : Wi-Fi de la borne, page de dessin pour téléphone, QR code, mise à jour sans câble |
@@ -111,6 +112,7 @@ Outils disponibles dans `hw.h` :
 | Casse-briques | encodeur ou joystick : raquette ; bouton ou joystick vers le haut : lancer ; bouton du joystick : pause |
 | Football | encodeur ou joystick : se déplacer ; maintenir le bouton : charger le tir, et pendant la charge tourner l'encodeur ou pousser le joystick : viser en biais (ligne de points) ; relâcher : tirer ; tourner pendant le tir : le courber. Le gardien « lit » une partie des tirs (de plus en plus avec les niveaux) : réglages en haut de `src/football.cpp` |
 | Flipper | bouton : flipper gauche ; joystick (toute action) : flipper droit ; tourner l'encodeur : secouer (vite = fort, trop = TILT) ; bouton de l'encodeur : pause, deux fois : menu |
+| Course | encodeur : aller à gauche ou à droite pour doubler ; bouton (ou bouton de l'encodeur) maintenu : turbo. La jauge se remplit en doublant, en roulant juste derrière une voiture (aspiration) et un peu toute seule ; un choc ralentit et vide un peu la jauge. 3 tours, puis la place et le temps (record gardé) ; bouton du joystick : menu |
 | Mood light | encodeur : ambiance ; bouton de l'encodeur : réglage de la luminosité ; bouton : veille ; bouton du joystick : menu |
 | Jukebox | encodeur : choisir ; bouton : jouer ; bouton du joystick : menu |
 | Atelier | on dessine sur le téléphone ; bouton du joystick : fermer (le Wi-Fi s'éteint) |
@@ -133,13 +135,13 @@ Dans `include/scenes.h`, ajouter une ligne au tableau `SCENES`, dans cet ordre :
    un titre centré dans la bande jaune (21 caractères maximum, utilisé pour les fins) puis le texte sur 4 lignes ;
    « ~ » est remplacé par le prénom de la joueuse (3 lettres, ou « toi ») ;
 3. jusqu'à 5 choix `{"libellé", scène cible, condition}` (libellé de 20 caractères maximum ; 4 visibles au plus
-   à la fois ; la condition `ALWAYS`, `IF_ALL_CHARMS`, `IF_TWO_CHARMS`, `IF_LEGEND`, `UNLESS_BOL`… cache le choix selon la progression) ;
+   à la fois ; la condition `ALWAYS`, `IF_ALL_CHARMS`, `IF_TWO_CHARMS`, `IF_LEGEND` (3 charmes et 3 trophées), `UNLESS_BOL`… cache le choix selon la progression) ;
 4. dessin (`PIC_…`, ou `PIC_NONE`) et effet animé (`FX_FOG` brume, `FX_WAVES` vagues, `FX_RAINBOW`… ou `FX_NONE`) ;
 5. couleur de la LED (`0xRRGGBB`) et « chaleur » de -1 à 4 : sur un chemin, 0 = loin du but (LED bleue),
    4 = tout près (LED orange qui bat vite) ; -1 = utiliser la couleur ;
 6. jingle (`J_…`) ;
 7. récompense donnée en arrivant : charme, trophée, fin (0 si aucune) ;
-8. mini-jeu (`GAME_NONE`, `GAME_REFLEX`, `GAME_BREAKOUT`, `GAME_FOOTBALL`, `GAME_PINBALL`, `GAME_BOSS`) et scènes d'arrivée en cas de victoire et de défaite. Un choix dont la
+8. mini-jeu (`GAME_NONE`, `GAME_REFLEX`, `GAME_BREAKOUT`, `GAME_FOOTBALL`, `GAME_PINBALL`, `GAME_BOSS`, `GAME_RACE`) et scènes d'arrivée en cas de victoire et de défaite. Un choix dont la
    cible est `GAME` lance le mini-jeu.
 
 Quand une récompense débloque une activité, l'OLED l'annonce (« Nouveau dans le menu : … »).

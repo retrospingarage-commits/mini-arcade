@@ -24,7 +24,7 @@ inline CRGB paletteColor(char c) {
   }
 }
 
-enum Picture : uint8_t { PIC_CHAT, PIC_DODO, PIC_PLACE, PIC_FANTOME, PIC_BOL, PIC_TANUKI, PIC_FEUILLE, PIC_FLAMMES, PIC_CADENAS, PIC_BRIQUES, PIC_GRENOUILLE, PIC_NOTE, PIC_CHATEAU, PIC_GARDE, PIC_ROI, PIC_HIBOU, PIC_GATEAU, PIC_BALLON, PIC_BOCAUX, PIC_STADE, PIC_FLIPPER, PIC_ETALS, PIC_CHAMPIGNONS, PIC_PANNEAUX, PIC_PONT, PIC_ROUTE, PIC_MOCHIS, PIC_COUNT };
+enum Picture : uint8_t { PIC_CHAT, PIC_DODO, PIC_PLACE, PIC_FANTOME, PIC_BOL, PIC_TANUKI, PIC_FEUILLE, PIC_FLAMMES, PIC_CADENAS, PIC_BRIQUES, PIC_GRENOUILLE, PIC_NOTE, PIC_CHATEAU, PIC_GARDE, PIC_ROI, PIC_HIBOU, PIC_GATEAU, PIC_BALLON, PIC_BOCAUX, PIC_STADE, PIC_FLIPPER, PIC_ETALS, PIC_CHAMPIGNONS, PIC_PANNEAUX, PIC_PONT, PIC_ROUTE, PIC_MOCHIS, PIC_KART, PIC_VOLANT, PIC_COUNT };
 constexpr Picture PIC_NONE = PIC_COUNT;  // pas de dessin (la scène n'a qu'un effet animé)
 
 const char* const PICTURES[PIC_COUNT][16] = {
@@ -513,6 +513,42 @@ const char* const PICTURES[PIC_COUNT][16] = {
     "gggggggggggggggg",
     "GGGGGGGGGGGGGGGG",
     "gggggggggggggggg",
+  },
+  {  // PIC_KART
+    "................",
+    ".m..............",
+    ".mwgwgwg........",
+    ".mgwgwgw........",
+    ".mwgwgwg........",
+    ".mgwgwgw........",
+    ".m..............",
+    ".m..............",
+    ".m......pppp....",
+    ".m.....pccccp...",
+    ".m...pppppppppp.",
+    ".m...ppywpppppp.",
+    "....kkk....kkk..",
+    "....kgk....kgk..",
+    "................",
+    "vvvvvvvvvvvvvvvv",
+  },
+  {  // PIC_VOLANT
+    "................",
+    ".....yyyyyy.....",
+    "...yy......yy...",
+    "..y..........y..",
+    "..y..........y..",
+    ".y............y.",
+    ".y............y.",
+    ".yyyyyyggyyyyyy.",
+    ".y.....gg.....y.",
+    ".y.....yy.....y.",
+    "..y....yy....y..",
+    "..y....yy....y..",
+    "...yy..yy..yy...",
+    ".....yyyyyy.....",
+    "................",
+    "................",
   },
 };
 

@@ -19,6 +19,11 @@ GameResult pinballLoop(uint32_t now);
 void       bossBegin(uint8_t charms);
 GameResult bossLoop(uint32_t now);
 
+// Course manga : encodeur = gauche/droite pour doubler, bouton maintenu = turbo (se remplit en doublant).
+// story = version de l'histoire (2 tours, rivales un peu plus lentes, il faut finir 1re).
+void       raceBegin(bool story);
+GameResult raceLoop(uint32_t now);
+
 void       moodBegin();      // Mood light : ambiances lumineuses
 GameResult moodLoop(uint32_t now);
 void       jukeboxBegin();   // Jukebox : réécouter les jingles de l'histoire

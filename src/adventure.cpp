@@ -70,12 +70,13 @@ bool isVisible(Cond c) {
     case IF_TWO_CHARMS:      return countBits(progress.charms) >= 2;
     case UNLESS_TWO_CHARMS:  return countBits(progress.charms) < 2;
     case IF_LEGEND:          return (progress.charms & ALL_CHARMS) == ALL_CHARMS
-                                    && (progress.trophies & (TROPHY_BALLON | TROPHY_BILLE)) == (TROPHY_BALLON | TROPHY_BILLE);
+                                    && (progress.trophies & ALL_TROPHIES) == ALL_TROPHIES;
     case UNLESS_BOL:         return !(progress.charms & CHARM_BOL);
     case UNLESS_FEUILLE:     return !(progress.charms & CHARM_FEUILLE);
     case UNLESS_NOTE:        return !(progress.charms & CHARM_NOTE);
     case UNLESS_BALLON:      return !(progress.trophies & TROPHY_BALLON);
     case UNLESS_BILLE:       return !(progress.trophies & TROPHY_BILLE);
+    case UNLESS_VOLANT:      return !(progress.trophies & TROPHY_VOLANT);
     case UNLESS_MARKET_DONE: return !((progress.charms & CHARM_BOL) && (progress.trophies & TROPHY_BILLE));
     default:                 return true;
   }
@@ -175,9 +176,8 @@ void enterScene(uint8_t id) {
     lines[0][n] = 0;
     nLines = 1 + wrapText(bar + 1, lines + 1, TEXT_LINES - 1);
   } else nLines = wrapText(textBuf, lines, TEXT_LINES);
-  if (s->id == FIRST_SCENE && !nameGiven) {  // nouvelle partie : on demande d'abord le prénom
-    if (progress.player[0]) strcpy(initials, progress.player);
-    else lastInitials(initials);
+  if (s->id == FIRST_SCENE && !nameGiven && !progress.player[0]) {  // 1re partie : on demande d'abord le prénom
+    lastInitials(initials);  // (pour en changer : Réglages, Tout effacer ; les scores restent)
     letterPos = 0;
     askingName = true;
     phase = NAME_ENTRY;
@@ -188,11 +188,12 @@ void enterScene(uint8_t id) {
 }
 
 void startGame(uint32_t now) {
-  if (scene->game == GAME_FOOTBALL || scene->game == GAME_PINBALL || scene->game == GAME_BREAKOUT || scene->game == GAME_BOSS) {
+  if (scene->game == GAME_FOOTBALL || scene->game == GAME_PINBALL || scene->game == GAME_BREAKOUT || scene->game == GAME_BOSS || scene->game == GAME_RACE) {
     phase = EXTERNAL_GAME;  // version courte du jeu complet, qui se débloque ensuite dans le menu
     if (scene->game == GAME_FOOTBALL) footballBegin(true);
     else if (scene->game == GAME_PINBALL) pinballBegin(true);
     else if (scene->game == GAME_BOSS) bossBegin(progress.charms);
+    else if (scene->game == GAME_RACE) raceBegin(true);
     else breakoutBeginStory();
     return;
   }
@@ -443,6 +444,7 @@ bool adventureLoop(uint32_t now) {
     if (scene->game == GAME_FOOTBALL)     r = footballLoop(now);
     else if (scene->game == GAME_PINBALL) r = pinballLoop(now);
     else if (scene->game == GAME_BOSS)    r = bossLoop(now);
+    else if (scene->game == GAME_RACE)    { r = raceLoop(now); if (r == GAME_QUIT) r = GAME_LOST; }
     else r = breakoutLoop(now) ? GAME_RUNNING : breakoutWon() ? GAME_WON : GAME_LOST;
     if (r != GAME_RUNNING) {
       encBase = encoderCount();
