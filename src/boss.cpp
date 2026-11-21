@@ -155,7 +155,7 @@ void bossBegin(uint8_t charms) {
   powers = charms;
   state = FIGHT;
   px = 7; kx = 5; kdir = 1;
-  hp = KING_HP; hearts = HEARTS; phaseIdx = 0;
+  hp = KING_HP; hearts = HEARTS + (charms & CHARM_PINCEAU ? 1 : 0); phaseIdx = 0;  // Pinceau : une vie de plus
   shieldUp = charms & CHARM_BOL;
   for (Obj& s : shots) s.on = false;
   for (Obj& b : bubbles) b.on = false;
@@ -205,7 +205,8 @@ GameResult bossLoop(uint32_t now) {
     int k = (int)(kx + 0.5f);
     if (s.y <= 3.5f && s.x >= k && s.x < k + KING_W) {
       s.on = false;
-      hp--;
+      static uint8_t hits = 0;
+      hp -= (powers & CHARM_PINCEAU) && (++hits & 1) ? 2 : 1;  // Pinceau : un tir sur deux compte double
       kingFlash = now + 80;
       play(SND_HIT);
       dirty = true;

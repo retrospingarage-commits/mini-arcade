@@ -24,6 +24,11 @@ GameResult bossLoop(uint32_t now);
 void       raceBegin(bool story);
 GameResult raceLoop(uint32_t now);
 
+// Labyrinthe des sous-sols : joystick pour se déplacer de salle en salle dans le noir, trouver la clé puis
+// le trésor caché derrière un faux mur. story = château de l'histoire (toujours le même, Pinceau Arc-en-ciel).
+void       mazeBegin(bool story);
+GameResult mazeLoop(uint32_t now);
+
 void       moodBegin();      // Mood light : ambiances lumineuses
 GameResult moodLoop(uint32_t now);
 void       jukeboxBegin();   // Jukebox : réécouter les jingles de l'histoire

@@ -16,7 +16,7 @@ Le brochage complet est dans `include/config.h`, l'alimentation est décrite dan
 
 ## Le jeu
 
-L'histoire **« Les Couleurs du Roi Gluant »** est au cœur de la borne : 51 scènes (dont 3 qui expliquent la quête au début), des chemins où l'on peut se
+L'histoire **« Les Couleurs du Roi Gluant »** est au cœur de la borne : 53 scènes (dont 3 qui expliquent la quête au début), des chemins où l'on peut se
 perdre (la LED RVB « chauffe » quand on se rapproche du but), 3 charmes, 3 trophées. Le château du Roi Gluant
 s'ouvre avec 2 charmes, et il faut battre le roi en combat (chaque charme y donne un pouvoir). Ensuite, on choisit sa
 fin : « La Fête des Couleurs », « La Cheffe pâtissière », « La Pluie arc-en-ciel », ou, avec les 3 charmes et les
@@ -30,6 +30,7 @@ fin : « La Fête des Couleurs », « La Cheffe pâtissière », « La Pluie arc
 | Football manga | le Ballon d'Or (finale au stade) |
 | Flipper manga | la Bille Étoile (record du vieux flipper) |
 | Course manga (doubler 8 karts, turbo) | le Volant d'Or (course des tanukis, sur la route du château) |
+| Labyrinthe (9 salles dans le noir, au joystick ; un nouveau château à chaque partie) | le Pinceau Arc-en-ciel (sous-sols du château ; il aide aussi contre le roi : une vie de plus, tirs plus forts) |
 | Atelier pixel art (dessin depuis le téléphone par Wi-Fi) et Galerie | une fin heureuse |
 | Scores et Réglages | toujours disponibles |
 | Mode secret (couleurs animées, niveaux bonus) | la fin légendaire |

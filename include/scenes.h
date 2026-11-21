@@ -21,6 +21,7 @@ enum Cond : uint8_t {
   UNLESS_BALLON,
   UNLESS_BILLE,
   UNLESS_VOLANT,
+  UNLESS_PINCEAU,
   UNLESS_MARKET_DONE,  // le marché disparaît de la place quand le Bol et la Bille Étoile sont obtenus
 };
 
@@ -29,7 +30,7 @@ enum Effect : uint8_t { FX_NONE, FX_DARK, FX_FOG, FX_WAVES, FX_RAIN, FX_DRIP, FX
                         FX_STARS, FX_PORTAL, FX_FIREWORKS };
 
 // Mini-jeu lancé par un choix dont la cible est GAME
-enum MiniGame : uint8_t { GAME_NONE, GAME_REFLEX, GAME_FOOTBALL, GAME_PINBALL, GAME_BREAKOUT, GAME_BOSS, GAME_RACE };
+enum MiniGame : uint8_t { GAME_NONE, GAME_REFLEX, GAME_FOOTBALL, GAME_PINBALL, GAME_BREAKOUT, GAME_BOSS, GAME_RACE, GAME_MAZE };
 constexpr uint8_t GAME = 250;
 
 struct Choice {
@@ -113,7 +114,7 @@ const Scene SCENES[] = {
    {{"Retour au village", 2, ALWAYS}},
    PIC_NOTE, FX_NONE, 0xFFC800, -1, J_MELODIE, CHARM_NOTE, 0, 0, GAME_NONE, 0, 0},
   {9, "Le château de mochi se dresse, tout gluant. Sa porte est fermée par 3 sceaux de couleur.",
-   {{"Briser les sceaux", 10, IF_TWO_CHARMS}, {"Toucher les sceaux", 45, UNLESS_TWO_CHARMS}, {"Retour au village", 2, ALWAYS}},
+   {{"Briser les sceaux", 10, IF_TWO_CHARMS}, {"Toucher les sceaux", 45, UNLESS_TWO_CHARMS}, {"Aux sous-sols", 53, UNLESS_PINCEAU}, {"Retour au village", 2, ALWAYS}},
    PIC_CHATEAU, FX_NONE, 0xFFFFFF, -1, J_VENT, 0, 0, 0, GAME_NONE, 0, 0},
   {10, "Un garde mochi bloque la porte : Fais-moi rire ou rebrousse chemin !",
    {{"Raconter une blague", 11, ALWAYS}, {"Foncer dans la porte", 17, ALWAYS}},
@@ -235,6 +236,12 @@ const Scene SCENES[] = {
   {52, "Les tanukis rient : Pas mal ! Mais seule la 1re place gagne le Volant d'Or.",
    {{"Revanche !", 50, ALWAYS}, {"Retour à la route", 38, ALWAYS}},
    PIC_KART, FX_NONE, 0x0028FF, -1, J_TROMBONE, 0, 0, 0, GAME_NONE, 0, 0},
+  {53, "Un escalier humide descend sous le château. Mochi : Il fait tout noir, ~... Je te suis !",
+   {{"Descendre", GAME, ALWAYS}, {"Remonter", 9, ALWAYS}},
+   PIC_CHATEAU, FX_DARK, 0x000830, -1, J_MYSTERE, 0, 0, 0, GAME_MAZE, 54, 9},
+  {54, "Le Pinceau Arc-en-ciel ! Mochi : Avec lui, le roi va voir de toutes les couleurs !",
+   {{"Remonter", 9, ALWAYS}},
+   PIC_PINCEAU, FX_CONFETTI, 0xFFFFFF, -1, J_SPECIAL, CHARM_PINCEAU, 0, 0, GAME_NONE, 0, 0},
   {45, "Les sceaux restent gris. Mochi : ~, il nous faut au moins 2 charmes pour les briser !",
    {{"Retour au village", 2, ALWAYS}},
    PIC_CHATEAU, FX_NONE, 0x505050, -1, J_TROMBONE, 0, 0, 0, GAME_NONE, 0, 0},

@@ -67,8 +67,9 @@ const Scene* findScene(uint8_t id) {
 bool isVisible(Cond c) {
   switch (c) {
     case IF_ALL_CHARMS:      return (progress.charms & ALL_CHARMS) == ALL_CHARMS;
-    case IF_TWO_CHARMS:      return countBits(progress.charms) >= 2;
-    case UNLESS_TWO_CHARMS:  return countBits(progress.charms) < 2;
+    case IF_TWO_CHARMS:      return countBits(progress.charms & ALL_CHARMS) >= 2;
+    case UNLESS_TWO_CHARMS:  return countBits(progress.charms & ALL_CHARMS) < 2;
+    case UNLESS_PINCEAU:     return !(progress.charms & CHARM_PINCEAU);
     case IF_LEGEND:          return (progress.charms & ALL_CHARMS) == ALL_CHARMS
                                     && (progress.trophies & ALL_TROPHIES) == ALL_TROPHIES;
     case UNLESS_BOL:         return !(progress.charms & CHARM_BOL);
@@ -188,12 +189,13 @@ void enterScene(uint8_t id) {
 }
 
 void startGame(uint32_t now) {
-  if (scene->game == GAME_FOOTBALL || scene->game == GAME_PINBALL || scene->game == GAME_BREAKOUT || scene->game == GAME_BOSS || scene->game == GAME_RACE) {
+  if (scene->game == GAME_FOOTBALL || scene->game == GAME_PINBALL || scene->game == GAME_BREAKOUT || scene->game == GAME_BOSS || scene->game == GAME_RACE || scene->game == GAME_MAZE) {
     phase = EXTERNAL_GAME;  // version courte du jeu complet, qui se débloque ensuite dans le menu
     if (scene->game == GAME_FOOTBALL) footballBegin(true);
     else if (scene->game == GAME_PINBALL) pinballBegin(true);
     else if (scene->game == GAME_BOSS) bossBegin(progress.charms);
     else if (scene->game == GAME_RACE) raceBegin(true);
+    else if (scene->game == GAME_MAZE) mazeBegin(true);
     else breakoutBeginStory();
     return;
   }
@@ -445,6 +447,7 @@ bool adventureLoop(uint32_t now) {
     else if (scene->game == GAME_PINBALL) r = pinballLoop(now);
     else if (scene->game == GAME_BOSS)    r = bossLoop(now);
     else if (scene->game == GAME_RACE)    { r = raceLoop(now); if (r == GAME_QUIT) r = GAME_LOST; }
+    else if (scene->game == GAME_MAZE)    r = mazeLoop(now);
     else r = breakoutLoop(now) ? GAME_RUNNING : breakoutWon() ? GAME_WON : GAME_LOST;
     if (r != GAME_RUNNING) {
       encBase = encoderCount();

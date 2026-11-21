@@ -107,7 +107,7 @@ void renderMatrix(uint32_t now) {
   Activity a = (Activity)cursor;
   FastLED.clear();
   static const Picture ICONS[ACT_COUNT] = {PIC_CHAT, PIC_NONE, PIC_BRIQUES, PIC_NOTE, PIC_STADE, PIC_FLIPPER,
-                                           PIC_KART, PIC_NONE, PIC_BOCAUX, PIC_BALLON, PIC_NONE};
+                                           PIC_KART, PIC_PINCEAU, PIC_NONE, PIC_BOCAUX, PIC_BALLON, PIC_NONE};
   if (!isUnlocked(a))             drawPicture(PIC_CADENAS);
   else if (ICONS[a] != PIC_NONE)  drawPicture(ICONS[a]);
   else for (int i = 0; i < 12; i++) leds[random16(NUM_LEDS)] = CHSV(random8(), 200, 200);  // étincelles

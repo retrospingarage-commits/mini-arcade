@@ -22,6 +22,7 @@ void progressLoad() {
   progress.sleepMode    = prefs.getUChar("sleep", 0);
   progress.raceBestPlace = prefs.getUChar("rplace", 0);
   progress.raceBestTime  = prefs.getUShort("rtime", 0);
+  progress.mazeBest      = prefs.getUShort("mbest", 0);
   String name = prefs.getString("player", "");
   strncpy(progress.player, name.c_str(), 3);
   progress.player[3] = 0;
@@ -44,6 +45,7 @@ void progressSave() {
   prefs.putUChar("sleep", progress.sleepMode);
   prefs.putUChar("rplace", progress.raceBestPlace);
   prefs.putUShort("rtime", progress.raceBestTime);
+  prefs.putUShort("mbest", progress.mazeBest);
   prefs.putString("player", progress.player);
   prefs.end();
 }
@@ -55,7 +57,7 @@ void progressReset() {
 }
 
 void progressUnlockAll() {
-  progress.charms = ALL_CHARMS;
+  progress.charms = ALL_CHARMS | CHARM_PINCEAU;
   progress.trophies = ALL_TROPHIES;
   progress.endings = HAPPY_ENDS | END_LEGENDAIRE;
   progressSave();
@@ -72,6 +74,7 @@ bool isUnlocked(Activity a) {
     case ACT_FOOTBALL:  return progress.trophies & TROPHY_BALLON;
     case ACT_PINBALL:   return progress.trophies & TROPHY_BILLE;
     case ACT_RACE:      return progress.trophies & TROPHY_VOLANT;
+    case ACT_MAZE:      return progress.charms & CHARM_PINCEAU;
     case ACT_ATELIER:
     case ACT_GALLERY:   return progress.endings & HAPPY_ENDS;
     default:            return false;
@@ -80,7 +83,7 @@ bool isUnlocked(Activity a) {
 
 const char* activityName(Activity a) {
   static const char* const NAMES[ACT_COUNT] = {
-    "Aventure", "Mood light", "Casse-briques", "Jukebox", "Football", "Flipper", "Course", "Atelier", "Galerie", "Scores", "Réglages"};
+    "Aventure", "Mood light", "Casse-briques", "Jukebox", "Football", "Flipper", "Course", "Labyrinthe", "Atelier", "Galerie", "Scores", "Réglages"};
   return a < ACT_COUNT ? NAMES[a] : "";
 }
 

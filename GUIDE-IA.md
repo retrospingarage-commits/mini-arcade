@@ -77,6 +77,7 @@ Commandes utiles dans le moniteur série : `u` débloque tout (pour tester), `r`
 | `src/football.cpp` | le football manga (aussi en version courte dans l'histoire, scène 26) |
 | `src/boss.cpp` | le combat final contre le Roi Gluant (scène 11) ; ses réglages (vie du roi, vitesse des bulles…) sont en haut du fichier |
 | `src/pinball.cpp` | le flipper manga (aussi en version courte dans l'histoire, scène 28) |
+| `src/maze.cpp` | le labyrinthe des sous-sols (9 salles générées : celles de l'histoire viennent toujours de `STORY_SEED`, celles du menu sont tirées au hasard) ; réglages en haut du fichier |
 | `src/race.cpp` | la course manga (aussi en version courte dans l'histoire, scène 50) ; vitesses des rivales et réglages du turbo en haut du fichier |
 | `src/mood.cpp` | la Mood light (7 ambiances, luminosité, veille) |
 | `src/jukebox.cpp` | le Jukebox des jingles, avec égaliseur |
@@ -108,11 +109,12 @@ Outils disponibles dans `hw.h` :
 | Scores | les 5 meilleurs scores de l'Aventure (initiales, points, * = fin légendaire) ; n'importe quel bouton : menu |
 | Réglages (dernière ligne du menu) | Luminosité (échelle progressive à 16 crans, de 1 à 40) ; Veille du menu (3, 10, 30 min ou jamais) ; Rejouer l'histoire (garde les déblocages) ; Tout effacer (garde la Galerie, les scores et les réglages) — ces deux-là demandent un 2e appui pour confirmer |
 | Aventure | au début d'une partie, le prénom en 3 lettres (encodeur ou joystick haut/bas : lettre ; bouton : suivante) : Mochi l'utilise, et un meilleur score s'enregistre tout seul sous ce prénom. Ensuite : encodeur ou joystick gauche/droite : choisir la réponse ; bouton : valider ; bouton du joystick : menu |
-| Combat contre le Roi Gluant (Aventure) | encodeur ou joystick : se déplacer ; bouton (ou bouton de l'encodeur) : tirer, on peut le garder enfoncé. Pouvoirs des charmes : Bol = bouclier qui revient, Feuille = tir triple, Note = bulles ralenties. Bouton du joystick : abandonner |
+| Combat contre le Roi Gluant (Aventure) | encodeur ou joystick : se déplacer ; bouton (ou bouton de l'encodeur) : tirer, on peut le garder enfoncé. Pouvoirs des charmes : Bol = bouclier qui revient, Feuille = tir triple, Note = bulles ralenties ; Pinceau Arc-en-ciel (labyrinthe) = une vie de plus et un tir sur deux compte double. Bouton du joystick : abandonner |
 | Casse-briques | encodeur ou joystick : raquette ; bouton ou joystick vers le haut : lancer ; bouton du joystick : pause |
 | Football | encodeur ou joystick : se déplacer ; maintenir le bouton : charger le tir, et pendant la charge tourner l'encodeur ou pousser le joystick : viser en biais (ligne de points) ; relâcher : tirer ; tourner pendant le tir : le courber. Le gardien « lit » une partie des tirs (de plus en plus avec les niveaux) : réglages en haut de `src/football.cpp` |
 | Flipper | bouton : flipper gauche ; joystick (toute action) : flipper droit ; tourner l'encodeur : secouer (vite = fort, trop = TILT) ; bouton de l'encodeur : pause, deux fois : menu |
 | Course | encodeur : aller à gauche ou à droite pour doubler ; bouton (ou bouton de l'encodeur) maintenu : turbo. La jauge se remplit en doublant, en roulant juste derrière une voiture (aspiration) et un peu toute seule ; un choc ralentit et vide un peu la jauge. 3 tours, puis la place et le temps (record gardé) ; bouton du joystick : menu |
+| Labyrinthe | joystick : se déplacer (le garder poussé pour avancer) ; passer une porte au bord = salle voisine. Noir : seule une petite lumière éclaire autour de soi, Mochi suit ; la LED RVB chauffe près de la planque. Trouver la clé (porte fermée), puis le trésor derrière un faux mur un peu plus clair. Toucher un mochi gluant renvoie à l'entrée de la salle (il fond en flaque de temps en temps : on peut alors passer). Bouton du joystick : menu |
 | Mood light | encodeur : ambiance ; bouton de l'encodeur : réglage de la luminosité ; bouton : veille ; bouton du joystick : menu |
 | Jukebox | encodeur : choisir ; bouton : jouer ; bouton du joystick : menu |
 | Atelier | on dessine sur le téléphone ; bouton du joystick : fermer (le Wi-Fi s'éteint) |
@@ -141,7 +143,7 @@ Dans `include/scenes.h`, ajouter une ligne au tableau `SCENES`, dans cet ordre :
    4 = tout près (LED orange qui bat vite) ; -1 = utiliser la couleur ;
 6. jingle (`J_…`) ;
 7. récompense donnée en arrivant : charme, trophée, fin (0 si aucune) ;
-8. mini-jeu (`GAME_NONE`, `GAME_REFLEX`, `GAME_BREAKOUT`, `GAME_FOOTBALL`, `GAME_PINBALL`, `GAME_BOSS`, `GAME_RACE`) et scènes d'arrivée en cas de victoire et de défaite. Un choix dont la
+8. mini-jeu (`GAME_NONE`, `GAME_REFLEX`, `GAME_BREAKOUT`, `GAME_FOOTBALL`, `GAME_PINBALL`, `GAME_BOSS`, `GAME_RACE`, `GAME_MAZE`) et scènes d'arrivée en cas de victoire et de défaite. Un choix dont la
    cible est `GAME` lance le mini-jeu.
 
 Quand une récompense débloque une activité, l'OLED l'annonce (« Nouveau dans le menu : … »).
