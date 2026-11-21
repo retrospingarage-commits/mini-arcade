@@ -6,18 +6,22 @@ Mini borne d'arcade sur ESP32 avec une matrice LED 16x16.
 
 - ESP32 DevKit 30 broches (WROOM-32D) sur la carte « Shield capteurs v2.1 »
 - Matrice WS2812B 16x16 (alimentée en 5 V directement, pas par la carte)
-- Encodeur rotatif KY-040
-- 2 boutons
+- Encodeur rotatif KY-040 (HW-040)
+- Bouton HW-483 et joystick 2 axes (avec bouton)
+- Buzzer passif HW-508 et LED RVB HW-478
 - Écran OLED SSD1306 0,96" (128x64, I2C)
 
 Le brochage complet est dans `include/config.h`.
 
 ## Le jeu : casse-briques façon Arkanoid
 
-- **Encodeur** : déplace la raquette (avec inertie)
-- **Bouton 1** ou **bouton de l'encodeur** : lancer la balle / valider
-- **Bouton 2** : pause
+- **Encodeur** (avec inertie) ou **joystick** (gauche/droite) : déplace la raquette
+- **Bouton 1**, **bouton de l'encodeur** ou **joystick vers le haut** : lancer la balle / valider
+- **Bouton du joystick** : pause
 - L'OLED affiche le niveau, le score et les vies (3 au départ)
+- Le buzzer fait les sons du jeu, la LED RVB prend la couleur du niveau (rouge quand on perd une vie)
+- Le joystick est détecté au démarrage : sans lui, le jeu marche avec l'encodeur seul. Ne pas toucher le joystick pendant
+  l'allumage, c'est à ce moment que son centre est mesuré
 
 6 niveaux de difficulté croissante (balle plus rapide, raquette plus petite) :
 
@@ -38,6 +42,7 @@ Réglages en direct dans le moniteur série (115200 bauds) :
 - `f <frottement>` : freinage (entre 0,80 et 0,999)
 - `m <vitesse max>` : vitesse maximale de la raquette
 - `n <niveau>` : aller directement à un niveau (1 à 6)
+- `s` : couper ou remettre le son
 
 ## Commandes (PlatformIO)
 

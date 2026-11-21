@@ -1,6 +1,7 @@
 // Casse-briques façon Arkanoid : 6 niveaux de difficulté croissante (voir include/levels.h).
-// Encodeur : raquette (avec inertie)   Bouton 1 ou bouton de l'encodeur : lancer   Bouton 2 : pause
-// Réglages en direct via le moniteur série :  g <gain>   f <frottement>   m <vitesse max>   n <niveau>
+// Encodeur ou joystick (gauche/droite) : raquette   Bouton 1, bouton de l'encodeur ou joystick vers le haut : lancer
+// Bouton du joystick : pause   Buzzer : sons   LED RVB : couleur du niveau
+// Réglages en direct via le moniteur série :  g <gain>   f <frottement>   m <vitesse max>   n <niveau>   s (son)
 #include <Arduino.h>
 #include <FastLED.h>
 #include <U8g2lib.h>
@@ -15,6 +16,10 @@ U8G2_SSD1306_128X64_NONAME_F_HW_I2C oled(U8G2_R0, U8X8_PIN_NONE);
 float gain     = 0.25f;  // cases/s de vitesse ajoutées par impulsion de l'encodeur
 float friction = 0.97f;  // multiplicateur de vitesse à chaque image (plus petit = freine plus)
 float vMax     = 30.0f;  // cases/s
+constexpr float JOY_SPEED    = 16.0f;  // cases/s de la raquette, joystick poussé à fond
+constexpr float JOY_DEADZONE = 0.15f;  // zone morte autour du centre du joystick (0 à 1)
+constexpr bool  JOY_INVERT_X = false;  // à passer à true si la raquette part dans le mauvais sens
+constexpr bool  JOY_INVERT_Y = false;  // à passer à true si « vers le haut » ne lance pas la balle
 // ---------------------------------------------------------------------------
 
 // --- Réglages du jeu --------------------------------------------------------
@@ -28,6 +33,7 @@ constexpr uint32_t MOVE_PERIOD      = 700;    // LISA-LOUISE : décalage des lig
 constexpr uint32_t FALL_PERIOD      = 8000;   // EMILIE-ROSE : descente du mur d'une ligne (ms)
 constexpr uint8_t  FALL_LIMIT       = 13;     // EMILIE-ROSE : si le mur atteint cette ligne, vie perdue
 constexpr uint32_t SCROLL_MS        = 45;     // vitesse du texte défilant (ms par pixel)
+constexpr uint8_t  RGB_BRIGHTNESS   = 64;     // luminosité max de la LED RVB (0 à 255)
 // ---------------------------------------------------------------------------
 
 enum State { TITLE, SERVE, PLAY, PAUSE, CLEAR, GAME_OVER, VICTORY };
@@ -98,6 +104,77 @@ void drawScroll(const char* s, uint32_t t, int y, CRGB col) {
   drawText(s, MATRIX_W - (int)(t / SCROLL_MS), y, col);
 }
 
+// --- Sons (buzzer passif) ---------------------------------------------------
+struct Note { uint16_t freq; uint16_t ms; };  // freq 0 = silence ; {0, 0} termine la mélodie
+const Note SND_LAUNCH[]   = {{660, 40}, {990, 40}, {0, 0}};
+const Note SND_PADDLE[]   = {{440, 20}, {0, 0}};
+const Note SND_HIT[]      = {{880, 20}, {0, 0}};
+const Note SND_BREAK[]    = {{1320, 30}, {0, 0}};
+const Note SND_METAL[]    = {{220, 30}, {0, 0}};
+const Note SND_LOSE[]     = {{392, 120}, {330, 120}, {262, 250}, {0, 0}};
+const Note SND_CLEAR[]    = {{523, 90}, {659, 90}, {784, 90}, {1047, 250}, {0, 0}};
+const Note SND_GAMEOVER[] = {{392, 200}, {370, 200}, {349, 200}, {330, 500}, {0, 0}};
+const Note SND_VICTORY[]  = {{523, 120}, {523, 120}, {784, 120}, {1047, 300}, {0, 80}, {784, 120}, {1047, 400}, {0, 0}};
+
+const Note* melody = nullptr;
+bool        melodyPriority = false;
+uint32_t    noteEnd = 0;
+bool        soundOn = true;
+
+// Une petite mélodie (priority) n'est jamais coupée par un bruitage de rebond
+void play(const Note* m, bool priority = false) {
+  if (!soundOn || (melody && melodyPriority && !priority)) return;
+  melody = m;
+  melodyPriority = priority;
+  noteEnd = 0;
+}
+
+void updateSound(uint32_t now) {
+  if (!melody || now < noteEnd) return;
+  if (!melody->ms) { ledcWriteTone(PIN_BUZZER, 0); melody = nullptr; return; }
+  ledcWriteTone(PIN_BUZZER, melody->freq);
+  noteEnd = now + melody->ms;
+  melody++;
+}
+
+// --- LED RVB ----------------------------------------------------------------
+void setRgb(CRGB c) {
+  ledcWrite(PIN_RGB_R, scale8(c.r, RGB_BRIGHTNESS));
+  ledcWrite(PIN_RGB_G, scale8(c.g, RGB_BRIGHTNESS));
+  ledcWrite(PIN_RGB_B, scale8(c.b, RGB_BRIGHTNESS));
+}
+
+// --- Joystick ---------------------------------------------------------------
+int  joyCenterX = 2048, joyCenterY = 2048;
+bool joyOk = false;  // faux si le joystick n'est pas branché (lecture incohérente au démarrage)
+
+void calibrateJoystick() {  // à faire sans toucher le joystick
+  long sx = 0, sy = 0;
+  for (int i = 0; i < 16; i++) { sx += analogRead(PIN_JOY_X); sy += analogRead(PIN_JOY_Y); delay(2); }
+  joyCenterX = sx / 16;
+  joyCenterY = sy / 16;
+  joyOk = joyCenterX > 1000 && joyCenterX < 3100 && joyCenterY > 1000 && joyCenterY < 3100;
+}
+
+// Position d'un axe entre -1 et 1, 0 dans la zone morte
+float joyAxis(uint8_t pin, int center, bool invert) {
+  if (!joyOk) return 0;
+  int raw = analogRead(pin) - center;
+  float v = raw / (float)(raw < 0 ? center : 4095 - center);
+  if (fabsf(v) < JOY_DEADZONE) return 0;
+  v = constrain((fabsf(v) - JOY_DEADZONE) / (1 - JOY_DEADZONE), 0.0f, 1.0f) * (v < 0 ? -1 : 1);
+  return invert ? -v : v;
+}
+
+// Vrai une seule fois quand on pousse le joystick vers le haut
+bool joyUpPressed() {
+  static bool wasUp = false;
+  bool up = joyAxis(PIN_JOY_Y, joyCenterY, JOY_INVERT_Y) < -0.6f;
+  bool p = up && !wasUp;
+  wasUp = up;
+  return p;
+}
+
 // --- Déroulement de la partie -----------------------------------------------
 void setState(State s) {
   state = s;
@@ -137,6 +214,7 @@ void launch() {
   speed = lvl().speed + bricksBroken * SPEED_PER_BRICK;
   sendUp(random(-40, 41) / 100.0f);  // petit angle aléatoire au départ
   lastMove = lastFall = millis();
+  play(SND_LAUNCH);
   setState(PLAY);
 }
 
@@ -150,6 +228,7 @@ void resume() {  // on décale les minuteries pour que la pause ne compte pas
 void loseLife() {
   lives--;
   hurtUntil = millis() + 300;
+  play(lives ? SND_LOSE : SND_GAMEOVER, true);
   setState(lives ? SERVE : GAME_OVER);
 }
 
@@ -180,14 +259,17 @@ void hitBrick(float x, float y) {
   int r = (int)y - brickTop, c = (int)x / 2;
   if (!grid[r][c]) return;
   glow[r][c] = 255;
-  if (grid[r][c] == METAL) { nudge(); return; }
+  if (grid[r][c] == METAL) { nudge(); play(SND_METAL); return; }
   score += 10;
   dirty = true;
   if (--grid[r][c] == 0) {
     bricksLeft--;
     bricksBroken++;
     updateSpeed();
-    if (!bricksLeft) setState(CLEAR);
+    play(SND_BREAK);
+    if (!bricksLeft) { play(SND_CLEAR, true); setState(CLEAR); }
+  } else {
+    play(SND_HIT);
   }
 }
 
@@ -228,6 +310,8 @@ void updatePaddle(float dt, bool active) {
   if (!active) { lastEnc = c; padVel = 0; return; }  // on ignore l'encodeur hors du jeu
   padVel += (c - lastEnc) * gain;
   lastEnc = c;
+  float jx = joyAxis(PIN_JOY_X, joyCenterX, JOY_INVERT_X);
+  if (jx) padVel = jx * JOY_SPEED;  // le joystick commande directement la vitesse
   padVel = constrain(padVel * friction, -vMax, vMax);
   padPos += padVel * dt;
   float lo = padW / 2.0f, hi = MATRIX_W - padW / 2.0f;
@@ -258,6 +342,7 @@ void updateBall(float dt) {
         // plus la balle tape loin du centre, plus elle repart en biais
         float off = constrain((nx - padPos) / (padW / 2.0f + 0.5f), -1.0f, 1.0f);
         sendUp(off * MAX_BOUNCE_ANGLE);
+        play(SND_PADDLE);
         ny = PADDLE_Y - 0.01f;
       }
     }
@@ -300,6 +385,20 @@ void drawGame(uint32_t now) {
   setPixel((int)bx, (int)by, lvl().special == SP_DARK ? CRGB(255, 200, 40) : CRGB::White);
 }
 
+void renderRgb(uint32_t now) {
+  CRGB c;
+  switch (state) {
+    case SERVE:
+    case PLAY:      c = now < hurtUntil ? CRGB(CRGB::Red) : CRGB(CHSV(lvl().hue[0], 255, 255)); break;
+    case TITLE:
+    case PAUSE:     c = CHSV(lvl().hue[0], 255, sin8(now / 4)); break;  // respire doucement
+    case CLEAR:     c = (now / 150) % 2 ? CRGB(CRGB::Green) : CRGB(CRGB::Black); break;
+    case GAME_OVER: c = CRGB::Red; break;
+    case VICTORY:   c = CHSV(now / 8, 255, 255); break;
+  }
+  setRgb(c);
+}
+
 void render(uint32_t now) {
   uint32_t t = now - stateSince;
   FastLED.clear();
@@ -330,6 +429,7 @@ void render(uint32_t now) {
       break;
   }
   FastLED.show();
+  renderRgb(now);
 }
 
 void drawOled() {
@@ -366,8 +466,10 @@ void handleSerial() {
       case 'f': friction = constrain(v, 0.80f, 0.999f); break;
       case 'm': vMax = v; break;
       case 'n': if (v >= 1 && v <= NUM_LEVELS) { lives = START_LIVES; loadLevel((uint8_t)v - 1); } break;
+      case 's': soundOn = !soundOn; if (!soundOn) ledcWriteTone(PIN_BUZZER, 0); break;
     }
-    Serial.printf("gain=%.2f friction=%.3f vmax=%.0f niveau=%u\n", gain, friction, vMax, levelIdx + 1);
+    Serial.printf("gain=%.2f friction=%.3f vmax=%.0f niveau=%u son=%s joystick=%s\n", gain, friction, vMax,
+                  levelIdx + 1, soundOn ? "oui" : "non", joyOk ? "oui" : "non");
     line = "";
   }
 }
@@ -386,20 +488,29 @@ void setup() {
   attachInterrupt(PIN_ENC_A, onEnc, CHANGE);
   attachInterrupt(PIN_ENC_B, onEnc, CHANGE);
 
+  ledcAttach(PIN_BUZZER, 2000, 8);
+  ledcAttach(PIN_RGB_R, 5000, 8);
+  ledcAttach(PIN_RGB_G, 5000, 8);
+  ledcAttach(PIN_RGB_B, 5000, 8);
+  calibrateJoystick();
+
   oled.setBusClock(400000);  // I2C rapide : l'OLED bloque moins longtemps le jeu
   oled.begin();
   newGame();
-  Serial.println("Pret. Commandes : g <gain>  f <frottement>  m <vmax>  n <niveau 1-6>");
+  Serial.printf("Pret (joystick %s). Commandes : g <gain>  f <frottement>  m <vmax>  n <niveau 1-6>  s (son)\n",
+                joyOk ? "detecte" : "absent");
 }
 
 void loop() {
   static uint32_t lastFrame = 0;
   uint32_t now = millis();
   handleSerial();
+  updateSound(now);
 
   // Les boutons sont lus à chaque tour pour ne rater aucun appui
   bool fire = btn1.pressed();
   fire |= btnEnc.pressed();
+  fire |= joyUpPressed();
   bool pauseBtn = btn2.pressed();
   switch (state) {
     case TITLE:     if (fire) setState(SERVE); break;
@@ -422,7 +533,7 @@ void loop() {
   if (state == CLEAR && now - stateSince > 1500) {
     score += 100 * (levelIdx + 1);
     if (levelIdx + 1 < NUM_LEVELS) loadLevel(levelIdx + 1);
-    else setState(VICTORY);
+    else { play(SND_VICTORY, true); setState(VICTORY); }
   }
 
   render(now);
