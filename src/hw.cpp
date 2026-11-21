@@ -5,6 +5,12 @@
 
 CRGB leds[NUM_LEDS];
 uint8_t oledAddress = 0;  // 0 = OLED pas trouvé au démarrage
+uint8_t matrixBrightness = 15;
+
+void setMatrixBrightness(uint8_t level) {
+  matrixBrightness = constrain(level, BRIGHTNESS_MIN, BRIGHTNESS);
+  FastLED.setBrightness(matrixBrightness);
+}
 U8G2_SSD1306_128X64_NONAME_F_HW_I2C oled(U8G2_R0, U8X8_PIN_NONE);
 
 // --- Réglages ---------------------------------------------------------------
@@ -143,7 +149,7 @@ void hwBegin() {
   Serial.begin(115200);
   FastLED.addLeds<WS2812B, PIN_LED_DATA, GRB>(leds, NUM_LEDS);
   FastLED.setMaxPowerInVoltsAndMilliamps(5, MAX_MILLIAMPS);
-  FastLED.setBrightness(BRIGHTNESS);
+  FastLED.setBrightness(matrixBrightness);
 
   pinMode(PIN_ENC_A, INPUT_PULLUP);
   pinMode(PIN_ENC_B, INPUT_PULLUP);

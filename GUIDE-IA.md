@@ -31,7 +31,8 @@ La source de vérité du brochage est `include/config.h`.
 ## 2. Règles de sécurité (à respecter absolument)
 
 1. **Courant de la matrice** : toujours garder `FastLED.setMaxPowerInVoltsAndMilliamps(5, MAX_MILLIAMPS)`
-   avec `MAX_MILLIAMPS` à 1500 au maximum, et la luminosité générale à 40/255. Toute la borne est alimentée
+   avec `MAX_MILLIAMPS` à 1500 au maximum, et la luminosité à 40/255 au maximum (`BRIGHTNESS` ; la joueuse règle
+   la sienne entre 2 et 40 dans le menu, `matrixBrightness`). Toute la borne est alimentée
    par un seul chargeur USB de 2,4 A : au-delà, il chauffe ou coupe.
 2. **Broches interdites en sortie** : D0, D2 et D12 (elles décident du démarrage de l'ESP32), et D34, D35,
    D36, D39 (entrées seulement).
@@ -98,7 +99,7 @@ Outils disponibles dans `hw.h` :
 
 | Activité | Commandes |
 |---|---|
-| Menu | encodeur ou joystick haut/bas : choisir ; bouton ou bouton de l'encodeur : valider. Veille après 3 min |
+| Menu | encodeur ou joystick haut/bas : choisir ; bouton ou bouton de l'encodeur : valider ; bouton du joystick puis encodeur : luminosité de la matrice (gardée en mémoire). Veille après 3 min |
 | Aventure | encodeur ou joystick gauche/droite : choisir la réponse ; bouton : valider ; bouton du joystick : menu |
 | Casse-briques | encodeur ou joystick : raquette ; bouton ou joystick vers le haut : lancer ; bouton du joystick : pause |
 | Football | encodeur ou joystick : se déplacer ; maintenir le bouton : charger le tir ; tourner pendant le tir : le courber |

@@ -15,6 +15,7 @@ struct Progress {
   uint16_t pinballBest;  // meilleurs scores
   uint16_t footballBest;
   uint8_t  mood, moodLevel;  // dernière ambiance et luminosité de la Mood light
+  uint8_t  brightness;       // luminosité de la matrice pour toute la borne
 };
 extern Progress progress;
 

@@ -3,7 +3,7 @@
 // Commandes du moniteur série (115200) :
 //   g <gain>  f <frottement>  m <vitesse max>  : ressenti de la raquette du casse-briques
 //   n <niveau 1-6> : casse-briques à ce niveau    a <scène> : Aventure à cette scène
-//   s : son oui/non    u : tout débloquer (test)    r : effacer la progression
+//   s : son oui/non    u : tout débloquer (test)    r : effacer la progression    l <2-40> : luminosité
 #include "hw.h"
 #include "save.h"
 #include "menu.h"
@@ -16,7 +16,7 @@ static bool inMenu = true;
 
 static void openMenu() {
   inMenu = true;
-  FastLED.setBrightness(BRIGHTNESS);
+  FastLED.setBrightness(matrixBrightness);
   menuBegin();
 }
 
@@ -66,6 +66,7 @@ static void handleSerial() {
       case 's': soundOn = !soundOn; if (!soundOn) ledcWriteTone(PIN_BUZZER, 0); break;
       case 'u': progressUnlockAll(); openMenu(); break;
       case 'r': progressReset(); openMenu(); break;
+      case 'l': setMatrixBrightness(v); progress.brightness = matrixBrightness; progressSave(); break;
     }
     Serial.printf("gain=%.2f friction=%.3f vmax=%.0f son=%s joystick=%s charmes=%d trophees=%d fins=%d scene=%d\n",
                   gain, friction, vMax, soundOn ? "oui" : "non", joyOk ? "oui" : "non",
@@ -85,6 +86,7 @@ void setup() {
     }
   }
   progressLoad();
+  setMatrixBrightness(progress.brightness);
   openMenu();
   Serial.printf("Pret (joystick %s). Commandes : g f m n a s u r (voir src/main.cpp)\n", joyOk ? "detecte" : "absent");
 }

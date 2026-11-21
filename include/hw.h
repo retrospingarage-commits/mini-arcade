@@ -44,6 +44,9 @@ void updateSound(uint32_t now);                   // à appeler à chaque tour d
 uint16_t currentFreq();                           // fréquence de la note en cours (0 = silence)
 void beep(uint16_t freq, uint16_t ms);            // un bip simple, sans mélodie
 
-constexpr uint8_t BRIGHTNESS = 40;  // luminosité normale de la matrice (règle de sécurité : 40 au maximum)
+constexpr uint8_t BRIGHTNESS = 40;          // luminosité maximale de la matrice (règle de sécurité : 40 au maximum)
+constexpr uint8_t BRIGHTNESS_MIN = 2;
+extern uint8_t    matrixBrightness;          // luminosité choisie dans le menu (2 à 40)
+void setMatrixBrightness(uint8_t level);     // applique et retient la luminosité (sans l'enregistrer)
 
 void setRgb(CRGB c);  // LED RVB

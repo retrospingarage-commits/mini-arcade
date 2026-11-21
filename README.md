@@ -30,13 +30,14 @@ débloque les activités du menu :
 | Atelier pixel art (dessin depuis le téléphone par Wi-Fi) et Galerie | une fin heureuse |
 | Mode secret (couleurs animées, niveaux bonus) | la fin légendaire |
 
+Dans le menu, le **bouton du joystick** puis l'**encodeur** règlent la luminosité de la matrice (gardée en mémoire).
 Les commandes de chaque activité sont dans `GUIDE-IA.md`.
 
 Le code est sous licence MIT (`LICENSE`). `GUIDE-IA.md` explique le matériel et le programme pour qu'une IA
 puisse aider à reprogrammer la borne.
 
 Commandes du moniteur série (115200 bauds) : `u` tout débloquer, `r` effacer la progression,
-`a <scène>` aller à une scène, `n <1-6>` casse-briques à un niveau, `s` son, `g`/`f`/`m` ressenti de la raquette.
+`a <scène>` aller à une scène, `l <2-40>` luminosité, `n <1-6>` casse-briques à un niveau, `s` son, `g`/`f`/`m` ressenti de la raquette.
 
 ## Commandes (PlatformIO)
 

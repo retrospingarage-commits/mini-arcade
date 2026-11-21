@@ -2,7 +2,7 @@
 #include <Preferences.h>
 #include "save.h"
 
-Progress progress = {0, 0, 0, 0, 0, 0, 0, 0};
+Progress progress = {0, 0, 0, 0, 0, 0, 0, 0, 15};
 static Preferences prefs;
 
 void progressLoad() {
@@ -15,6 +15,7 @@ void progressLoad() {
   progress.footballBest = prefs.getUShort("fbest", 0);
   progress.mood         = prefs.getUChar("mood", 0);
   progress.moodLevel    = prefs.getUChar("moodlvl", 20);
+  progress.brightness   = prefs.getUChar("bright", 15);
   prefs.end();
 }
 
@@ -28,11 +29,13 @@ void progressSave() {
   prefs.putUShort("fbest", progress.footballBest);
   prefs.putUChar("mood", progress.mood);
   prefs.putUChar("moodlvl", progress.moodLevel);
+  prefs.putUChar("bright", progress.brightness);
   prefs.end();
 }
 
 void progressReset() {
-  progress = {0, 0, 0, 0, 0, 0, 0, 0};
+  uint8_t keep = progress.brightness;  // la luminosité n'est pas une progression : on la garde
+  progress = {0, 0, 0, 0, 0, 0, 0, 0, keep};
   progressSave();
 }
 

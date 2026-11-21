@@ -18,6 +18,7 @@ int32_t     encBase = 0;
 int8_t      joyWas = 0;
 bool        dirty = true;
 const char* message = nullptr;  // message affiché un instant (activité verrouillée ou pas encore prête)
+bool        adjusting = false;  // réglage de la luminosité (bouton du joystick dans le menu)
 uint32_t    messageUntil = 0;
 
 constexpr uint32_t SLEEP_MS = 180000;  // veille après 3 minutes sans toucher à rien dans le menu
@@ -55,7 +56,16 @@ void drawOled(uint32_t now) {
     oled.setDrawColor(1);
   }
 
-  if (message && now < messageUntil) {  // bulle par-dessus le menu
+  if (adjusting) {  // bulle du réglage de la luminosité
+    oled.setDrawColor(0);
+    oled.drawBox(6, 18, 116, 36);
+    oled.setDrawColor(1);
+    oled.drawFrame(6, 18, 116, 36);
+    oled.setCursor(30, 31);
+    oled.print("Luminosité");
+    oled.drawFrame(14, 38, 100, 9);
+    oled.drawBox(16, 40, (matrixBrightness - BRIGHTNESS_MIN) * 96 / (BRIGHTNESS - BRIGHTNESS_MIN), 5);
+  } else if (message && now < messageUntil) {  // bulle par-dessus le menu
     oled.setDrawColor(0);
     oled.drawBox(6, 22, 116, 24);
     oled.setDrawColor(1);
@@ -74,6 +84,10 @@ void renderMatrix(uint32_t now) {
   if (!isUnlocked(a))             drawPicture(PIC_CADENAS);
   else if (ICONS[a] != PIC_NONE)  drawPicture(ICONS[a]);
   else for (int i = 0; i < 12; i++) leds[random16(NUM_LEDS)] = CHSV(random8(), 200, 200);  // étincelles
+  if (adjusting) {  // barre du niveau en bas de la matrice (visible même sans OLED)
+    int n = (matrixBrightness - BRIGHTNESS_MIN) * 16 / (BRIGHTNESS - BRIGHTNESS_MIN) + 1;
+    for (int x = 0; x < 16; x++) setPixel(x, 15, x < n ? CRGB(255, 200, 0) : CRGB(30, 30, 30));
+  }
   FastLED.show();
   setRgb(isUnlocked(a) ? CRGB(CHSV(cursor * 32, 255, 255)) : CRGB(40, 40, 40));
 }
@@ -100,16 +114,17 @@ int menuLoop(uint32_t now) {
   int32_t d = (encoderCount() - encBase) / 4;
   if (d) {
     encBase += d * 4;
-    move(d);
+    if (adjusting) { setMatrixBrightness(matrixBrightness + d * 2); dirty = true; }
+    else move(d);
   }
   float y = joyY();  // le joystick monte et descend dans la liste
   int8_t dir = y > 0.6f ? 1 : y < -0.6f ? -1 : 0;
-  if (dir && dir != joyWas) move(dir);
+  if (dir && dir != joyWas && !adjusting) move(dir);
   joyWas = dir;
 
   bool ok = btn1.pressed();
   ok |= btnEnc.pressed();
-  bool b2 = btn2.pressed();  // le bouton du joystick ne sert qu'à réveiller la borne
+  bool b2 = btn2.pressed();  // le bouton du joystick : réglage de la luminosité
   bool input = d || dir || ok || b2;
   if (input) lastInput = now;
   if (sleeping) {  // en veille : n'importe quelle action rallume, sans rien choisir
@@ -123,7 +138,19 @@ int menuLoop(uint32_t now) {
     oled.setPowerSave(1);
     return -1;
   }
-  if (ok) {
+  if (adjusting) {  // n'importe quel bouton valide et enregistre la luminosité
+    if (ok || b2) {
+      adjusting = false;
+      progress.brightness = matrixBrightness;
+      progressSave();
+      play(SND_OK);
+      dirty = true;
+    }
+  } else if (b2) {  // bouton du joystick : réglage de la luminosité
+    adjusting = true;
+    play(SND_TICK);
+    dirty = true;
+  } else if (ok) {
     Activity a = (Activity)cursor;
     if (!isUnlocked(a)) {
       message = "Joue à l'Aventure !";

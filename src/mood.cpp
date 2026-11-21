@@ -129,7 +129,7 @@ GameResult moodLoop(uint32_t now) {
     progress.mood = mood;
     progress.moodLevel = level;
     progressSave();
-    FastLED.setBrightness(BRIGHTNESS);
+    FastLED.setBrightness(matrixBrightness);
     if (!oledOn) oled.setPowerSave(0);
     return GAME_QUIT;
   }
