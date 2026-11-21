@@ -103,6 +103,10 @@ void handleFill() {
 }
 
 void handleSave() {
+  if (isBlank(canvas)) {  // rien de dessiné : on n'encombre pas la Galerie
+    server.send(200, "text/plain; charset=utf-8", "Ton dessin est vide : dessine d'abord quelque chose !");
+    return;
+  }
   int n = gallerySave(canvas);
   server.send(200, "text/plain; charset=utf-8", String("Enregistré ! ") + n + " dessin(s) dans la Galerie.");
   beep(1568, 120);

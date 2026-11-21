@@ -15,3 +15,5 @@ void        drawDrawing(const uint8_t* d, uint32_t now);       // affiche un des
 int         galleryCount();
 bool        galleryLoad(int i, uint8_t* out);                  // i = 0 pour le plus ancien
 int         gallerySave(const uint8_t* in);                    // renvoie le nombre de dessins
+int         galleryDelete(int i);                              // efface le dessin i, renvoie le nombre restant
+bool        isBlank(const uint8_t* d);                         // vrai si le dessin est tout noir

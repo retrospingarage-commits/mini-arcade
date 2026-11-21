@@ -79,7 +79,7 @@ Commandes utiles dans le moniteur série : `u` débloque tout (pour tester), `r`
 | `src/mood.cpp` | la Mood light (7 ambiances, luminosité, veille) |
 | `src/jukebox.cpp` | le Jukebox des jingles, avec égaliseur |
 | `src/atelier.cpp` | l'Atelier pixel art : Wi-Fi de la borne, page de dessin pour téléphone, QR code, mise à jour sans câble |
-| `src/gallery.cpp`, `include/gallery.h` | la palette des dessins, leur enregistrement (20 maximum) et la Galerie |
+| `src/gallery.cpp`, `include/gallery.h` | la palette des dessins, leur enregistrement (20 maximum, rangés du plus ancien au plus récent ; un dessin tout noir n'est pas enregistré), l'effacement et la Galerie |
 | `include/font.h` | la petite police 3×5 pour écrire sur la matrice |
 
 Principe : `loop()` appelle à chaque tour la fonction de l'activité en cours (`menuLoop`, `adventureLoop`,
@@ -112,7 +112,7 @@ Outils disponibles dans `hw.h` :
 | Mood light | encodeur : ambiance ; bouton de l'encodeur : réglage de la luminosité ; bouton : veille ; bouton du joystick : menu |
 | Jukebox | encodeur : choisir ; bouton : jouer ; bouton du joystick : menu |
 | Atelier | on dessine sur le téléphone ; bouton du joystick : fermer (le Wi-Fi s'éteint) |
-| Galerie | encodeur : durée de chaque dessin ; bouton : suivant ; bouton du joystick : menu |
+| Galerie | encodeur : durée de chaque dessin ; bouton : suivant ; bouton de l'encodeur : effacer le dessin affiché (un 2e appui confirme, tourner ou le bouton annule) ; bouton du joystick : menu |
 
 **Score de l'Aventure** (calculé à chaque fin, dans `src/adventure.cpp`) : fin heureuse 300 (légendaire 1 000), +100 par
 charme et +150 par trophée possédés, bonus de rapidité 400 − 10 par scène traversée, −20 par impasse. S'il entre dans
