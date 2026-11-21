@@ -16,15 +16,21 @@ Le brochage complet est dans `include/config.h`, l'alimentation est décrite dan
 
 ## Le jeu
 
-L'histoire **« Les Couleurs du Roi Gluant »** est au cœur de la borne : en la jouant, on débloque les
-activités du menu (casse-briques, football, flipper, mood light, jukebox, atelier pixel art…).
+L'histoire **« Les Couleurs du Roi Gluant »** est au cœur de la borne : 43 scènes, des chemins où l'on peut se
+perdre (la LED RVB « chauffe » quand on se rapproche du but), 3 charmes, 2 trophées, 4 fins. En la jouant, on
+débloque les activités du menu :
 
-- **Menu** : l'encodeur ou le joystick (haut/bas) choisit, le bouton ou le bouton de l'encodeur valide.
-  Les activités pas encore gagnées sont verrouillées.
-- **Aventure** : le texte s'affiche sur l'OLED, le décor sur la matrice. L'encodeur ou le joystick
-  (gauche/droite) choisit la réponse, le bouton valide, le bouton du joystick revient au menu.
-- **Casse-briques** : 6 niveaux (VANESSA, GUILLAUME, LISA-LOUISE, ANTOINE, LUCIE, EMILIE-ROSE), raquette à
-  l'encodeur ou au joystick, pause avec le bouton du joystick.
+| Activité | Se débloque avec |
+|---|---|
+| Mood light (7 ambiances) | le Bol Magique |
+| Casse-briques (6 niveaux) | la Feuille Magique |
+| Jukebox des jingles | la Note Magique |
+| Football manga | le Ballon d'Or |
+| Flipper manga | la Bille Étoile |
+| Atelier pixel art (dessin depuis le téléphone par Wi-Fi) et Galerie | une fin heureuse |
+| Mode secret (couleurs animées, niveaux bonus) | la fin légendaire |
+
+Les commandes de chaque activité sont dans `GUIDE-IA.md`.
 
 Le code est sous licence MIT (`LICENSE`). `GUIDE-IA.md` explique le matériel et le programme pour qu'une IA
 puisse aider à reprogrammer la borne.

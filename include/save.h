@@ -12,6 +12,9 @@ struct Progress {
   uint8_t charms;
   uint8_t trophies;
   uint8_t endings;
+  uint16_t pinballBest;  // meilleurs scores
+  uint16_t footballBest;
+  uint8_t  mood, moodLevel;  // dernière ambiance et luminosité de la Mood light
 };
 extern Progress progress;
 

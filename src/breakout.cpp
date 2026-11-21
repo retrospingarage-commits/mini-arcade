@@ -4,6 +4,7 @@
 #include "hw.h"
 #include "levels.h"
 #include "breakout.h"
+#include "save.h"
 
 // --- Réglages du ressenti (modifiables en direct par le moniteur série) -----
 float gain     = 0.25f;  // cases/s de vitesse ajoutées par impulsion de l'encodeur
@@ -47,6 +48,9 @@ uint8_t padW = 5;
 float   bx = 0, by = 0, vx = 0, vy = 0, speed = 0;
 
 const Level& lvl() { return LEVELS[levelIdx]; }
+
+// 6 niveaux, plus MOCHI-MAGE quand la fin légendaire a été trouvée (mode secret)
+uint8_t levelCount() { return progress.endings & END_LEGENDAIRE ? NUM_LEVELS + 1 : NUM_LEVELS; }
 
 const Note SND_LAUNCH[]   = {{660, 40}, {990, 40}, {0, 0}};
 const Note SND_PADDLE[]   = {{440, 20}, {0, 0}};
@@ -319,7 +323,7 @@ void drawOled() {
   oled.clearBuffer();
   oled.setFont(u8g2_font_6x10_tf);
   oled.setCursor(0, 10);
-  oled.printf("%u/%u %s", levelIdx + 1, NUM_LEVELS, lvl().name);
+  oled.printf("%u/%u %s", levelIdx + 1, levelCount(), lvl().name);
   oled.setFont(u8g2_font_logisoso24_tn);
   oled.setCursor(0, 42);
   oled.print(score);
@@ -378,7 +382,7 @@ bool breakoutLoop(uint32_t now) {
   if (state == TITLE && now - stateSince > scrollDuration(lvl().name)) setState(SERVE);
   if (state == CLEAR && now - stateSince > 1500) {
     score += 100 * (levelIdx + 1);
-    if (levelIdx + 1 < NUM_LEVELS) loadLevel(levelIdx + 1);
+    if (levelIdx + 1 < levelCount()) loadLevel(levelIdx + 1);
     else { play(SND_VICTORY, true); setState(VICTORY); }
   }
 

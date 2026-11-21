@@ -22,6 +22,7 @@ void     drawScroll(const char* s, uint32_t t, int y, CRGB col);
 struct Button {
   uint8_t pin; bool last = true; uint32_t t = 0;
   bool pressed();
+  bool held() const { return !digitalRead(pin); }  // vrai tant que le bouton est enfoncé
 };
 extern Button btn1, btn2, btnEnc;  // bouton HW-483, bouton du joystick, bouton de l'encodeur
 
@@ -32,11 +33,16 @@ extern bool joyOk;
 float joyX();
 float joyY();          // négatif vers le haut
 bool  joyUpPressed();  // vrai une seule fois quand on pousse vers le haut
+bool  joyActive();     // vrai tant que le joystick est poussé dans n'importe quelle direction ou enfoncé
 
 // Buzzer : une mélodie est une liste de notes terminée par {0, 0}
 struct Note { uint16_t freq; uint16_t ms; };  // freq 0 = silence
 extern bool soundOn;
 void play(const Note* m, bool priority = false);  // une mélodie prioritaire n'est pas coupée par un bruitage
 void updateSound(uint32_t now);                   // à appeler à chaque tour de loop()
+uint16_t currentFreq();                           // fréquence de la note en cours (0 = silence)
+void tone(uint16_t freq, uint16_t ms);            // un bip simple, sans mélodie
+
+constexpr uint8_t BRIGHTNESS = 40;  // luminosité normale de la matrice (règle de sécurité : 40 au maximum)
 
 void setRgb(CRGB c);  // LED RVB

@@ -20,8 +20,12 @@ bool        dirty = true;
 const char* message = nullptr;  // message affiché un instant (activité verrouillée ou pas encore prête)
 uint32_t    messageUntil = 0;
 
-// Activités déjà programmées (les autres arrivent dans les prochaines étapes)
-bool isReady(Activity a) { return a == ACT_ADVENTURE || a == ACT_BREAKOUT; }
+constexpr uint32_t SLEEP_MS = 180000;  // veille après 3 minutes sans toucher à rien dans le menu
+uint32_t lastInput = 0;
+bool     sleeping = false;
+
+// Activités déjà programmées
+bool isReady(Activity a) { return a < ACT_COUNT; }
 
 void drawLock(int x, int baseline) {  // petit cadenas de 7x8 pixels
   oled.drawBox(x, baseline - 5, 7, 5);
@@ -65,10 +69,11 @@ void drawOled(uint32_t now) {
 void renderMatrix(uint32_t now) {
   Activity a = (Activity)cursor;
   FastLED.clear();
-  if (!isUnlocked(a))           drawPicture(PIC_CADENAS);
-  else if (a == ACT_ADVENTURE)  drawPicture(PIC_CHAT);
-  else if (a == ACT_BREAKOUT)   drawPicture(PIC_BRIQUES);
-  else for (int i = 0; i < 12; i++) leds[random16(NUM_LEDS)] = CHSV(random8(), 200, 200);  // pas encore de dessin
+  static const Picture ICONS[ACT_COUNT] = {PIC_CHAT, PIC_NONE, PIC_BRIQUES, PIC_NOTE, PIC_STADE, PIC_FLIPPER,
+                                           PIC_NONE, PIC_BOCAUX};
+  if (!isUnlocked(a))             drawPicture(PIC_CADENAS);
+  else if (ICONS[a] != PIC_NONE)  drawPicture(ICONS[a]);
+  else for (int i = 0; i < 12; i++) leds[random16(NUM_LEDS)] = CHSV(random8(), 200, 200);  // étincelles
   FastLED.show();
   setRgb(isUnlocked(a) ? CRGB(CHSV(cursor * 32, 255, 255)) : CRGB(40, 40, 40));
 }
@@ -84,6 +89,8 @@ void move(int d) {
 void menuBegin() {
   encBase = encoderCount();
   message = nullptr;
+  lastInput = millis();
+  if (sleeping) { oled.setPowerSave(0); sleeping = false; }
   dirty = true;
 }
 
@@ -102,7 +109,20 @@ int menuLoop(uint32_t now) {
 
   bool ok = btn1.pressed();
   ok |= btnEnc.pressed();
-  btn2.pressed();  // le bouton du joystick ne sert pas dans le menu
+  bool b2 = btn2.pressed();  // le bouton du joystick ne sert qu'à réveiller la borne
+  bool input = d || dir || ok || b2;
+  if (input) lastInput = now;
+  if (sleeping) {  // en veille : n'importe quelle action rallume, sans rien choisir
+    if (input) { sleeping = false; oled.setPowerSave(0); dirty = true; }
+    return -1;
+  }
+  if (now - lastInput > SLEEP_MS) {  // veille : tout s'éteint
+    sleeping = true;
+    FastLED.clear(); FastLED.show();
+    setRgb(CRGB::Black);
+    oled.setPowerSave(1);
+    return -1;
+  }
   if (ok) {
     Activity a = (Activity)cursor;
     if (!isUnlocked(a)) {

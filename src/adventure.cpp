@@ -4,6 +4,7 @@
 // Les scènes elles-mêmes sont dans include/scenes.h.
 #include "adventure.h"
 #include "scenes.h"
+#include "activities.h"
 
 namespace {
 
@@ -35,7 +36,7 @@ bool          dirty = true;
 uint32_t      rewardUntil = 0;
 
 // Mini-jeu de réflexe (scène 23) : attendre que la matrice devienne verte, puis appuyer
-enum Phase : uint8_t { SCENE, REFLEX_WAIT, REFLEX_GO, REFLEX_END };
+enum Phase : uint8_t { SCENE, REFLEX_WAIT, REFLEX_GO, REFLEX_END, EXTERNAL_GAME };  // EXTERNAL_GAME : football ou flipper
 Phase    phase = SCENE;
 uint8_t  stars = 0;
 uint32_t phaseUntil = 0;
@@ -94,8 +95,10 @@ void enterScene(uint8_t id) {
 }
 
 void startGame(uint32_t now) {
-  if (scene->game != GAME_REFLEX) {  // football et flipper : pas encore programmés
-    enterScene(SOON);
+  if (scene->game == GAME_FOOTBALL || scene->game == GAME_PINBALL) {  // version courte du jeu complet
+    phase = EXTERNAL_GAME;
+    if (scene->game == GAME_FOOTBALL) footballBegin(true);
+    else pinballBegin(true);
     return;
   }
   phase = REFLEX_WAIT;
@@ -309,10 +312,17 @@ void adventureGoto(uint8_t sceneId) {
 bool adventureLoop(uint32_t now) {
   static uint32_t lastFrame = 0;
 
+  if (phase == EXTERNAL_GAME) {  // le jeu lit lui-même les boutons et dessine tout
+    GameResult r = scene->game == GAME_FOOTBALL ? footballLoop(now) : pinballLoop(now);
+    if (r != GAME_RUNNING) {
+      encBase = encoderCount();
+      enterScene(r == GAME_WON ? scene->winTarget : scene->loseTarget);
+    }
+    return true;
+  }
   bool ok = btn1.pressed();
   ok |= btnEnc.pressed();
   bool back = btn2.pressed();
-
   if (phase != SCENE) {
     updateReflex(now, ok);
   } else {

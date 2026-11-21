@@ -9,13 +9,46 @@
 #include "menu.h"
 #include "adventure.h"
 #include "breakout.h"
+#include "activities.h"
 
-enum App { APP_MENU, APP_ADVENTURE, APP_BREAKOUT };
-static App app = APP_MENU;
+static int  current = -1;  // activité en cours (Activity), -1 = menu
+static bool inMenu = true;
 
 static void openMenu() {
-  app = APP_MENU;
+  inMenu = true;
+  FastLED.setBrightness(BRIGHTNESS);
   menuBegin();
+}
+
+static void start(int a) {
+  inMenu = false;
+  current = a;
+  switch (a) {
+    case ACT_ADVENTURE: adventureBegin(); break;
+    case ACT_MOOD:      moodBegin(); break;
+    case ACT_BREAKOUT:  breakoutBegin(); break;
+    case ACT_JUKEBOX:   jukeboxBegin(); break;
+    case ACT_FOOTBALL:  footballBegin(false); break;
+    case ACT_PINBALL:   pinballBegin(false); break;
+    case ACT_ATELIER:   atelierBegin(); break;
+    case ACT_GALLERY:   galleryBegin(); break;
+    default:            openMenu(); break;
+  }
+}
+
+// Fait tourner l'activité en cours ; faux quand elle est terminée
+static bool runCurrent(uint32_t now) {
+  switch (current) {
+    case ACT_ADVENTURE: return adventureLoop(now);
+    case ACT_BREAKOUT:  return breakoutLoop(now);
+    case ACT_MOOD:      return moodLoop(now) == GAME_RUNNING;
+    case ACT_JUKEBOX:   return jukeboxLoop(now) == GAME_RUNNING;
+    case ACT_FOOTBALL:  return footballLoop(now) == GAME_RUNNING;
+    case ACT_PINBALL:   return pinballLoop(now) == GAME_RUNNING;
+    case ACT_ATELIER:   return atelierLoop(now) == GAME_RUNNING;
+    case ACT_GALLERY:   return galleryLoop(now) == GAME_RUNNING;
+    default:            return false;
+  }
 }
 
 static void handleSerial() {
@@ -28,8 +61,8 @@ static void handleSerial() {
       case 'g': gain = v; break;
       case 'f': friction = constrain(v, 0.80f, 0.999f); break;
       case 'm': vMax = v; break;
-      case 'n': if (v >= 1 && v <= 6) { app = APP_BREAKOUT; breakoutBegin((uint8_t)v - 1); } break;
-      case 'a': if (v >= 1) { app = APP_ADVENTURE; adventureBegin(); adventureGoto((uint8_t)v); } break;
+      case 'n': if (v >= 1 && v <= 6) { start(ACT_BREAKOUT); breakoutBegin((uint8_t)v - 1); } break;
+      case 'a': if (v >= 1) { start(ACT_ADVENTURE); adventureGoto((uint8_t)v); } break;
       case 's': soundOn = !soundOn; if (!soundOn) ledcWriteTone(PIN_BUZZER, 0); break;
       case 'u': progressUnlockAll(); openMenu(); break;
       case 'r': progressReset(); openMenu(); break;
@@ -52,15 +85,10 @@ void loop() {
   uint32_t now = millis();
   handleSerial();
   updateSound(now);
-
-  switch (app) {
-    case APP_MENU: {
-      int a = menuLoop(now);
-      if (a == ACT_ADVENTURE)     { app = APP_ADVENTURE; adventureBegin(); }
-      else if (a == ACT_BREAKOUT) { app = APP_BREAKOUT; breakoutBegin(); }
-      break;
-    }
-    case APP_ADVENTURE: if (!adventureLoop(now)) openMenu(); break;
-    case APP_BREAKOUT:  if (!breakoutLoop(now)) openMenu(); break;
+  if (inMenu) {
+    int a = menuLoop(now);
+    if (a >= 0) start(a);
+  } else if (!runCurrent(now)) {
+    openMenu();
   }
 }

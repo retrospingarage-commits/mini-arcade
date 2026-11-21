@@ -38,8 +38,9 @@ La source de vérité du brochage est `include/config.h`.
    résistance de 10 kΩ soudée sur la carte. Ne pas demander `INPUT_PULLUP` sur cette broche.
 4. **Joystick** : il est alimenté en 3,3 V, jamais en 5 V.
 5. **Alimentation** : ne jamais brancher en même temps le chargeur et un ordinateur sur la borne.
-6. **Wi-Fi** (quand il sera ajouté) : réseau propre à la borne, protégé par un mot de passe, sans accès à
-   internet. Aucun mot de passe ni identifiant écrit en clair dans le code publié.
+6. **Wi-Fi** : réseau propre à la borne (« Mini-arcade »), allumé seulement dans l'Atelier, sans accès à
+   internet. Son mot de passe est tiré au hasard au premier lancement et gardé dans la borne (NVS) ; il
+   s'affiche sur l'OLED. Ne jamais écrire de mot de passe ou d'identifiant en clair dans le code.
 
 ## 3. Compiler et installer le programme
 
@@ -50,6 +51,9 @@ Le projet utilise PlatformIO (`platformio.ini`), avec des versions de bibliothè
 - Sans rien installer : à chaque envoi sur GitHub, l'action « Compilation ESP32 » produit le fichier
   `mini-arcade-complet.bin` (onglet Actions, section Artifacts). On l'installe depuis Chrome ou Edge avec un
   outil de flashage web (par exemple esptool.spacehuhn.com), à l'adresse **0x0**.
+
+- Sans câble : ouvrir l'Atelier sur la borne, connecter l'ordinateur au Wi-Fi « Mini-arcade » avec le mot de passe
+  affiché, puis `ARCADE_PASS=<mot de passe> pio run -e ota -t upload`.
 
 Commandes utiles dans le moniteur série : `u` débloque tout (pour tester), `r` efface la progression,
 `a <numéro>` saute à une scène de l'Aventure, `n <1-6>` lance le casse-briques à un niveau, `s` coupe le son.
@@ -65,7 +69,14 @@ Commandes utiles dans le moniteur série : `u` débloque tout (pour tester), `r`
 | `src/adventure.cpp` | le moteur de l'histoire (affichage, choix, récompenses, effets animés, LED « chaud-froid », mini-jeu de réflexe) |
 | `include/scenes.h` | les scènes de l'histoire : textes, choix, dessins, couleurs, jingles |
 | `include/pictures.h` | les dessins pixel art 16×16 |
-| `src/breakout.cpp`, `include/levels.h` | le casse-briques et ses 6 niveaux |
+| `include/activities.h` | la liste des activités du menu et la façon de les lancer |
+| `src/breakout.cpp`, `include/levels.h` | le casse-briques et ses 6 niveaux (+ 1 niveau bonus en mode secret) |
+| `src/football.cpp` | le football manga (aussi en version courte dans l'histoire, scène 26) |
+| `src/pinball.cpp` | le flipper manga (aussi en version courte dans l'histoire, scène 28) |
+| `src/mood.cpp` | la Mood light (7 ambiances, luminosité, veille) |
+| `src/jukebox.cpp` | le Jukebox des jingles, avec égaliseur |
+| `src/atelier.cpp` | l'Atelier pixel art : Wi-Fi de la borne, page de dessin pour téléphone, QR code, mise à jour sans câble |
+| `src/gallery.cpp`, `include/gallery.h` | la palette des dessins, leur enregistrement (20 maximum) et la Galerie |
 | `include/font.h` | la petite police 3×5 pour écrire sur la matrice |
 
 Principe : `loop()` appelle à chaque tour la fonction de l'activité en cours (`menuLoop`, `adventureLoop`,
@@ -82,7 +93,24 @@ Outils disponibles dans `hw.h` :
 - `play(melodie, prioritaire)` : joue une liste de notes `{fréquence en Hz, durée en ms}` terminée par `{0, 0}`.
 - `setRgb(couleur)` : couleur de la LED RVB.
 
-## 5. Ajouter quelque chose
+## 5. Commandes de chaque activité
+
+| Activité | Commandes |
+|---|---|
+| Menu | encodeur ou joystick haut/bas : choisir ; bouton ou bouton de l'encodeur : valider. Veille après 3 min |
+| Aventure | encodeur ou joystick gauche/droite : choisir la réponse ; bouton : valider ; bouton du joystick : menu |
+| Casse-briques | encodeur ou joystick : raquette ; bouton ou joystick vers le haut : lancer ; bouton du joystick : pause |
+| Football | encodeur ou joystick : se déplacer ; maintenir le bouton : charger le tir ; tourner pendant le tir : le courber |
+| Flipper | bouton : flipper gauche ; joystick (toute action) : flipper droit ; tourner l'encodeur : secouer (vite = fort, trop = TILT) ; bouton de l'encodeur : pause, deux fois : menu |
+| Mood light | encodeur : ambiance ; bouton de l'encodeur : réglage de la luminosité ; bouton : veille ; bouton du joystick : menu |
+| Jukebox | encodeur : choisir ; bouton : jouer ; bouton du joystick : menu |
+| Atelier | on dessine sur le téléphone ; bouton du joystick : fermer (le Wi-Fi s'éteint) |
+| Galerie | encodeur : durée de chaque dessin ; bouton : suivant ; bouton du joystick : menu |
+
+**Mode secret** (après la fin légendaire) : 4 couleurs animées dans l'Atelier, niveau MOCHI-MAGE au casse-briques,
+gardien plus rapide et points doublés au football, bumpers étoilés à points doublés au flipper.
+
+## 6. Ajouter quelque chose
 
 ### Une scène de l'histoire
 Dans `include/scenes.h`, ajouter une ligne au tableau `SCENES`, dans cet ordre :
@@ -108,10 +136,11 @@ Dans `include/pictures.h`, 16 lignes de 16 lettres (une lettre par pixel ; les c
 ### Une activité dans le menu
 1. Ajouter son nom dans `Activity` et `activityName` (`include/save.h`, `src/save.cpp`), et sa règle de
    déblocage dans `isUnlocked`.
-2. Écrire ses fonctions `xxxBegin()` et `bool xxxLoop(uint32_t now)` dans un nouveau fichier `src/xxx.cpp`.
-3. La déclarer prête dans `isReady` (`src/menu.cpp`) et la brancher dans `loop()` (`src/main.cpp`).
+2. Déclarer `xxxBegin()` et `GameResult xxxLoop(uint32_t now)` dans `include/activities.h`, et les écrire dans un
+   nouveau fichier `src/xxx.cpp` (la boucle renvoie `GAME_RUNNING` tant que l'activité continue).
+3. Les brancher dans `start()` et `runCurrent()` (`src/main.cpp`), et choisir son icône dans `ICONS` (`src/menu.cpp`).
 
-## 6. Conventions du code
+## 7. Conventions du code
 
 - Commentaires en français, noms de variables et de fonctions en anglais.
 - Les réglages (vitesses, couleurs, durées) sont des constantes en haut de chaque fichier.

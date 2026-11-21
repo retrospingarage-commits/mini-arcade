@@ -2,7 +2,7 @@
 #include <Preferences.h>
 #include "save.h"
 
-Progress progress = {0, 0, 0, 0};
+Progress progress = {0, 0, 0, 0, 0, 0, 0, 0};
 static Preferences prefs;
 
 void progressLoad() {
@@ -11,6 +11,10 @@ void progressLoad() {
   progress.charms   = prefs.getUChar("charms", 0);
   progress.trophies = prefs.getUChar("trophies", 0);
   progress.endings  = prefs.getUChar("endings", 0);
+  progress.pinballBest  = prefs.getUShort("pbest", 0);
+  progress.footballBest = prefs.getUShort("fbest", 0);
+  progress.mood         = prefs.getUChar("mood", 0);
+  progress.moodLevel    = prefs.getUChar("moodlvl", 20);
   prefs.end();
 }
 
@@ -20,11 +24,15 @@ void progressSave() {
   prefs.putUChar("charms", progress.charms);
   prefs.putUChar("trophies", progress.trophies);
   prefs.putUChar("endings", progress.endings);
+  prefs.putUShort("pbest", progress.pinballBest);
+  prefs.putUShort("fbest", progress.footballBest);
+  prefs.putUChar("mood", progress.mood);
+  prefs.putUChar("moodlvl", progress.moodLevel);
   prefs.end();
 }
 
 void progressReset() {
-  progress = {0, 0, 0, 0};
+  progress = {0, 0, 0, 0, 0, 0, 0, 0};
   progressSave();
 }
 

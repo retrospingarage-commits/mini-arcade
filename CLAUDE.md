@@ -38,6 +38,7 @@ Le fichier KiCad de la carte nomme mal 4 pastilles de l'empreinte ESP32, mais le
   à tenir à jour à chaque évolution (il est livré avec la borne pour que sa propriétaire le donne à son IA).
 - Les réglages sont des constantes en haut de chaque fichier ; le ressenti de la raquette (gain, frottement,
   vitesse max) est en haut de `src/breakout.cpp`.
+- Le Wi-Fi (Atelier) n'est allumé que dans l'Atelier ; son mot de passe est aléatoire, gardé en NVS, jamais dans le code.
 - Le cahier des charges (scénario, déblocages, commandes des jeux) est le document Claude Docs
   « Mini-arcade – Cahier des charges + Aventure manga ».
 - Code en français pour les commentaires, noms de variables en anglais.

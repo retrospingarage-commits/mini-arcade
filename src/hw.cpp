@@ -76,10 +76,21 @@ void play(const Note* m, bool priority) {
   noteEnd = 0;
 }
 
+static uint16_t curFreq = 0;
+uint16_t currentFreq() { return curFreq; }
+
+void tone(uint16_t freq, uint16_t ms) {
+  static Note single[2];
+  single[0] = {freq, ms};
+  single[1] = {0, 0};
+  play(single);
+}
+
 void updateSound(uint32_t now) {
   if (!melody || now < noteEnd) return;
-  if (!melody->ms) { ledcWriteTone(PIN_BUZZER, 0); melody = nullptr; return; }
+  if (!melody->ms) { ledcWriteTone(PIN_BUZZER, 0); curFreq = 0; melody = nullptr; return; }
   ledcWriteTone(PIN_BUZZER, melody->freq);
+  curFreq = melody->freq;
   noteEnd = now + melody->ms;
   melody++;
 }
@@ -123,13 +134,14 @@ bool joyUpPressed() {
 }
 
 float joyX() { return joyAxis(PIN_JOY_X, joyCenterX, JOY_INVERT_X); }
+bool  joyActive() { return fabsf(joyX()) > 0.5f || fabsf(joyY()) > 0.5f || btn2.held(); }
 float joyY() { return joyAxis(PIN_JOY_Y, joyCenterY, JOY_INVERT_Y); }
 
 void hwBegin() {
   Serial.begin(115200);
   FastLED.addLeds<WS2812B, PIN_LED_DATA, GRB>(leds, NUM_LEDS);
   FastLED.setMaxPowerInVoltsAndMilliamps(5, MAX_MILLIAMPS);
-  FastLED.setBrightness(40);
+  FastLED.setBrightness(BRIGHTNESS);
 
   pinMode(PIN_ENC_A, INPUT_PULLUP);
   pinMode(PIN_ENC_B, INPUT_PULLUP);

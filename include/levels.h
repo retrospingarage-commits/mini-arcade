@@ -89,6 +89,17 @@ const Level LEVELS[] = {
     "...11...",
     "..1111.."},
    {96, 224, 250}, 11.0f, 3, SP_FALLING},
+
+  // MOCHI-MAGE : niveau bonus du mode secret (débloqué par la fin légendaire), une étoile qui tourne
+  {"MOCHI-MAGE",
+   {"3..33..3",
+    ".3.33.3.",
+    "..3333..",
+    "33333333",
+    "..3333..",
+    ".3.33.3.",
+    "3..33..3"},
+   {192, 160, 224}, 11.5f, 3, SP_MOVING},
 };
 
-constexpr uint8_t NUM_LEVELS = sizeof(LEVELS) / sizeof(LEVELS[0]);
+constexpr uint8_t NUM_LEVELS = 6;  // niveaux normaux ; le 7e (MOCHI-MAGE) n'existe qu'en mode secret
