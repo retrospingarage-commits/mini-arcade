@@ -6,7 +6,12 @@
 #include "config.h"
 
 extern CRGB leds[NUM_LEDS];
-extern U8G2_SSD1306_128X64_NONAME_F_HW_I2C oled;
+#if OLED_SH1106
+using OledDisplay = U8G2_SH1106_128X64_NONAME_F_HW_I2C;   // écran 1,3"
+#else
+using OledDisplay = U8G2_SSD1306_128X64_NONAME_F_HW_I2C;  // écran 0,96"
+#endif
+extern OledDisplay oled;
 extern uint8_t oledAddress;  // adresse I2C trouvée au démarrage (0 = OLED absent)
 
 void hwBegin();  // à appeler une fois dans setup()

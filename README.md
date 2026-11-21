@@ -9,7 +9,7 @@ Mini borne d'arcade sur ESP32 avec une matrice LED 16x16.
 - Encodeur rotatif KY-040 (HW-040)
 - Bouton HW-483 et joystick 2 axes (avec bouton)
 - Buzzer passif HW-508 et LED RVB HW-478
-- Écran OLED SSD1306 0,96" (128x64, I2C)
+- Écran OLED SSD1306 0,96" (128x64, I2C) ; un SH1106 1,3" marche aussi (`OLED_SH1106` dans `include/config.h`)
 
 Le brochage complet est dans `include/config.h`, l'alimentation est décrite dans `CLAUDE.md`
 (un seul chargeur 5 V / 2,4 A pour tout, la matrice limitée à 1,5 A par le programme).

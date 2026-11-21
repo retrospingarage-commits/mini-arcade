@@ -15,7 +15,7 @@ Une carte ESP32 (DevKit 30 broches, puce WROOM-32D) posée sur une carte d'exten
 | Élément | Rôle | Broche (GPIO) | Connecteur de la carte |
 |---|---|---|---|
 | Matrice WS2812B 16×16 (256 LED couleur) | écran principal | D4 (données) | TEMP SOL 1 (TEMP SOL 2 et 3 partagent ce D4) |
-| Écran OLED SSD1306 128×64, bicolore (16 lignes du haut jaunes, le reste bleu), I2C (0x3C, ou 0x3D détecté) | textes, menus, scores | SDA D21, SCL D22 (tirages 4K7 soudés) | T H AIR 2 |
+| Écran OLED SSD1306 0,96" 128×64, bicolore (16 lignes du haut jaunes, le reste bleu), I2C (0x3C, ou 0x3D détecté) ; un SH1106 1,3" marche aussi avec `OLED_SH1106 1` dans `include/config.h` | textes, menus, scores | SDA D21, SCL D22 (tirages 4K7 soudés) | T H AIR 2 |
 | LED RVB HW-478 (une seule LED, cathode commune, résistances 220 Ω / 100 Ω / 100 Ω) | ambiance | R D17, V D27, B D33 | RELAIS |
 | Encodeur rotatif HW-040 (KY-040) : rotation sans fin + bouton | commande principale | A D18, B D19, bouton D23 | LORA |
 | Bouton poussoir HW-483 | « bouton 1 » | D15 | PLUVIO 1 |

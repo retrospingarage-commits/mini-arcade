@@ -22,7 +22,7 @@ void setMatrixBrightness(uint8_t level) {
   matrixBrightness = constrain(level, BRIGHTNESS_MIN, BRIGHTNESS);
   FastLED.setBrightness(matrixBrightness);
 }
-U8G2_SSD1306_128X64_NONAME_F_HW_I2C oled(U8G2_R0, U8X8_PIN_NONE);
+OledDisplay oled(U8G2_R0, U8X8_PIN_NONE);
 
 // --- Réglages ---------------------------------------------------------------
 constexpr uint32_t SCROLL_MS     = 85;     // vitesse du texte défilant (ms par pixel ; plus grand = plus lent)
