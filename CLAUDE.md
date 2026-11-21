@@ -34,6 +34,10 @@ Le fichier KiCad de la carte nomme mal 4 pastilles de l'empreinte ESP32, mais le
 ## Règles
 - Matrice : toujours limiter le courant (`MAX_MILLIAMPS`) ; pistes de la carte de 0,5 mm, ne pas faire passer le courant de la matrice par elle.
 - Ne pas utiliser D0, D2, D12 (démarrage) ni D34/D35/D39 pour des sorties.
-- Les réglages de ressenti de l'encodeur (gain, frottement, vitesse max) et du jeu sont en haut de `src/main.cpp`.
-- Les 6 niveaux du casse-briques sont dans `include/levels.h`, la police 3x5 de la matrice dans `include/font.h`.
+- Organisation du programme et façon d'ajouter une scène, un dessin ou une activité : voir `GUIDE-IA.md`,
+  à tenir à jour à chaque évolution (il est livré avec la borne pour que sa propriétaire le donne à son IA).
+- Les réglages sont des constantes en haut de chaque fichier ; le ressenti de la raquette (gain, frottement,
+  vitesse max) est en haut de `src/breakout.cpp`.
+- Le cahier des charges (scénario, déblocages, commandes des jeux) est le document Claude Docs
+  « Mini-arcade – Cahier des charges + Aventure manga ».
 - Code en français pour les commentaires, noms de variables en anglais.

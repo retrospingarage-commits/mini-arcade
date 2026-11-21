@@ -1,0 +1,42 @@
+#pragma once
+// Matériel partagé par toutes les activités : matrice, OLED, boutons, encodeur, joystick, buzzer, LED RVB
+#include <Arduino.h>
+#include <FastLED.h>
+#include <U8g2lib.h>
+#include "config.h"
+
+extern CRGB leds[NUM_LEDS];
+extern U8G2_SSD1306_128X64_NONAME_F_HW_I2C oled;
+
+void hwBegin();  // à appeler une fois dans setup()
+
+// Matrice : coordonnées (0,0) en haut à gauche, texte en police 3x5
+uint16_t XY(uint8_t x, uint8_t y);
+void     setPixel(int x, int y, CRGB c);
+int      textWidth(const char* s);
+void     drawText(const char* s, int x, int y, CRGB col);
+uint32_t scrollDuration(const char* s);
+void     drawScroll(const char* s, uint32_t t, int y, CRGB col);
+
+// Boutons : pressed() est vrai une seule fois par appui
+struct Button {
+  uint8_t pin; bool last = true; uint32_t t = 0;
+  bool pressed();
+};
+extern Button btn1, btn2, btnEnc;  // bouton HW-483, bouton du joystick, bouton de l'encodeur
+
+int32_t encoderCount();  // impulsions depuis le démarrage (4 par cran ; positif dans le sens horaire)
+
+// Joystick : position de -1 à 1 (0 au centre), toujours 0 s'il n'est pas branché
+extern bool joyOk;
+float joyX();
+float joyY();          // négatif vers le haut
+bool  joyUpPressed();  // vrai une seule fois quand on pousse vers le haut
+
+// Buzzer : une mélodie est une liste de notes terminée par {0, 0}
+struct Note { uint16_t freq; uint16_t ms; };  // freq 0 = silence
+extern bool soundOn;
+void play(const Note* m, bool priority = false);  // une mélodie prioritaire n'est pas coupée par un bruitage
+void updateSound(uint32_t now);                   // à appeler à chaque tour de loop()
+
+void setRgb(CRGB c);  // LED RVB
