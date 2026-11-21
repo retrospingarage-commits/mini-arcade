@@ -109,7 +109,7 @@ void enterScene(uint8_t id) {
     if (!before[i] && isUnlocked((Activity)i)) {  // on l'annonce : sinon on ne le saurait pas
       showPopup("Nouveau dans le menu :", activityName((Activity)i));
     }
-  if (s->id != SOON) {  // compteurs de la partie, pour le score
+  if (s->id != SOON && (s->id < 47 || s->id > 49)) {  // compteurs de la partie, pour le score (sauf l'introduction)
     progress.runSteps++;
     if (!strncmp(s->text, "IMPASSE", 7)) progress.runImpasses++;
   }
@@ -391,7 +391,7 @@ void adventureBegin() {
   encBase = encoderCount();
   scene = nullptr;
   if (!progress.scene) { progress.runSteps = 0; progress.runImpasses = 0; }  // nouvelle partie
-  enterScene(progress.scene ? progress.scene : 1);
+  enterScene(progress.scene ? progress.scene : 47);  // nouvelle partie : la quête est d'abord expliquée
 }
 
 void adventureGoto(uint8_t sceneId) {
