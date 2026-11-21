@@ -19,6 +19,7 @@ struct Progress {
   uint16_t runSteps;         // partie d'Aventure en cours : scènes traversées depuis la scène 1
   uint8_t  runImpasses;      //   et impasses rencontrées (servent au score)
   uint8_t  sleepMode;        // veille du menu : 0 = 3 min, 1 = 10 min, 2 = 30 min, 3 = jamais
+  char     player[4];        // prénom en 3 lettres, demandé au début de l'Aventure ("" = pas encore demandé)
 };
 extern Progress progress;
 

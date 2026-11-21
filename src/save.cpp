@@ -20,6 +20,9 @@ void progressLoad() {
   progress.runSteps     = prefs.getUShort("rsteps", 0);
   progress.runImpasses  = prefs.getUChar("rimp", 0);
   progress.sleepMode    = prefs.getUChar("sleep", 0);
+  String name = prefs.getString("player", "");
+  strncpy(progress.player, name.c_str(), 3);
+  progress.player[3] = 0;
   prefs.end();
 }
 
@@ -37,6 +40,7 @@ void progressSave() {
   prefs.putUShort("rsteps", progress.runSteps);
   prefs.putUChar("rimp", progress.runImpasses);
   prefs.putUChar("sleep", progress.sleepMode);
+  prefs.putString("player", progress.player);
   prefs.end();
 }
 

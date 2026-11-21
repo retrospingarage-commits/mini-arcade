@@ -12,6 +12,7 @@ namespace {
 constexpr int      LINE_CHARS = 21;   // caractères par ligne sur l'OLED (police 6x10)
 constexpr int      TEXT_LINES = 5;    // lignes de texte au-dessus de la barre de choix
 constexpr uint8_t  SOON       = 0;    // scène « bientôt » : la cible n'est pas encore écrite
+constexpr uint8_t  FIRST_SCENE = 47;  // 1re scène d'une nouvelle partie (on y demande le prénom)
 constexpr uint8_t  REFLEX_STARS = 3;  // étoiles à attraper au mini-jeu de réflexe
 const uint16_t     REFLEX_WINDOW[REFLEX_STARS] = {900, 700, 550};  // temps pour appuyer (ms), de plus en plus court
 
@@ -46,6 +47,8 @@ constexpr int      SPEED_BONUS = 400, POINTS_PER_STEP = 10, IMPASSE_PENALTY = 20
 uint16_t finalScore = 0;
 uint8_t  finalEnding = 0;
 char     initials[4];
+bool     askingName = false, nameGiven = false;  // saisie du prénom au début d'une partie (sinon : initiales pour le score)
+char     textBuf[160];        // texte de la scène avec le prénom à la place de « ~ »
 uint8_t  letterPos = 0;
 
 // Mini-jeu de réflexe (scène 23) : attendre que la matrice devienne verte, puis appuyer
@@ -94,6 +97,24 @@ void showPopup(const char* title, const char* text) {
   popupUntil = millis() + 4000;
 }
 
+// Recopie un texte de scène en remplaçant « ~ » par le prénom (« LOU » devient « Lou ») ou par « toi »
+void personalize(const char* src, char* dst, size_t size) {
+  char name[4] = "toi";
+  if (progress.player[0]) {
+    int n = 0;
+    for (int i = 0; i < 3 && progress.player[i] && progress.player[i] != ' '; i++)
+      name[n++] = i ? tolower(progress.player[i]) : progress.player[i];
+    name[n] = 0;
+    if (!n) strcpy(name, "toi");
+  }
+  size_t o = 0;
+  for (; *src && o + 4 < size; src++) {
+    if (*src == '~') { strcpy(dst + o, name); o += strlen(name); }
+    else dst[o++] = *src;
+  }
+  dst[o] = 0;
+}
+
 void enterScene(uint8_t id) {
   const Scene* s = findScene(id);
   if (!s) {
@@ -119,9 +140,16 @@ void enterScene(uint8_t id) {
               + max(0, SPEED_BONUS - POINTS_PER_STEP * progress.runSteps) - IMPASSE_PENALTY * progress.runImpasses;
     finalScore = max(score, 0);
     finalEnding = s->ending;
-    if (scoreRank(finalScore) >= 0) {  // il entre au classement : on demande les initiales
+    int rank = scoreRank(finalScore);
+    if (rank >= 0 && progress.player[0]) {  // il entre au classement, sous le prénom donné au début
+      scoreAdd(progress.player, finalScore, finalEnding);
+      char buf[24];
+      snprintf(buf, sizeof(buf), "%s : %u points", progress.player, finalScore);
+      showPopup(rank == 0 ? "Meilleur score !" : "Bienvenue au classement", buf);
+    } else if (rank >= 0) {  // pas de prénom (partie commencée avec une ancienne version) : on le demande
       lastInitials(initials);
       letterPos = 0;
+      askingName = false;
       phase = NAME_ENTRY;
     } else {
       char buf[24];
@@ -138,14 +166,22 @@ void enterScene(uint8_t id) {
   if (!nVisible) visible[nVisible++] = &CONTINUE;
   selected = 0;
 
-  const char* bar = strchr(s->text, '|');  // « Titre|texte » : titre centré dans la bande jaune
+  personalize(s->text, textBuf, sizeof(textBuf));
+  const char* bar = strchr(textBuf, '|');  // « Titre|texte » : titre centré dans la bande jaune
   hasTitle = bar != nullptr;
   if (hasTitle) {
-    int n = min((int)(bar - s->text), 63);
-    memcpy(lines[0], s->text, n);
+    int n = min((int)(bar - textBuf), 63);
+    memcpy(lines[0], textBuf, n);
     lines[0][n] = 0;
     nLines = 1 + wrapText(bar + 1, lines + 1, TEXT_LINES - 1);
-  } else nLines = wrapText(s->text, lines, TEXT_LINES);
+  } else nLines = wrapText(textBuf, lines, TEXT_LINES);
+  if (s->id == FIRST_SCENE && !nameGiven) {  // nouvelle partie : on demande d'abord le prénom
+    if (progress.player[0]) strcpy(initials, progress.player);
+    else lastInitials(initials);
+    letterPos = 0;
+    askingName = true;
+    phase = NAME_ENTRY;
+  }
   play(s->jingle, true);
   rewardUntil = reward ? millis() + 2500 : 0;
   dirty = true;
@@ -205,11 +241,12 @@ void drawCentered(const char* s, int baseline) {
 void drawOled() {
   oled.clearBuffer();
   oled.setFont(u8g2_font_6x10_tf);
-  if (phase == NAME_ENTRY) {  // saisie des initiales
+  if (phase == NAME_ENTRY) {  // saisie du prénom (début de partie) ou des initiales (score)
     char buf[24];
-    snprintf(buf, sizeof(buf), "Score : %u !", finalScore);
+    if (askingName) snprintf(buf, sizeof(buf), "Ton prénom ?");
+    else snprintf(buf, sizeof(buf), "Score : %u !", finalScore);
     drawCentered(buf, 11);  // bande jaune
-    drawCentered("Tes initiales :", 29);
+    drawCentered(askingName ? "3 lettres, bouton = OK" : "Tes initiales :", 29);
     oled.setFont(u8g2_font_10x20_tf);
     for (int i = 0; i < 3; i++) {
       char c[2] = {initials[i], 0};
@@ -391,7 +428,7 @@ void adventureBegin() {
   encBase = encoderCount();
   scene = nullptr;
   if (!progress.scene) { progress.runSteps = 0; progress.runImpasses = 0; }  // nouvelle partie
-  enterScene(progress.scene ? progress.scene : 47);  // nouvelle partie : la quête est d'abord expliquée
+  enterScene(progress.scene ? progress.scene : FIRST_SCENE);  // nouvelle partie : la quête est d'abord expliquée
 }
 
 void adventureGoto(uint8_t sceneId) {
@@ -431,7 +468,16 @@ bool adventureLoop(uint32_t now) {
       play(SND_TICK);
       dirty = true;
     }
-    if (ok && ++letterPos >= 3) {  // 3e lettre validée : on enregistre
+    if (ok && ++letterPos >= 3 && askingName) {  // prénom validé : l'histoire commence
+      memcpy(progress.player, initials, 4);
+      progressSave();
+      askingName = false;
+      phase = SCENE;
+      nameGiven = true;  // on réaffiche la scène avec le prénom, sans le redemander
+      enterScene(FIRST_SCENE);
+      nameGiven = false;
+    } else if (ok && letterPos >= 3) {  // 3e lettre validée : on enregistre le score
+      memcpy(progress.player, initials, 4);
       int rank = scoreAdd(initials, finalScore, finalEnding);
       char buf[24];
       snprintf(buf, sizeof(buf), "%s : %u points", initials, finalScore);
