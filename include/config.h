@@ -15,8 +15,8 @@ constexpr uint8_t PIN_ENC_A  = 18;  // CLK
 constexpr uint8_t PIN_ENC_B  = 19;  // DT
 constexpr uint8_t PIN_ENC_SW = 23;  // bouton de l'axe
 
-// Buzzer passif HW-508 : signal sur D25 (connecteur LORA), GND et 3V3 pris sur TEMP SOL 2 (fil de signal D4 laissé vide)
-constexpr uint8_t PIN_BUZZER = 25;
+// Buzzer passif HW-508 : signal S sur D13 (connecteur EXT), GND et 3V3 pris sur TEMP SOL 2 (fil de signal D4 laissé vide)
+constexpr uint8_t PIN_BUZZER = 13;
 
 // Boutons de jeu (connecteurs PLUVIO 1 et 2, 10K vers 3V3 + 100nF si soudés)
 constexpr uint8_t PIN_BTN1 = 15;    // PLUVIO 1 : bouton HW-483 (strapping : OK avec pull-up)

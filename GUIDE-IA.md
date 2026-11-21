@@ -20,10 +20,10 @@ Une carte ESP32 (DevKit 30 broches, puce WROOM-32D) posée sur une carte d'exten
 | Encodeur rotatif HW-040 (KY-040) : rotation sans fin + bouton | commande principale | A D18, B D19, bouton D23 | LORA |
 | Bouton poussoir HW-483 | « bouton 1 » | D15 | PLUVIO 1 |
 | Joystick 2 axes analogiques + bouton | commande secondaire | X D32, Y D34, bouton D36 (VP) | HUM SOL 1, HUM SOL 2, PLUVIO 2 |
-| Buzzer passif HW-508 | sons et mélodies, une note à la fois | D25 | LORA (signal), TEMP SOL 2 (GND et 3V3) |
+| Buzzer passif HW-508 | sons et mélodies, une note à la fois | D13 | EXT (signal), TEMP SOL 2 (GND et 3V3) |
 
-Broches encore libres : D13 et D26 (connecteur EXT), D14 (connecteur LORA), D16 (connecteur RELAIS). D13 et D14 savent détecter un
-toucher (pastille tactile), D26 peut sortir un signal audio analogique.
+Broches encore libres : D26 (connecteur EXT), D25 et D14 (connecteur LORA), D16 (connecteur RELAIS). D14 sait
+détecter un toucher (pastille tactile), D25 et D26 peuvent sortir un signal audio analogique.
 
 La source de vérité du brochage est `include/config.h`.
 
