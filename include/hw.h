@@ -7,6 +7,7 @@
 
 extern CRGB leds[NUM_LEDS];
 extern U8G2_SSD1306_128X64_NONAME_F_HW_I2C oled;
+extern uint8_t oledAddress;  // adresse I2C trouvée au démarrage (0 = OLED absent)
 
 void hwBegin();  // à appeler une fois dans setup()
 

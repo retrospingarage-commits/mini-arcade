@@ -1,8 +1,10 @@
 // Matériel partagé par toutes les activités : matrice, OLED, boutons, encodeur, joystick, buzzer, LED RVB
+#include <Wire.h>
 #include "hw.h"
 #include "font.h"
 
 CRGB leds[NUM_LEDS];
+uint8_t oledAddress = 0;  // 0 = OLED pas trouvé au démarrage
 U8G2_SSD1306_128X64_NONAME_F_HW_I2C oled(U8G2_R0, U8X8_PIN_NONE);
 
 // --- Réglages ---------------------------------------------------------------
@@ -157,6 +159,15 @@ void hwBegin() {
   ledcAttach(PIN_RGB_B, 5000, 8);
   calibrateJoystick();
 
+  // L'OLED répond à l'adresse 0x3C, ou 0x3D sur certains modules : on cherche la bonne
+  Wire.begin(21, 22);
+  for (uint8_t addr : {0x3C, 0x3D}) {
+    Wire.beginTransmission(addr);
+    if (Wire.endTransmission() == 0) { oledAddress = addr; break; }
+  }
+  Serial.printf(oledAddress ? "OLED trouve a l'adresse 0x%02X\n" : "OLED introuvable (verifier VCC, GND, SDA, SCL)\n",
+                oledAddress);
+  if (oledAddress) oled.setI2CAddress(oledAddress * 2);
   oled.setBusClock(400000);  // I2C rapide : l'OLED bloque moins longtemps le jeu
   oled.begin();
   oled.enableUTF8Print();    // accents sur l'OLED

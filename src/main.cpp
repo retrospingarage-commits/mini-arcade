@@ -76,6 +76,14 @@ static void handleSerial() {
 
 void setup() {
   hwBegin();
+  if (!oledAddress) {  // pas d'OLED : on le dit sur la matrice pendant 3 secondes
+    for (uint32_t t0 = millis(), t; (t = millis() - t0) < 3000;) {
+      FastLED.clear();
+      drawScroll("OLED ?", t % scrollDuration("OLED ?"), 5, CRGB::Red);
+      FastLED.show();
+      delay(20);
+    }
+  }
   progressLoad();
   openMenu();
   Serial.printf("Pret (joystick %s). Commandes : g f m n a s u r (voir src/main.cpp)\n", joyOk ? "detecte" : "absent");
