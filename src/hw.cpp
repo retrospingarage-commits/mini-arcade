@@ -42,6 +42,7 @@ void IRAM_ATTR onEnc() {
 }
 
 uint16_t XY(uint8_t x, uint8_t y) {
+  if (MATRIX_FLIP_X) x = MATRIX_W - 1 - x;
   if (MATRIX_SERPENTINE && (y & 1)) x = MATRIX_W - 1 - x;
   return y * MATRIX_W + x;
 }

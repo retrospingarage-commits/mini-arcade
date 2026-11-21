@@ -26,7 +26,8 @@ Broches encore libres : D25 et D14 (connecteur LORA), D16 (connecteur RELAIS), D
 seule, avec une 10K de tirage soudée). D14 sait détecter un toucher (pastille tactile), D25 peut sortir un signal
 audio analogique.
 
-La source de vérité du brochage est `include/config.h`.
+La source de vérité du brochage est `include/config.h`. La matrice de cette borne a sa première ligne qui part de
+la droite : `MATRIX_FLIP_X` remet l'image à l'endroit (à changer si une autre matrice affiche tout en miroir).
 
 ## 2. Règles de sécurité (à respecter absolument)
 

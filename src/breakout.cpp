@@ -7,14 +7,16 @@
 #include "save.h"
 
 // --- Réglages du ressenti (modifiables en direct par le moniteur série) -----
-float gain     = 0.3f;   // cases/s de vitesse ajoutées par impulsion de l'encodeur
-float friction = 0.985f; // multiplicateur de vitesse à chaque image : proche de 1 = la raquette glisse longtemps (volant)
+float direct   = 0.25f;  // cases parcourues tout de suite par impulsion (4 impulsions = 1 cran = 1 case)
+float gain     = 0.1f;   // élan : vitesse donnée par un tour rapide (cases/s par impulsion/s), comme un volant
+float friction = 0.985f; // multiplicateur de vitesse à chaque image : proche de 1 = l'élan dure longtemps
 float vMax     = 30.0f;  // cases/s
 // ---------------------------------------------------------------------------
 
 namespace breakout {
 
-constexpr float JOY_SPEED = 16.0f;  // cases/s de la raquette, joystick poussé à fond
+constexpr float JOY_SPEED   = 16.0f;  // cases/s de la raquette, joystick poussé à fond
+constexpr float FLING_SPEED = 20.0f;  // impulsions/s : en dessous, l'encodeur déplace sans donner d'élan
 
 // --- Réglages du jeu --------------------------------------------------------
 constexpr uint8_t  START_LIVES      = 3;
@@ -195,10 +197,14 @@ void updateSpecial(uint32_t now) {
 // --- Raquette et balle ------------------------------------------------------
 void updatePaddle(float dt, bool active) {
   static int32_t lastEnc = 0;
+  static float   encSpeed = 0;  // vitesse de rotation lissée (impulsions/s)
   int32_t c = encoderCount();
-  if (!active) { lastEnc = c; padVel = 0; return; }  // on ignore l'encodeur hors du jeu
-  padVel += (c - lastEnc) * gain * ENC_X_SIGN;
+  if (!active) { lastEnc = c; padVel = 0; encSpeed = 0; return; }  // on ignore l'encodeur hors du jeu
+  int32_t pulses = (c - lastEnc) * ENC_X_SIGN;
   lastEnc = c;
+  padPos += pulses * direct;  // la raquette suit l'encodeur tout de suite, sans temps mort
+  encSpeed = encSpeed * 0.7f + pulses / dt * 0.3f;
+  if (pulses && fabsf(encSpeed) > FLING_SPEED) padVel = encSpeed * gain;  // tour rapide : la raquette garde de l'élan
   float jx = joyX();
   if (jx) padVel = jx * JOY_SPEED;  // le joystick commande directement la vitesse
   padVel = constrain(padVel * friction, -vMax, vMax);

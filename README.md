@@ -41,7 +41,7 @@ Le code est sous licence MIT (`LICENSE`). `GUIDE-IA.md` explique le matériel et
 puisse aider à reprogrammer la borne.
 
 Commandes du moniteur série (115200 bauds) : `u` tout débloquer, `r` effacer la progression,
-`a <scène>` aller à une scène, `l <2-40>` luminosité, `n <1-6>` casse-briques à un niveau, `s` son, `g`/`f`/`m` ressenti de la raquette.
+`a <scène>` aller à une scène, `l <2-40>` luminosité, `n <1-6>` casse-briques à un niveau, `s` son, `d`/`g`/`f`/`m` ressenti de la raquette (déplacement par cran, élan, frottement, vitesse max).
 
 ## Commandes (PlatformIO)
 

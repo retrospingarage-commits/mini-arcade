@@ -1,7 +1,7 @@
 // Mini-arcade : l'histoire « Les Couleurs du Roi Gluant » est au cœur du jeu.
 // Elle débloque les activités du menu (voir la section 4 bis du cahier des charges et include/save.h).
 // Commandes du moniteur série (115200) :
-//   g <gain>  f <frottement>  m <vitesse max>  : ressenti de la raquette du casse-briques
+//   d <cases par impulsion>  g <élan>  f <frottement>  m <vitesse max>  : ressenti de la raquette du casse-briques
 //   n <niveau 1-6> : casse-briques à ce niveau    a <scène> : Aventure à cette scène
 //   s : son oui/non    b : tester le buzzer (B : test brut, sans LEDC)    u : tout débloquer    r : effacer la progression
 //   l <2-40> : luminosité
@@ -63,6 +63,7 @@ static void handleSerial() {
     float v = line.substring(2).toFloat();
     switch (line[0]) {
       case 'g': gain = v; break;
+      case 'd': direct = v; break;
       case 'f': friction = constrain(v, 0.80f, 0.999f); break;
       case 'm': vMax = v; break;
       case 'n': if (v >= 1 && v <= 6) { start(ACT_BREAKOUT); breakoutBegin((uint8_t)v - 1); } break;
@@ -80,8 +81,8 @@ static void handleSerial() {
         break;
       case 'l': setMatrixBrightness(v); progress.brightness = matrixBrightness; progressSave(); break;
     }
-    Serial.printf("gain=%.2f friction=%.3f vmax=%.0f son=%s joystick=%s charmes=%d trophees=%d fins=%d scene=%d\n",
-                  gain, friction, vMax, soundOn ? "oui" : "non", joyOk ? "oui" : "non",
+    Serial.printf("direct=%.2f gain=%.2f friction=%.3f vmax=%.0f son=%s joystick=%s charmes=%d trophees=%d fins=%d scene=%d\n",
+                  direct, gain, friction, vMax, soundOn ? "oui" : "non", joyOk ? "oui" : "non",
                   progress.charms, progress.trophies, progress.endings, progress.scene);
     line = "";
   }
