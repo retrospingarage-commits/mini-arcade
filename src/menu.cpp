@@ -58,8 +58,10 @@ void drawOled(uint32_t now) {
     }
   } else {
   oled.print("MENU");
-  oled.setCursor(62, 11);
-  oled.printf("Charmes %d/3", countBits(progress.charms & ALL_CHARMS));
+  char pct[20];  // avancement de l'histoire, à droite de la bande jaune
+  snprintf(pct, sizeof(pct), "Avancement %d%%", progressPercent());
+  oled.setCursor(128 - oled.getUTF8Width(pct), 11);
+  oled.print(pct);
 
   int top = constrain((int)cursor - VISIBLE_ITEMS / 2, 0, ACT_COUNT - VISIBLE_ITEMS);
   for (int i = 0; i < VISIBLE_ITEMS; i++) {

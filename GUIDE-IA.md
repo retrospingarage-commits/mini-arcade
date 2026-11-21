@@ -106,7 +106,7 @@ Outils disponibles dans `hw.h` :
 | Activité | Commandes |
 |---|---|
 | Menu | encodeur ou joystick haut/bas : choisir ; bouton ou bouton de l'encodeur : valider ; bouton du joystick puis encodeur : luminosité de la matrice (gardée en mémoire). Veille après 3 min |
-| Scores | les 5 meilleurs scores de l'Aventure (initiales, points, * = fin légendaire) ; n'importe quel bouton : menu |
+| Scores | les 5 meilleurs scores de l'Aventure (initiales, points, * = fin légendaire) ; tourner l'encodeur (ou joystick gauche/droite) : page Avancement (charmes, Pinceau, trophées, fins) ; n'importe quel bouton : menu. Le menu affiche l'avancement en % (11 choses à trouver) |
 | Réglages (dernière ligne du menu) | Luminosité (échelle progressive à 16 crans, de 1 à 40) ; Veille du menu (3, 10, 30 min ou jamais) ; Rejouer l'histoire (garde les déblocages) ; Tout effacer (garde la Galerie, les scores et les réglages) — ces deux-là demandent un 2e appui pour confirmer |
 | Aventure | au début d'une partie, le prénom en 3 lettres (encodeur ou joystick haut/bas : lettre ; bouton : suivante) : Mochi l'utilise, et un meilleur score s'enregistre tout seul sous ce prénom. Ensuite : encodeur ou joystick gauche/droite : choisir la réponse ; bouton : valider ; bouton du joystick : menu |
 | Combat contre le Roi Gluant (Aventure) | encodeur ou joystick : se déplacer ; bouton (ou bouton de l'encodeur) : tirer, on peut le garder enfoncé. Pouvoirs des charmes : Bol = bouclier qui revient, Feuille = tir triple, Note = bulles ralenties ; Pinceau Arc-en-ciel (labyrinthe) = une vie de plus et un tir sur deux compte double. Bouton du joystick : abandonner |

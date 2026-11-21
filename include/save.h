@@ -50,3 +50,5 @@ int  scoreAdd(const char* name, uint16_t score, uint8_t ending);  // renvoie sa 
 void lastInitials(char out[4]);               // les dernières initiales tapées (pour gagner du temps)
 const char* activityName(Activity a);
 int         countBits(uint8_t v);
+// Avancement de l'histoire en % : 3 charmes, le Pinceau, 3 trophées, 4 fins (11 choses à trouver)
+int         progressPercent();

@@ -87,6 +87,12 @@ const char* activityName(Activity a) {
   return a < ACT_COUNT ? NAMES[a] : "";
 }
 
+int progressPercent() {
+  int done = countBits(progress.charms & (ALL_CHARMS | CHARM_PINCEAU)) + countBits(progress.trophies & ALL_TROPHIES)
+           + countBits(progress.endings & (HAPPY_ENDS | END_LEGENDAIRE));
+  return done * 100 / 11;
+}
+
 int countBits(uint8_t v) {
   int n = 0;
   for (; v; v >>= 1) n += v & 1;
