@@ -33,7 +33,7 @@ constexpr uint32_t MOVE_PERIOD      = 700;    // LISA-LOUISE : décalage des lig
 constexpr uint32_t FALL_PERIOD      = 8000;   // EMILIE-ROSE : descente du mur d'une ligne (ms)
 constexpr uint8_t  FALL_LIMIT       = 13;     // EMILIE-ROSE : si le mur atteint cette ligne, vie perdue
 constexpr uint32_t SCROLL_MS        = 45;     // vitesse du texte défilant (ms par pixel)
-constexpr uint8_t  RGB_BRIGHTNESS   = 64;     // luminosité max de la LED RVB (0 à 255)
+constexpr uint8_t  RGB_LED_LEVEL   = 64;     // luminosité max de la LED RVB (0 à 255)
 // ---------------------------------------------------------------------------
 
 enum State { TITLE, SERVE, PLAY, PAUSE, CLEAR, GAME_OVER, VICTORY };
@@ -139,9 +139,9 @@ void updateSound(uint32_t now) {
 
 // --- LED RVB ----------------------------------------------------------------
 void setRgb(CRGB c) {
-  ledcWrite(PIN_RGB_R, scale8(c.r, RGB_BRIGHTNESS));
-  ledcWrite(PIN_RGB_G, scale8(c.g, RGB_BRIGHTNESS));
-  ledcWrite(PIN_RGB_B, scale8(c.b, RGB_BRIGHTNESS));
+  ledcWrite(PIN_RGB_R, scale8(c.r, RGB_LED_LEVEL));
+  ledcWrite(PIN_RGB_G, scale8(c.g, RGB_LED_LEVEL));
+  ledcWrite(PIN_RGB_B, scale8(c.b, RGB_LED_LEVEL));
 }
 
 // --- Joystick ---------------------------------------------------------------
