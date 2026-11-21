@@ -14,15 +14,15 @@ Une carte ESP32 (DevKit 30 broches, puce WROOM-32D) posée sur une carte d'exten
 
 | Élément | Rôle | Broche (GPIO) | Connecteur de la carte |
 |---|---|---|---|
-| Matrice WS2812B 16×16 (256 LED couleur) | écran principal | D16 (données) | RELAIS |
+| Matrice WS2812B 16×16 (256 LED couleur) | écran principal | D4 (données) | TEMP SOL 1 (TEMP SOL 2 et 3 partagent ce D4) |
 | Écran OLED SSD1306 128×64, monochrome, I2C (adresse 0x3C) | textes, menus, scores | SDA D21, SCL D22 | T H AIR 2 |
 | LED RVB HW-478 (une seule LED, cathode commune, résistances 220 Ω / 100 Ω / 100 Ω) | ambiance | R D17, V D27, B D33 | RELAIS |
 | Encodeur rotatif HW-040 (KY-040) : rotation sans fin + bouton | commande principale | A D18, B D19, bouton D23 | LORA |
 | Bouton poussoir HW-483 | « bouton 1 » | D15 | PLUVIO 1 |
 | Joystick 2 axes analogiques + bouton | commande secondaire | X D32, Y D34, bouton D36 (VP) | HUM SOL 1, HUM SOL 2, PLUVIO 2 |
-| Buzzer passif HW-508 | sons et mélodies, une note à la fois | D25 | LORA |
+| Buzzer passif HW-508 | sons et mélodies, une note à la fois | D25 | LORA (signal), TEMP SOL 2 (GND et 3V3) |
 
-Broches encore libres : D13 et D26 (connecteur EXT), D14 (connecteur LORA). D13 et D14 savent détecter un
+Broches encore libres : D13 et D26 (connecteur EXT), D14 (connecteur LORA), D16 (connecteur RELAIS). D13 et D14 savent détecter un
 toucher (pastille tactile), D26 peut sortir un signal audio analogique.
 
 La source de vérité du brochage est `include/config.h`.

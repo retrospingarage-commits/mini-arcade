@@ -1,8 +1,9 @@
 #pragma once
 // Brochage : carte "Shield capteurs v2.1" + ESP32 DevKit 30 broches (WROOM-32D)
 
-// Matrice WS2812B 16x16 (connecteur RELAIS : GND + D16, alimentée en direct)
-constexpr uint8_t  PIN_LED_DATA = 16;
+// Matrice WS2812B 16x16 (connecteur TEMP SOL 1 : GND + D4, alimentée en direct)
+// Attention : TEMP SOL 1, 2 et 3 partagent la même broche D4 ; ne rien brancher d'autre sur leur fil de signal.
+constexpr uint8_t  PIN_LED_DATA = 4;
 constexpr uint16_t MATRIX_W = 16;
 constexpr uint16_t MATRIX_H = 16;
 constexpr uint16_t NUM_LEDS = MATRIX_W * MATRIX_H;
@@ -14,7 +15,7 @@ constexpr uint8_t PIN_ENC_A  = 18;  // CLK
 constexpr uint8_t PIN_ENC_B  = 19;  // DT
 constexpr uint8_t PIN_ENC_SW = 23;  // bouton de l'axe
 
-// Buzzer passif HW-508 (connecteur LORA, même câble que l'encodeur : D25 + GND)
+// Buzzer passif HW-508 : signal sur D25 (connecteur LORA), GND et 3V3 pris sur TEMP SOL 2 (fil de signal D4 laissé vide)
 constexpr uint8_t PIN_BUZZER = 25;
 
 // Boutons de jeu (connecteurs PLUVIO 1 et 2, 10K vers 3V3 + 100nF si soudés)
@@ -25,7 +26,7 @@ constexpr uint8_t PIN_BTN2 = 36;    // PLUVIO 2 (VP) : bouton du joystick. PAS d
 constexpr uint8_t PIN_JOY_X = 32;   // HUM SOL 1 (S1)
 constexpr uint8_t PIN_JOY_Y = 34;   // HUM SOL 2 (S2), entrée seule
 
-// LED RVB HW-478 à cathode commune (connecteur RELAIS, même câble que la matrice : D17, D27, D33 + GND)
+// LED RVB HW-478 à cathode commune (connecteur RELAIS, pour elle seule : D17, D27, D33 + GND)
 constexpr uint8_t PIN_RGB_R = 17;
 constexpr uint8_t PIN_RGB_G = 27;
 constexpr uint8_t PIN_RGB_B = 33;

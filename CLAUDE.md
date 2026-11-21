@@ -12,15 +12,17 @@ buzzer passif HW-508, LED RVB HW-478, OLED SSD1306 0,96" (128x64).
 ## Brochage (voir `include/config.h`, seule source de vérité)
 | Fonction | Connecteur de la carte | GPIO |
 |---|---|---|
-| Matrice WS2812B (données) | RELAIS | D16 (+ GND commun ; 5 V par l'alimentation directe, pas par la carte) |
+| Matrice WS2812B (données) | TEMP SOL 1 | D4 + GND (5 V par l'alimentation directe, pas par la carte) |
 | LED RVB R / V / B | RELAIS | D17 / D27 / D33 (+ GND) |
 | Encodeur A / B / bouton | LORA | D18 / D19 / D23 (+ 3V3, GND) |
-| Buzzer passif | LORA | D25 (+ GND) |
+| Buzzer passif | LORA (signal) + TEMP SOL 2 (GND, 3V3) | D25 ; fil D4 de TEMP SOL 2 laissé vide |
 | Bouton 1 (HW-483) | PLUVIO 1 | D15 |
 | Bouton 2 (bouton du joystick) | PLUVIO 2 | D36 (VP, entrée seule, 10K externe obligatoire) |
 | Joystick X / Y | HUM SOL 1 / HUM SOL 2 | D32 / D34 (via les 1K ; joystick alimenté en 3V3, pas en 5V) |
 | OLED I2C | T H AIR 2 | SDA D21 / SCL D22, 0x3C |
-| Libres | EXT (D13, D26), D14 (LORA) | |
+| Libres | EXT (D13, D26), D14 (LORA), D16 (RELAIS) | |
+
+TEMP SOL 1, 2 et 3 partagent la même broche D4 : un seul appareil peut y envoyer un signal (la matrice).
 
 ## Alimentation
 Un seul chargeur USB 5 V / 2,4 A, câble coupé (rouge = +5V, noir = GND) et dédoublé :
