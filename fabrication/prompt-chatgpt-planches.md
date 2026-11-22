@@ -2,73 +2,55 @@
 
 ---
 
-Tu es designer pour la découpe et la gravure laser. Je fabrique une petite borne d'arcade murale pour une jeune fan de manga. Elle est faite de **4 planches carrées en bois** (contreplaqué de 10 mm d'épaisseur), suspendues les unes sous les autres par des ficelles, et accrochée au mur comme une décoration. Je te demande le design des 4 planches.
+Tu es illustrateur et designer pour la gravure laser sur bois. Je fabrique une petite borne d'arcade murale pour une jeune fan de manga. Elle est faite de **4 planches carrées en contreplaqué de 24 × 24 cm**, décorées sur **une seule face** et suspendues les unes sous les autres par des ficelles, le tout accroché au mur comme un tableau. Je poserai moi-même les composants électroniques par-dessus : **ne dessine aucun emplacement de composant**. Je veux surtout un **décor manga magnifique** qui forme une seule histoire de haut en bas.
 
-## Ce que j'attends de toi
+## Ce que j'attends de toi, pour chaque planche (4 planches)
 
-Pour **chaque planche**, deux fichiers à l'échelle 1:1 (240 × 240 mm) :
+1. **Une image PNG pour la gravure**, 240 × 240 mm à 300 ppp (2835 × 2835 pixels), **noir et blanc pur** (noir = gravé, blanc = bois nu).
+2. **Un fichier SVG de tracé de coupe**, à l'échelle 1:1 (`viewBox="0 0 240 240"`, `width="240mm" height="240mm"`), traits rouges (#FF0000) de 0,01 mm, sans remplissage. Il ne contient **que** :
+   - le contour extérieur : carré de 240 × 240 mm à **coins arrondis (rayon 15 mm)** ;
+   - **uniquement sur la planche 3** : un cercle de **70 mm de diamètre, centré exactement**. Ce trou laisse voir le logo « RétroSpin Garage » de la carte électronique placée derrière.
+3. Un **aperçu des 4 planches assemblées** verticalement, comme elles seront au mur (avec un petit écart entre elles, pour les ficelles).
 
-1. **Un fichier vectoriel SVG pour la découpe** : seulement des contours fermés, trait de 0,01 mm, couleur rouge pur (#FF0000), sans remplissage. Il contient le contour extérieur, tous les trous et toutes les ouvertures. Unités en millimètres, `viewBox="0 0 240 240"`, `width="240mm" height="240mm"`.
-2. **Une image PNG pour la gravure** : en niveaux de gris (idéalement en noir et blanc pur, sans dégradés fins), 240 × 240 mm à 300 ppp (2835 × 2835 pixels), fond blanc = non gravé, noir = gravé. Elle doit se superposer exactement au SVG.
+L'image et le SVG doivent se superposer exactement. Je grave l'image, je trace le SVG avec le laser (rainure peu profonde), puis je découpe à la scie en suivant la rainure.
 
-Donne aussi un **aperçu** des 4 planches assemblées verticalement, comme elles seront au mur.
+## Repères de perçage (à graver dans l'image PNG)
 
-## Règles communes aux 4 planches
+Je perce ces trous à la perceuse : marque chaque emplacement par un **petit cercle gravé avec un point au centre** (trait de 0,4 mm), du diamètre indiqué :
+- **Trous de ficelle** : cercle de **5 mm**, centre à **10 mm du bord du haut ou du bas et à 10 mm du bord du côté**, dans les angles :
+  - planche 1 (tout en haut) : seulement les 2 angles **du bas** ;
+  - planches 2 et 3 : les 4 angles (**haut et bas**) ;
+  - planche 4 (tout en bas) : seulement les 2 angles **du haut**.
+- **Trou d'accroche** : sur la planche 1 seulement, un cercle de **10 mm** au centre exact, pour la vis du mur.
+- Garde **au moins 6 mm sans rien graver** autour de chaque repère de perçage, du trou de 70 mm et de la ligne de coupe extérieure (je scie un peu à l'extérieur de la rainure).
 
-- Carré de **240 × 240 mm**, **coins arrondis** (rayon 15 mm).
-- **Trous pour les ficelles** : diamètre **5 mm**, centre à **10 mm du bord du haut ou du bas et à 10 mm du bord du côté**, dans les angles :
-  - planche 1 (tout en haut) : 2 trous **en bas** seulement (bas gauche, bas droit) ;
-  - planches 2 et 3 : 4 trous, **en haut et en bas** ;
-  - planche 4 (tout en bas) : 2 trous **en haut** seulement.
-- La gravure ne doit **pas** toucher les trous ni les ouvertures : garde une marge d'au moins 4 mm autour de chaque trou et de chaque ouverture.
-- Adapté à la gravure laser sur bois : traits d'au moins 0,3 mm, pas de texte plus petit que 4 mm de haut, aplats noirs francs plutôt que des dégradés, éviter les grandes surfaces entièrement noires (elles brûlent et noircissent le bois).
-- Le style et l'histoire sont décrits plus bas : les 4 planches doivent former **une seule fresque manga** qui se lit de haut en bas.
+## Contraintes de gravure laser (diode, bois)
 
-## Chaque planche
+- Noir et blanc pur, sans gris. Pour les ombres et les textures, utilise des **trames manga** (motifs de points, hachures, lignes parallèles) plutôt que des dégradés.
+- Traits de **0,4 mm minimum**, texte d'au moins 5 mm de haut.
+- Évite les grandes surfaces entièrement noires : elles brûlent et noircissent le bois. Préfère des aplats **hachurés ou en trame**.
+- Garde un petit **cadre décoratif** à environ 8 mm du bord, qui donne un bel aspect fini.
 
-### Planche 1 (tout en haut) : décoration et accroche murale
-- Un **trou d'accroche** au centre de la planche, pour la vis du mur : un trou en forme de **trou de serrure** (cercle de 10 mm de diamètre, surmonté d'une fente de 5 mm de large et 10 mm de haut), centré horizontalement et verticalement.
-- Aucun composant : c'est la planche **titre**. Grave le titre **« Les Couleurs du Roi Gluant »** en lettrage manga, et l'illustration principale : le château de mochi blanc et gluant au-dessus de Pixelville toute grise, le Roi Gluant qui garde les couleurs dans des bocaux, et un arc-en-ciel qui s'échappe.
+## Le style
 
-### Planche 2 : l'écran à LED
-- Derrière cette planche est fixée une **matrice LED 16 × 16 de 160 × 160 mm** (256 LED, une tous les 10 mm).
-- Découpe une **fenêtre carrée de 162 × 162 mm, centrée**, coins arrondis (rayon 3 mm), pour voir toute la matrice.
-- Grave un **cadre manga** autour de la fenêtre, comme un écran de borne d'arcade : lignes de vitesse, étoiles et pixels, avec Mochi (le chat gris) qui regarde l'écran depuis un coin.
+**Manga kawaii**, lignes nettes et rondes, grands yeux brillants, effets typiques (lignes de vitesse, étoiles, bulles, onomatopées comme « BOING ! », « SLURP ! », « BUUUT ! »), avec un clin d'œil au **pixel art rétro** (petits carrés, motifs de pixels, couleurs remplacées par des trames). C'est pour une enfant : joyeux et mignon, jamais effrayant. Utilise des zones de décor plus simples (rayons, étoiles, motifs) au **centre des planches 2 et 4**, car j'y fixerai des composants. Les détails importants vont autour, vers les bords.
 
-### Planche 3 : la carte électronique
-- Derrière est fixée la carte électronique (sur sa face avant se trouve le logo **RétroSpin Garage**).
-- Découpe un **trou rond de 70 mm de diamètre au centre exact** de la planche, pour voir le logo.
-- Grave autour du trou un **décor de « hublot » manga** (cercle d'énergie, rayons, petits engrenages et circuits stylisés), et le texte **« RétroSpin Garage »** en arc au-dessus ou en dessous du hublot.
-- Prévois **4 trous de fixation de 3,2 mm** (vis M3) aux coins d'un rectangle de 60 × 80 mm centré : je les ajusterai à la vraie carte.
+## L'histoire à raconter, de haut en bas
 
-### Planche 4 (tout en bas) : les commandes
-Elle porte toutes les commandes. Place-les comme une manette, confortable pour deux mains, avec l'écran en haut au centre :
-- **Écran OLED 1,3"** (module d'environ 35 × 34 mm, zone d'affichage d'environ 29 × 15 mm) : fenêtre rectangulaire de **31 × 16,5 mm**, centrée horizontalement, à environ 55 mm du haut, avec **4 petits trous de vis de 2,5 mm** aux coins du module (écartement exact à confirmer : mets-les à titre provisoire, à 30 × 28 mm).
-- **Joystick** (à gauche) : trou rond de **28 mm** de diamètre, pour laisser bouger le manche.
-- **Bouton rotatif (encodeur)** (à droite) : trou rond de **7,5 mm** pour l'axe fileté.
-- **Gros bouton poussoir** (à droite, sous l'encodeur) : trou rond de **13 mm**.
-- **LED RVB** (en haut, à côté de l'écran) : trou rond de **5 mm**.
-- **Buzzer** : une petite grille de 7 trous de 2 mm (en forme de fleur) pour laisser passer le son.
-- Grave autour de chaque commande un petit symbole manga clair : flèches autour du joystick, « tourner » autour de l'encodeur, une étoile sur le bouton, une bulle « !! » près de la LED.
-- Grave dans le bas un petit bandeau avec Mochi qui dit **« À toi de jouer ! »**.
+Le **Roi Gluant**, un roi en mochi rose et collant avec une couronne, a volé les couleurs de **Pixelville**, qui est devenue toute grise. Une jeune héroïne et son chat **Mochi** (gris, rond, petites oreilles pointues, l'air paresseux) partent les rendre. Les **couleurs réelles viendront des LED** : sur le bois, tout est en noir et blanc.
 
-## Fixation des composants
-Tous les composants sont **simplement vissés** sur le bois, par l'arrière. Marque donc, sur les planches 2, 3 et 4, des **trous de vis provisoires de 3,2 mm** (M3) à chaque endroit où un composant doit être fixé, repérés par une **petite croix gravée de 3 mm** à côté du trou, pour que je puisse les déplacer facilement. Ne grave rien sur la face avant à moins de 4 mm de ces trous.
+- **Planche 1 (en haut), le titre.** Le titre **« Les Couleurs du Roi Gluant »** en grand lettrage manga. Le château de mochi blanc et gluant au sommet d'une colline, le Roi Gluant à son balcon qui garde les couleurs dans des bocaux, et un arc-en-ciel qui s'en échappe.
+- **Planche 2, le village.** Pixelville toute grise, la place, et les habitants : le **fantôme gourmand** avec son bol de ramen, le **tanuki** avec une feuille sur la tête, la **grenouille DJ** avec casque et platines, un **hibou** sur un panneau, la forêt aux champignons et le lac brumeux avec un pont. Mochi et l'héroïne au milieu.
+- **Planche 3, le hublot.** Autour du trou central de 70 mm, un grand décor en forme de **hublot ou de portail magique** : cercle d'énergie, rayons, engrenages et circuits stylisés, étoiles. Le texte **« RétroSpin Garage »** en arc au-dessus ou en dessous. Des objets magiques tout autour : Bol, Feuille, Note, Ballon d'Or, Bille Étoile, Volant d'Or, Pinceau Arc-en-ciel.
+- **Planche 4 (en bas), les jeux et la victoire.** Un décor d'arcade : le **capitaine lapin footballeur** et son ballon, un **vieux flipper**, des **karts de tanukis** en pleine course, les **sous-sols du château** avec un mochi gluant, le **Mochi-Mage** étoilé. Le bas se termine par la victoire : l'arc-en-ciel, les couleurs qui reviennent, et un petit bandeau avec Mochi qui dit **« À toi de jouer ! »**.
 
-## L'univers à illustrer (style et personnages)
-
-- **Style** : manga kawaii, lignes nettes et rondes, grands yeux brillants, effets typiques (lignes de vitesse, étoiles, onomatopées « BOING ! », « SLURP ! », « BUUUT ! »), avec un clin d'œil au pixel art rétro (petits carrés). C'est pour une enfant : joyeux et mignon, jamais effrayant.
-- **L'histoire** : le Roi Gluant, un roi en mochi rose et tout collant, avec une couronne, a volé les couleurs de **Pixelville**, qui est devenue toute grise. L'héroïne et son chat **Mochi** (gris, rond, petites oreilles pointues, l'air un peu paresseux) partent les rendre.
-- **Personnages à placer sur les planches** : un fantôme gourmand avec un bol de ramen fumant, un tanuki joueur avec une feuille sur la tête, une grenouille DJ avec un casque et des platines, un capitaine lapin footballeur, un vieux flipper, des karts de course de tanukis, des mochis géants tout mous, un hibou sur un panneau, le Mochi-Mage (un mochi sorcier étoilé).
-- **Objets magiques** : le Bol Magique, la Feuille Magique, la Note Magique, le Ballon d'Or, la Bille Étoile, le Volant d'Or, le Pinceau Arc-en-ciel.
-- **Lieux** : la place du village, la forêt aux champignons qui brillent, le lac brumeux avec un pont, la route qui monte vers le château blanc et gluant, les sous-sols du château.
-- Les couleurs réelles viendront des LED : sur le bois, tout est en gravure monochrome.
+Si possible, fais **se rejoindre** un motif d'une planche à l'autre (par exemple l'arc-en-ciel ou une banderole qui descend), en tenant compte de l'écart des ficelles.
 
 ## À me rendre
 
-1. Les 4 fichiers SVG de découpe (`planche-1-decoupe.svg` … `planche-4-decoupe.svg`).
-2. Les 4 images PNG de gravure (`planche-1-gravure.png` … `planche-4-gravure.png`).
+1. Les 4 images PNG de gravure (`planche-1-gravure.png` … `planche-4-gravure.png`).
+2. Les 4 fichiers SVG de tracé de coupe (`planche-1-coupe.svg` … `planche-4-coupe.svg`).
 3. L'aperçu des 4 planches assemblées.
-4. Un petit tableau récapitulatif des trous et ouvertures de chaque planche (forme, diamètre ou dimensions, position du centre en mm depuis le coin en haut à gauche), pour que je puisse vérifier avant de découper.
+4. Une courte liste des repères de perçage de chaque planche (diamètre, position du centre en mm depuis le coin en haut à gauche), pour que je vérifie avant de percer.
 
 ---
