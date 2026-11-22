@@ -151,7 +151,7 @@ void hitBrick(float x, float y) {
   if (!grid[r][c]) return;
   glow[r][c] = 255;
   if (grid[r][c] == METAL) { nudge(); play(SND_METAL); return; }
-  score += 10;
+  score += levelPoints(10);
   dirty = true;
   if (--grid[r][c] == 0) {
     bricksLeft--;
@@ -398,7 +398,7 @@ bool breakoutLoop(uint32_t now) {
   if (state == PLAY)  { updateBall(dt); if (state == PLAY) updateSpecial(now); }
   if (state == TITLE && now - stateSince > scrollDuration(lvl().name)) setState(SERVE);
   if (state == CLEAR && now - stateSince > 1500) {
-    score += 100 * (levelIdx + 1);
+    score += levelPoints(100 * (levelIdx + 1));
     if (!story && levelIdx + 1 < levelCount()) loadLevel(levelIdx + 1);
     else { play(SND_VICTORY, true); setState(VICTORY); }
   }

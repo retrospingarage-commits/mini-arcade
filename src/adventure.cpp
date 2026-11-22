@@ -47,7 +47,8 @@ constexpr int      SPEED_BONUS = 400, POINTS_PER_STEP = 10, IMPASSE_PENALTY = 20
 uint16_t finalScore = 0;
 uint8_t  finalEnding = 0;
 char     initials[4];
-bool     askingName = false, nameGiven = false;  // saisie du prénom au début d'une partie (sinon : initiales pour le score)
+bool     askingName = false, nameGiven = false;
+bool     resuming = false;  // on revient sur la scène sauvegardée : ni pas compté, ni score enregistré une 2e fois  // saisie du prénom au début d'une partie (sinon : initiales pour le score)
 char     textBuf[160];        // texte de la scène avec le prénom à la place de « ~ »
 uint8_t  letterPos = 0;
 
@@ -132,16 +133,16 @@ void enterScene(uint8_t id) {
     if (!before[i] && isUnlocked((Activity)i)) {  // on l'annonce : sinon on ne le saurait pas
       showPopup("Nouveau dans le menu :", activityName((Activity)i));
     }
-  if (s->id != SOON && (s->id < 47 || s->id > 49)) {  // compteurs de la partie, pour le score (sauf l'introduction)
+  if (s->id != SOON && (s->id < 47 || s->id > 49) && !resuming) {  // compteurs de la partie, pour le score (sauf l'introduction)
     progress.runSteps++;
     if (!strncmp(s->text, "IMPASSE", 7)) progress.runImpasses++;
   }
-  if (s->ending) {  // une fin : on calcule le score de la partie
+  if (s->ending && !resuming) {  // une fin : on calcule le score de la partie
     int score = (s->ending & END_LEGENDAIRE ? LEGEND_POINTS : END_POINTS)
               + CHARM_POINTS * countBits(progress.charms) + TROPHY_POINTS * countBits(progress.trophies)
               + max(0, SPEED_BONUS - POINTS_PER_STEP * progress.runSteps) - IMPASSE_PENALTY * progress.runImpasses;
-    finalScore = max((int)(score * byLevel(1.0f, 1.2f, 1.5f)), 0);  // plus c'est difficile, plus ça rapporte
-    finalEnding = s->ending;
+    finalScore = max(levelPoints(score), 0);  // plus c'est difficile, plus ça rapporte
+    finalEnding = s->ending | progress.difficulty << SCORE_LEVEL_SHIFT;  // la difficulté est gardée avec le score
     int rank = scoreRank(finalScore);
     if (rank >= 0 && progress.player[0]) {  // il entre au classement, sous le prénom donné au début
       scoreAdd(progress.player, finalScore, finalEnding);
@@ -432,7 +433,9 @@ void adventureBegin() {
   encBase = encoderCount();
   scene = nullptr;
   if (!progress.scene) { progress.runSteps = 0; progress.runImpasses = 0; }  // nouvelle partie
-  enterScene(progress.scene ? progress.scene : FIRST_SCENE);  // nouvelle partie : la quête est d'abord expliquée
+  resuming = progress.scene != 0;
+  enterScene(progress.scene ? progress.scene : FIRST_SCENE);
+  resuming = false;  // nouvelle partie : la quête est d'abord expliquée
 }
 
 void adventureGoto(uint8_t sceneId) {

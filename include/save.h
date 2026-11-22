@@ -46,6 +46,7 @@ bool        isUnlocked(Activity a);
 // Meilleurs scores de l'Aventure : gardés à part, pour toute la vie de la borne (même « Tout effacer » les garde)
 constexpr int MAX_SCORES = 5;
 struct ScoreEntry { char name[4]; uint16_t score; uint8_t ending; };  // ending = la fin atteinte (END_…)
+constexpr int SCORE_LEVEL_SHIFT = 4;  // la difficulté de la partie est rangée dans les bits 4-5 de « ending »
 int  scoresLoad(ScoreEntry out[MAX_SCORES]);  // renvoie le nombre de scores enregistrés
 int  scoreRank(uint16_t score);               // place (0 = premier) que prendrait ce score, -1 s'il n'entre pas
 int  scoreAdd(const char* name, uint16_t score, uint8_t ending);  // renvoie sa place
@@ -58,4 +59,6 @@ int         progressPercent();
 inline float byLevel(float easy, float medium, float hard) {
   return progress.difficulty == 0 ? easy : progress.difficulty == 1 ? medium : hard;
 }
+// Points pondérés par la difficulté : ×1 en facile, ×1,2 en moyen, ×1,5 en difficile
+inline int levelPoints(int points) { return (int)(points * byLevel(1.0f, 1.2f, 1.5f)); }
 const char* difficultyName();

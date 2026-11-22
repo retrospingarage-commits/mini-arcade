@@ -46,7 +46,9 @@ void drawOled() {
   }
   for (int i = 0; i < count; i++) {  // 5 lignes de 9 pixels dans la partie bleue
     oled.setCursor(0, 24 + i * 9);
-    oled.printf("%d. %-3s %5u %s", i + 1, table[i].name, table[i].score, endingMark(table[i].ending));
+    static const char LEVEL[] = "FMD";  // facile, moyen, difficile
+    oled.printf("%d. %-3s %5u %c %s", i + 1, table[i].name, table[i].score, LEVEL[(table[i].ending >> SCORE_LEVEL_SHIFT) % 3],
+                endingMark(table[i].ending));
   }
   oled.sendBuffer();
 }

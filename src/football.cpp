@@ -64,7 +64,7 @@ void endShot(uint32_t now, bool goal, const char* msg) {
   lastWasGoal = goal;
   message = msg;
   phaseUntil = now + (goal ? 1600 : 1100);
-  if (goal) { goals++; score += 100 * (level + 1) * (bonus ? 2 : 1); flashUntil = now + 600; play(SND_GOAL, true); }
+  if (goal) { goals++; score += levelPoints(100 * (level + 1) * (bonus ? 2 : 1)); flashUntil = now + 600; play(SND_GOAL, true); }
   else play(SND_SAVE, true);
   dirty = true;
 }

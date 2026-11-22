@@ -103,7 +103,7 @@ void hitBumpers(uint32_t now) {
     float speed = max(12.0f, sqrtf(vx * vx + vy * vy));
     vx = nx * speed; vy = ny * speed;
     bx = b.x + nx * (1.0f + BALL_R); by = b.y + ny * (1.0f + BALL_R);
-    score += 100 * (bonus ? 2 : 1);
+    score += levelPoints(100 * (bonus ? 2 : 1));
     b.litUntil = now + 150;
     play(SND_BUMP);
     dirty = true;
@@ -115,13 +115,13 @@ void hitTargets(uint32_t now) {
   for (int i = 0; i < 5; i++)
     if (!targets[i] && fabsf(bx - TARGET_X[i] - 0.5f) < 1.0f) {
       targets[i] = true;
-      score += 250;
+      score += levelPoints(250);
       play(SND_TARGET);
       dirty = true;
       bool all = true;
       for (bool t : targets) all &= t;
       if (all) {  // MOCHI complet : gros bonus et effet manga maximal
-        score += 2000;
+        score += levelPoints(2000);
         for (bool& t : targets) t = false;
         fx = 1; fxUntil = now + 900; flashUntil = now + 300;
         message = "MOCHI !!";
@@ -147,7 +147,7 @@ void physics(float dt, uint32_t now) {
     for (Flipper& f : flippers) {
       float ex = f.px - f.side * cosf(f.angle) * FLIPPER_LEN, ey = f.py + sinf(f.angle) * FLIPPER_LEN;
       float kick = f.omega < 0 ? -f.omega * FLIPPER_LEN : 0;  // le flipper se lève : il frappe la bille
-      if (collideSegment(f.px, f.py, ex, ey, 0.3f, kick, true) && kick > 0) score += 10;
+      if (collideSegment(f.px, f.py, ex, ey, 0.3f, kick, true) && kick > 0) score += levelPoints(10);
     }
     hitBumpers(now);
     hitTargets(now);
@@ -155,7 +155,7 @@ void physics(float dt, uint32_t now) {
     if (bx < 2.3f && by > 3.5f && by < 6.5f && vy < -RAMP_SPEED) {
       inRamp = true; rampStart = now;
       bool combo = lastRamp && now - lastRamp < COMBO_MS;
-      score += (combo ? 1000 : 500) * (bonus ? 2 : 1);
+      score += levelPoints((combo ? 1000 : 500) * (bonus ? 2 : 1));
       lastRamp = now;
       message = combo ? "SUPER RAMPE !" : "RAMPE !";
       fx = 0.8f; fxUntil = now + RAMP_MS;
