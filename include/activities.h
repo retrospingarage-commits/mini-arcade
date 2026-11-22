@@ -29,6 +29,10 @@ GameResult raceLoop(uint32_t now);
 void       mazeBegin(bool story);
 GameResult mazeLoop(uint32_t now);
 
+// Le ramen du fantôme (Aventure) : attraper les ingrédients de la recette dans le bol, éviter le piment.
+void       ramenBegin();
+GameResult ramenLoop(uint32_t now);
+
 void       moodBegin();      // Mood light : ambiances lumineuses
 GameResult moodLoop(uint32_t now);
 void       jukeboxBegin();   // Jukebox : réécouter les jingles de l'histoire

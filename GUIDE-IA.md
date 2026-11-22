@@ -19,7 +19,7 @@ Une carte ESP32 (DevKit 30 broches, puce WROOM-32D) posée sur une carte d'exten
 | LED RVB HW-478 (une seule LED, cathode commune, résistances 220 Ω / 100 Ω / 100 Ω) | ambiance | R D17, V D27, B D33 | RELAIS |
 | Encodeur rotatif HW-040 (KY-040) : rotation sans fin + bouton | commande principale | A D18, B D19, bouton D23 | LORA |
 | Bouton poussoir HW-483 | « bouton 1 » | D15 | PLUVIO 1 |
-| Joystick 2 axes analogiques + bouton | commande secondaire | X D32, Y D34, bouton D26 | HUM SOL 1, HUM SOL 2, EXT |
+| Joystick 2 axes analogiques + bouton | commande du labyrinthe, et doublure de l'encodeur ailleurs | X D32, Y D34, bouton D26 | HUM SOL 1, HUM SOL 2, EXT |
 | Buzzer passif HW-508 | sons et mélodies, une note à la fois | D13 | EXT (signal), TEMP SOL 2 (GND et 3V3) |
 
 Broches encore libres : D25 et D14 (connecteur LORA), D16 (connecteur RELAIS), D36/VP (connecteur PLUVIO 2, entrée
@@ -33,7 +33,7 @@ la droite : `MATRIX_FLIP_X` remet l'image à l'endroit (à changer si une autre 
 
 1. **Courant de la matrice** : toujours garder `FastLED.setMaxPowerInVoltsAndMilliamps(5, MAX_MILLIAMPS)`
    avec `MAX_MILLIAMPS` à 1500 au maximum, et la luminosité à 40/255 au maximum (`BRIGHTNESS` ; la joueuse règle
-   la sienne entre 2 et 40 dans le menu, `matrixBrightness`). Toute la borne est alimentée
+   la sienne entre 1 et 40 dans le menu, `matrixBrightness`). Toute la borne est alimentée
    par un seul chargeur USB de 2,4 A : au-delà, il chauffe ou coupe.
 2. **Broches interdites en sortie** : D0, D2 et D12 (elles décident du démarrage de l'ESP32), et D34, D35,
    D36, D39 (entrées seulement).
@@ -75,6 +75,7 @@ Commandes utiles dans le moniteur série : `u` débloque tout (pour tester), `r`
 | `include/activities.h` | la liste des activités du menu et la façon de les lancer |
 | `src/breakout.cpp`, `include/levels.h` | le casse-briques et ses 6 niveaux (+ 1 niveau bonus en mode secret, + le niveau TANUKI joué dans l'histoire, scène 5) |
 | `src/football.cpp` | le football manga (aussi en version courte dans l'histoire, scène 26) |
+| `src/ramen.cpp` | le ramen du fantôme (scène 3) : attraper les ingrédients de la recette dans un bol, éviter le piment |
 | `src/boss.cpp` | le combat final contre le Roi Gluant (scène 11) ; ses réglages (vie du roi, vitesse des bulles…) sont en haut du fichier |
 | `src/pinball.cpp` | le flipper manga (aussi en version courte dans l'histoire, scène 28) |
 | `src/maze.cpp` | le labyrinthe des sous-sols (9 salles générées : celles de l'histoire viennent toujours de `STORY_SEED`, celles du menu sont tirées au hasard) ; réglages en haut du fichier |
@@ -105,7 +106,7 @@ Outils disponibles dans `hw.h` :
 
 | Activité | Commandes |
 |---|---|
-| Menu | encodeur ou joystick haut/bas : choisir ; bouton ou bouton de l'encodeur : valider ; bouton du joystick puis encodeur : luminosité de la matrice (gardée en mémoire). Veille après 3 min |
+| Menu | encodeur ou joystick haut/bas : choisir ; bouton ou bouton de l'encodeur : valider ; bouton du joystick puis encodeur : luminosité de la matrice (gardée en mémoire). Veille réglable (Réglages) |
 | Scores | les 5 meilleurs scores de l'Aventure (initiales, points, * = fin légendaire) ; tourner l'encodeur (ou joystick gauche/droite) : page Avancement (charmes, Pinceau, trophées, fins) ; n'importe quel bouton : menu. Le menu affiche l'avancement en % (11 choses à trouver) |
 | Réglages (dernière ligne du menu) | Luminosité (échelle progressive à 16 crans, de 1 à 40) ; Veille du menu (3, 10, 30 min ou jamais) ; Rejouer l'histoire (garde les déblocages) ; Tout effacer (garde la Galerie, les scores et les réglages) — ces deux-là demandent un 2e appui pour confirmer |
 | Aventure | au début d'une partie, le prénom en 3 lettres (encodeur ou joystick haut/bas : lettre ; bouton : suivante) : Mochi l'utilise, et un meilleur score s'enregistre tout seul sous ce prénom. Ensuite : encodeur ou joystick gauche/droite : choisir la réponse ; bouton : valider ; bouton du joystick : menu |
@@ -122,13 +123,36 @@ Outils disponibles dans `hw.h` :
 
 **Score de l'Aventure** (calculé à chaque fin, dans `src/adventure.cpp`) : fin heureuse 300 (légendaire 1 000), +100 par
 charme et +150 par trophée possédés, bonus de rapidité 400 − 10 par scène traversée, −20 par impasse. S'il entre dans
-les 5 meilleurs, on tape 3 initiales (encodeur : lettre, bouton : suivante). Le classement est rangé à part (espace NVS
+les 5 meilleurs, il s'enregistre tout seul sous le prénom donné au début (3 lettres). Le classement est rangé à part (espace NVS
 « scores ») : rien ne l'efface, ni « Tout effacer », ni une mise à jour du programme.
 
 **Mode secret** (après la fin légendaire) : 4 couleurs animées dans l'Atelier, niveau MOCHI-MAGE au casse-briques,
 gardien plus rapide et points doublés au football, bumpers étoilés à points doublés au flipper.
 
-## 6. Ajouter quelque chose
+## 6. L'histoire en bref
+
+« Les Couleurs du Roi Gluant » : le Roi Gluant a volé les couleurs de Pixelville. La partie commence par 3 écrans
+qui expliquent la quête (scènes 47 à 49, prénom demandé la première fois), puis la chambre (scène 1).
+
+| Étape | Où | Ce qu'on gagne |
+|---|---|---|
+| Ramen du fantôme (mini-jeu, scène 3) | rue des étals | Bol Magique (charme) |
+| Défi du tanuki (mini casse-briques, scène 5) | forêt | Feuille Magique (charme) |
+| Concert de la grenouille DJ (scène 7) | lac | Note Magique (charme) |
+| Finale de football (scène 26) | route du château | Ballon d'Or (trophée) |
+| Record du vieux flipper (scène 28) | rue des étals | Bille Étoile (trophée) |
+| Course des tanukis (scène 50) | route du château | Volant d'Or (trophée) |
+| Labyrinthe des sous-sols (scène 53) | château | Pinceau Arc-en-ciel (bonus du combat) |
+| Sceaux du château (scène 9) | château | il faut au moins 2 charmes |
+| Combat contre le roi (scène 11) | salle du trône | puis le choix de la fin (scène 46) |
+| Fins (scènes 18, 19, 20) | après le combat | La Fête des Couleurs, La Cheffe pâtissière, La Pluie arc-en-ciel |
+| Fin légendaire (scènes 21 à 24) | portail d'étoiles | 3 charmes et 3 trophées |
+
+Chaque charme donne un pouvoir dans le combat. L'avancement (menu et page Scores) compte 11 choses : 3 charmes, le
+Pinceau, 3 trophées, 4 fins. Les mauvais choix mènent à des impasses drôles qui ramènent au lit (scène 1). Sur les
+chemins d'errance (scènes 30 et plus), la LED RVB « chauffe » quand on se rapproche du but.
+
+## 7. Ajouter quelque chose
 
 ### Une scène de l'histoire
 Dans `include/scenes.h`, ajouter une ligne au tableau `SCENES`, dans cet ordre :
@@ -143,7 +167,7 @@ Dans `include/scenes.h`, ajouter une ligne au tableau `SCENES`, dans cet ordre :
    4 = tout près (LED orange qui bat vite) ; -1 = utiliser la couleur ;
 6. jingle (`J_…`) ;
 7. récompense donnée en arrivant : charme, trophée, fin (0 si aucune) ;
-8. mini-jeu (`GAME_NONE`, `GAME_REFLEX`, `GAME_BREAKOUT`, `GAME_FOOTBALL`, `GAME_PINBALL`, `GAME_BOSS`, `GAME_RACE`, `GAME_MAZE`) et scènes d'arrivée en cas de victoire et de défaite. Un choix dont la
+8. mini-jeu (`GAME_NONE`, `GAME_REFLEX`, `GAME_BREAKOUT`, `GAME_FOOTBALL`, `GAME_PINBALL`, `GAME_BOSS`, `GAME_RACE`, `GAME_MAZE`, `GAME_RAMEN`) et scènes d'arrivée en cas de victoire et de défaite. Un choix dont la
    cible est `GAME` lance le mini-jeu.
 
 Quand une récompense débloque une activité, l'OLED l'annonce (« Nouveau dans le menu : … »).
@@ -161,7 +185,7 @@ Dans `include/pictures.h`, 16 lignes de 16 lettres (une lettre par pixel ; les c
    nouveau fichier `src/xxx.cpp` (la boucle renvoie `GAME_RUNNING` tant que l'activité continue).
 3. Les brancher dans `start()` et `runCurrent()` (`src/main.cpp`), et choisir son icône dans `ICONS` (`src/menu.cpp`).
 
-## 7. Conventions du code
+## 8. Conventions du code
 
 - Commentaires en français, noms de variables et de fonctions en anglais.
 - Les réglages (vitesses, couleurs, durées) sont des constantes en haut de chaque fichier.

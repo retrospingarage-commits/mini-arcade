@@ -30,7 +30,7 @@ enum Effect : uint8_t { FX_NONE, FX_DARK, FX_FOG, FX_WAVES, FX_RAIN, FX_DRIP, FX
                         FX_STARS, FX_PORTAL, FX_FIREWORKS };
 
 // Mini-jeu lancé par un choix dont la cible est GAME
-enum MiniGame : uint8_t { GAME_NONE, GAME_REFLEX, GAME_FOOTBALL, GAME_PINBALL, GAME_BREAKOUT, GAME_BOSS, GAME_RACE, GAME_MAZE };
+enum MiniGame : uint8_t { GAME_NONE, GAME_REFLEX, GAME_FOOTBALL, GAME_PINBALL, GAME_BREAKOUT, GAME_BOSS, GAME_RACE, GAME_MAZE, GAME_RAMEN };
 constexpr uint8_t GAME = 250;
 
 struct Choice {
@@ -95,10 +95,10 @@ const Scene SCENES[] = {
   {2, "Place du village, sans couleur. Où aller ?",
    {{"Marché", 30, UNLESS_MARKET_DONE}, {"Forêt", 32, UNLESS_FEUILLE}, {"Lac", 35, UNLESS_NOTE}, {"Route du château", 38, ALWAYS}, {"Raccourci château", 9, IF_ALL_CHARMS}},
    PIC_PLACE, FX_NONE, 0x808080, -1, J_CALME, 0, 0, 0, GAME_NONE, 0, 0},
-  {3, "Un fantôme affamé flotte : J'ai faim ! Un ramen, vite !",
-   {{"Cuisiner un ramen", 4, UNLESS_BOL}, {"Tout le piment", 15, ALWAYS}, {"Retour à la rue", 30, ALWAYS}},
-   PIC_FANTOME, FX_NONE, 0x60A0FF, -1, J_SOUFFLE, 0, 0, 0, GAME_NONE, 0, 0},
-  {4, "Slurp ! Le fantôme est ravi et t'offre le Bol Magique. Charme obtenu !",
+  {3, "Un fantôme gourmand : Mon ramen ! Nouilles, oeufs, algues... et SURTOUT PAS de piment !",
+   {{"Cuisiner", GAME, UNLESS_BOL}, {"Retour à la rue", 30, ALWAYS}},
+   PIC_FANTOME, FX_NONE, 0x60A0FF, -1, J_SOUFFLE, 0, 0, 0, GAME_RAMEN, 4, 15},
+  {4, "Slurp ! Le fantôme brille de bonheur et t'offre le Bol Magique. Charme obtenu !",
    {{"Retour au village", 2, ALWAYS}},
    PIC_BOL, FX_NONE, 0xFF5A00, -1, J_FANFARE, CHARM_BOL, 0, 0, GAME_NONE, 0, 0},
   {5, "Un tanuki te défie : casse toutes ses briques-feuilles ! Si tu gagnes, cadeau !",
