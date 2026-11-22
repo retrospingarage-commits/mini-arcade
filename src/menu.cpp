@@ -21,8 +21,8 @@ const char* message = nullptr;  // message affiché un instant (activité verrou
 bool        adjusting = false;  // réglage de la luminosité (bouton du joystick dans le menu)
 
 // Réglages : la dernière ligne du menu
-const char* const SETTINGS[] = {"Luminosité", "Veille", "Rejouer l'histoire", "Tout effacer", "Retour"};
-constexpr int     SETTINGS_COUNT = 5;
+const char* const SETTINGS[] = {"Luminosité", "Veille", "Difficulté", "Rejouer l'histoire", "Tout effacer", "Retour"};
+constexpr int     SETTINGS_COUNT = 6;
 const char* const SLEEP_NAMES[] = {"3 min", "10 min", "30 min", "jamais"};
 const uint32_t    SLEEP_DELAYS[] = {180000, 600000, 1800000, 0};  // 0 = jamais de veille
 bool        inSettings = false;
@@ -54,6 +54,7 @@ void drawOled(uint32_t now) {
       oled.setCursor(4, baseline);
       oled.print(SETTINGS[item]);
       if (item == 1) { oled.print(" : "); oled.print(SLEEP_NAMES[progress.sleepMode % 4]); }
+      if (item == 2) { oled.print(" : "); oled.print(difficultyName()); }
       oled.setDrawColor(1);
     }
   } else {
@@ -109,7 +110,7 @@ void renderMatrix(uint32_t now) {
   Activity a = (Activity)cursor;
   FastLED.clear();
   static const Picture ICONS[ACT_COUNT] = {PIC_CHAT, PIC_NONE, PIC_BRIQUES, PIC_NOTE, PIC_STADE, PIC_FLIPPER,
-                                           PIC_KART, PIC_PINCEAU, PIC_NONE, PIC_BOCAUX, PIC_BALLON, PIC_NONE};
+                                           PIC_KART, PIC_PINCEAU, PIC_NONE, PIC_BOCAUX, PIC_BALLON, PIC_CHAT, PIC_NONE};
   if (!isUnlocked(a))             drawPicture(PIC_CADENAS);
   else if (ICONS[a] != PIC_NONE)  drawPicture(ICONS[a]);
   else for (int i = 0; i < 12; i++) leds[random16(NUM_LEDS)] = CHSV(random8(), 200, 200);  // étincelles
@@ -140,10 +141,15 @@ void chooseSetting(uint32_t now) {
       progressSave();
       play(SND_TICK);
       break;
-    case 2:
+    case 2:  // difficulté : facile, moyen, difficile
+      progress.difficulty = (progress.difficulty + 1) % 3;
+      progressSave();
+      play(SND_TICK);
+      break;
     case 3:
+    case 4:
       if (confirming != setCursor) { confirming = setCursor; play(SND_LOCKED); break; }
-      if (setCursor == 2) { progress.scene = 0; progressSave(); message = "Histoire au début !"; }
+      if (setCursor == 3) { progress.scene = 0; progressSave(); message = "Histoire au début !"; }
       else { progressReset(); cursor = 0; message = "Tout est effacé !"; }
       messageUntil = now + 2000;
       confirming = -1;

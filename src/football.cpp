@@ -49,7 +49,7 @@ int32_t  encBase;
 bool     dirty;
 
 int   keeperCol()     { return (int)(kx + 0.5f); }  // colonne de gauche du gardien (il en occupe 2)
-float keeperSpeed()   { return 2.5f + level * 1.0f + (bonus ? 1.5f : 0); }
+float keeperSpeed()   { return (2.5f + level * 1.0f + (bonus ? 1.5f : 0)) * byLevel(0.85f, 1.0f, 1.25f); }
 float defenderSpeed() { return 3.0f + level * 1.0f; }
 
 void newRound() {
@@ -184,7 +184,8 @@ GameResult footballLoop(uint32_t now) {
           bvy = -(SHOT_SPEED_MIN + power * (SHOT_SPEED_MAX - SHOT_SPEED_MIN));
           bvx = aim * -bvy;  // tir en biais
           shotStart = now;
-          keeperReads = random(100) < KEEPER_READ_CHANCE + min(level, 6) * KEEPER_READ_LEVEL + (bonus ? 10 : 0);
+          keeperReads = random(100) < byLevel(18, KEEPER_READ_CHANCE, 55) + min(level, 6) * byLevel(6, KEEPER_READ_LEVEL, 10)
+                                      + (bonus ? 10 : 0);  // difficulté « moyen » = les réglages ci-dessus
           reaction = keeperReads ? KEEPER_FAST_MS : KEEPER_LATE_MS + random(0, 150);
           phase = SHOT;
           message = power > 0.8f ? "TIR DU DRAGON !" : nullptr;

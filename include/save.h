@@ -22,6 +22,7 @@ struct Progress {
   uint8_t  sleepMode;        // veille du menu : 0 = 3 min, 1 = 10 min, 2 = 30 min, 3 = jamais
   uint8_t  raceBestPlace;    // meilleure place à la Course (0 = jamais courue)
   uint16_t raceBestTime;     //   et son temps, en dixièmes de seconde
+  uint8_t  difficulty;       // 0 facile, 1 moyen, 2 difficile (pour tous les jeux)
   uint16_t mazeBest;         // meilleur temps au Labyrinthe, en dixièmes de seconde (0 = jamais fini)
   char     player[4];        // prénom en 3 lettres, demandé au début de l'Aventure ("" = pas encore demandé)
 };
@@ -36,6 +37,7 @@ void progressUnlockAll();  // pour tester : tous les charmes, trophées et fins
 enum Activity : uint8_t {
   ACT_ADVENTURE, ACT_MOOD, ACT_BREAKOUT, ACT_JUKEBOX, ACT_FOOTBALL, ACT_PINBALL, ACT_RACE, ACT_MAZE, ACT_ATELIER, ACT_GALLERY,
   ACT_SCORES,    // meilleurs scores de l'Aventure
+  ACT_ABOUT,     // À propos : QR code vers le guide pour reprogrammer la borne avec une IA
   ACT_SETTINGS,  // Réglages : géré par le menu lui-même (luminosité, veille, recommencer, tout effacer)
   ACT_COUNT
 };
@@ -52,3 +54,8 @@ const char* activityName(Activity a);
 int         countBits(uint8_t v);
 // Avancement de l'histoire en % : 3 charmes, le Pinceau, 3 trophées, 4 fins (11 choses à trouver)
 int         progressPercent();
+// Choisit une valeur selon la difficulté réglée (Réglages) : facile, moyen ou difficile
+inline float byLevel(float easy, float medium, float hard) {
+  return progress.difficulty == 0 ? easy : progress.difficulty == 1 ? medium : hard;
+}
+const char* difficultyName();

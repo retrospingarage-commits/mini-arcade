@@ -3,6 +3,7 @@
 // Les intrus (chaussette, arête, caillou) font « Beurk ! » et retirent un ingrédient du bol.
 // Le piment rouge : le fantôme crache des flammes (perdu). Bouton du joystick : abandonner.
 #include "hw.h"
+#include "save.h"
 #include "activities.h"
 
 namespace ramen {
@@ -66,7 +67,7 @@ void spawn() {
         int missing[RECIPE_ITEMS], n = 0;
         for (int i = 0; i < RECIPE_ITEMS; i++) if (have[i] < NEEDED[i]) missing[n++] = i;
         k = (Kind)(n ? missing[random(n)] : random(RECIPE_ITEMS));
-      } else if (r < CHANCE_GOOD + CHANCE_CHILI) k = CHILI;
+      } else if (r < CHANCE_GOOD + CHANCE_CHILI * byLevel(1.0f, 1.4f, 2.0f)) k = CHILI;
       else k = (Kind)(SOCK + random(3));
       it = {constrain(ghostX, 0.0f, 14.0f), 2, k, true};
       return;
@@ -151,7 +152,7 @@ using namespace ramen;
 void ramenBegin() {
   for (Item& it : items) it.on = false;
   for (int& h : have) h = 0;
-  bowlX = 6; ghostX = 8; ghostDir = 1; fallSpeed = FALL_SPEED;
+  bowlX = 6; ghostX = 8; ghostDir = 1; fallSpeed = FALL_SPEED * byLevel(1.0f, 1.25f, 1.6f);
   state = PLAY; message = nullptr;
   nextSpawn = millis() + 1200;
   encBase = encoderCount();

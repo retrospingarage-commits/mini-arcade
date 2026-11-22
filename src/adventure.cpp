@@ -67,8 +67,8 @@ const Scene* findScene(uint8_t id) {
 bool isVisible(Cond c) {
   switch (c) {
     case IF_ALL_CHARMS:      return (progress.charms & ALL_CHARMS) == ALL_CHARMS;
-    case IF_TWO_CHARMS:      return countBits(progress.charms & ALL_CHARMS) >= 2;
-    case UNLESS_TWO_CHARMS:  return countBits(progress.charms & ALL_CHARMS) < 2;
+    case IF_SEALS_OPEN:      return countBits(progress.charms & ALL_CHARMS) >= SEAL_CHARMS;
+    case UNLESS_SEALS_OPEN:  return countBits(progress.charms & ALL_CHARMS) < SEAL_CHARMS;
     case UNLESS_PINCEAU:     return !(progress.charms & CHARM_PINCEAU);
     case IF_LEGEND:          return (progress.charms & ALL_CHARMS) == ALL_CHARMS
                                     && (progress.trophies & ALL_TROPHIES) == ALL_TROPHIES;
@@ -140,7 +140,7 @@ void enterScene(uint8_t id) {
     int score = (s->ending & END_LEGENDAIRE ? LEGEND_POINTS : END_POINTS)
               + CHARM_POINTS * countBits(progress.charms) + TROPHY_POINTS * countBits(progress.trophies)
               + max(0, SPEED_BONUS - POINTS_PER_STEP * progress.runSteps) - IMPASSE_PENALTY * progress.runImpasses;
-    finalScore = max(score, 0);
+    finalScore = max((int)(score * byLevel(1.0f, 1.2f, 1.5f)), 0);  // plus c'est difficile, plus ça rapporte
     finalEnding = s->ending;
     int rank = scoreRank(finalScore);
     if (rank >= 0 && progress.player[0]) {  // il entre au classement, sous le prénom donné au début
@@ -210,7 +210,7 @@ void updateReflex(uint32_t now, bool pressed) {
   switch (phase) {
     case REFLEX_WAIT:
       if (pressed) { reflexWon = false; phase = REFLEX_END; phaseUntil = now + 1200; play(SND_MISS, true); dirty = true; }
-      else if (now >= phaseUntil) { phase = REFLEX_GO; phaseUntil = now + REFLEX_WINDOW[stars]; play(SND_GO, true); dirty = true; }
+      else if (now >= phaseUntil) { phase = REFLEX_GO; phaseUntil = now + (uint32_t)(REFLEX_WINDOW[stars] * byLevel(1.0f, 0.85f, 0.7f)); play(SND_GO, true); dirty = true; }
       break;
     case REFLEX_GO:
       if (pressed) {

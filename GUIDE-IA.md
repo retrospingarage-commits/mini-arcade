@@ -1,7 +1,8 @@
 # Guide de la mini-arcade pour une IA
 
 Ce document est fait pour être donné tel quel à un assistant IA (Claude, ChatGPT, Gemini…) afin de
-reprogrammer la mini-arcade. Il décrit le matériel, les règles à ne jamais enfreindre, l'organisation
+reprogrammer la mini-arcade. Tout le code est ici : https://github.com/retrospingarage-commits/mini-arcade
+(le QR code de la ligne « À propos » du menu ouvre ce guide). Il décrit le matériel, les règles à ne jamais enfreindre, l'organisation
 du programme et la façon d'y ajouter des choses. Le code est sous licence MIT (voir `LICENSE`) : tu peux le
 modifier, le partager et t'en servir comme tu veux.
 
@@ -75,6 +76,7 @@ Commandes utiles dans le moniteur série : `u` débloque tout (pour tester), `r`
 | `include/activities.h` | la liste des activités du menu et la façon de les lancer |
 | `src/breakout.cpp`, `include/levels.h` | le casse-briques et ses 6 niveaux (+ 1 niveau bonus en mode secret, + le niveau TANUKI joué dans l'histoire, scène 5) |
 | `src/football.cpp` | le football manga (aussi en version courte dans l'histoire, scène 26) |
+| `src/about.cpp` | la page « À propos » et son QR code |
 | `src/ramen.cpp` | le ramen du fantôme (scène 3) : attraper les ingrédients de la recette dans un bol, éviter le piment |
 | `src/boss.cpp` | le combat final contre le Roi Gluant (scène 11) ; ses réglages (vie du roi, vitesse des bulles…) sont en haut du fichier |
 | `src/pinball.cpp` | le flipper manga (aussi en version courte dans l'histoire, scène 28) |
@@ -109,6 +111,8 @@ Outils disponibles dans `hw.h` :
 | Menu | encodeur ou joystick haut/bas : choisir ; bouton ou bouton de l'encodeur : valider ; bouton du joystick puis encodeur : luminosité de la matrice (gardée en mémoire). Veille réglable (Réglages) |
 | Scores | les 5 meilleurs scores de l'Aventure (initiales, points, * = fin légendaire) ; tourner l'encodeur (ou joystick gauche/droite) : page Avancement (charmes, Pinceau, trophées, fins) ; n'importe quel bouton : menu. Le menu affiche l'avancement en % (11 choses à trouver) |
 | Réglages (dernière ligne du menu) | Luminosité (échelle progressive à 16 crans, de 1 à 40) ; Veille du menu (3, 10, 30 min ou jamais) ; Rejouer l'histoire (garde les déblocages) ; Tout effacer (garde la Galerie, les scores et les réglages) — ces deux-là demandent un 2e appui pour confirmer |
+| Difficulté (dans Réglages) | facile, moyen ou difficile pour tous les jeux (gardée même après « Tout effacer ») ; chaque jeu choisit ses valeurs avec `byLevel(facile, moyen, difficile)` (`include/save.h`). En moyen et difficile, le score de l'Aventure est multiplié par 1,2 et 1,5 |
+| À propos | QR code vers ce guide (`ABOUT_URL` dans `include/config.h`) ; n'importe quel bouton : menu |
 | Aventure | au début d'une partie, le prénom en 3 lettres (encodeur ou joystick haut/bas : lettre ; bouton : suivante) : Mochi l'utilise, et un meilleur score s'enregistre tout seul sous ce prénom. Ensuite : encodeur ou joystick gauche/droite : choisir la réponse ; bouton : valider ; bouton du joystick : menu |
 | Combat contre le Roi Gluant (Aventure) | encodeur ou joystick : se déplacer ; bouton (ou bouton de l'encodeur) : tirer, on peut le garder enfoncé. Pouvoirs des charmes : Bol = bouclier qui revient, Feuille = tir triple, Note = bulles ralenties ; Pinceau Arc-en-ciel (labyrinthe) = une vie de plus et un tir sur deux compte double. Bouton du joystick : abandonner |
 | Casse-briques | encodeur ou joystick : raquette ; bouton ou joystick vers le haut : lancer ; bouton du joystick : pause |
@@ -143,7 +147,7 @@ qui expliquent la quête (scènes 47 à 49, prénom demandé la première fois),
 | Record du vieux flipper (scène 28) | rue des étals | Bille Étoile (trophée) |
 | Course des tanukis (scène 50) | route du château | Volant d'Or (trophée) |
 | Labyrinthe des sous-sols (scène 53) | château | Pinceau Arc-en-ciel (bonus du combat) |
-| Sceaux du château (scène 9) | château | il faut au moins 2 charmes |
+| Sceaux du château (scène 9) | château | il faut les 3 charmes (`SEAL_CHARMS` dans `include/scenes.h`) |
 | Combat contre le roi (scène 11) | salle du trône | puis le choix de la fin (scène 46) |
 | Fins (scènes 18, 19, 20) | après le combat | La Fête des Couleurs, La Cheffe pâtissière, La Pluie arc-en-ciel |
 | Fin légendaire (scènes 21 à 24) | portail d'étoiles | 3 charmes et 3 trophées |
@@ -161,7 +165,7 @@ Dans `include/scenes.h`, ajouter une ligne au tableau `SCENES`, dans cet ordre :
    un titre centré dans la bande jaune (21 caractères maximum, utilisé pour les fins) puis le texte sur 4 lignes ;
    « ~ » est remplacé par le prénom de la joueuse (3 lettres, ou « toi ») ;
 3. jusqu'à 5 choix `{"libellé", scène cible, condition}` (libellé de 20 caractères maximum ; 4 visibles au plus
-   à la fois ; la condition `ALWAYS`, `IF_ALL_CHARMS`, `IF_TWO_CHARMS`, `IF_LEGEND` (3 charmes et 3 trophées), `UNLESS_BOL`… cache le choix selon la progression) ;
+   à la fois ; la condition `ALWAYS`, `IF_ALL_CHARMS`, `IF_SEALS_OPEN`, `IF_LEGEND` (3 charmes et 3 trophées), `UNLESS_BOL`… cache le choix selon la progression) ;
 4. dessin (`PIC_…`, ou `PIC_NONE`) et effet animé (`FX_FOG` brume, `FX_WAVES` vagues, `FX_RAINBOW`… ou `FX_NONE`) ;
 5. couleur de la LED (`0xRRGGBB`) et « chaleur » de -1 à 4 : sur un chemin, 0 = loin du but (LED bleue),
    4 = tout près (LED orange qui bat vite) ; -1 = utiliser la couleur ;

@@ -56,6 +56,8 @@ bool     dirty;
 const int TARGET_X[5] = {2, 5, 8, 11, 14};
 const char* const LETTERS = "MOCHI";
 
+uint32_t ballSaveMs() { return (uint32_t)byLevel(BALL_SAVE_MS, BALL_SAVE_MS / 2, 0); }
+
 void resetBall(uint32_t now) {
   bx = 8; by = 2.5f; vx = random(-30, 31) / 10.0f; vy = 0;
   tilted = false; tiltMeter = 0;
@@ -132,7 +134,7 @@ void physics(float dt, uint32_t now) {
   const int STEPS = 6;
   float h = dt / STEPS;
   for (int s = 0; s < STEPS; s++) {
-    vy += GRAVITY * h;
+    vy += GRAVITY * byLevel(1.0f, 1.12f, 1.25f) * h;
     float sp = sqrtf(vx * vx + vy * vy);
     if (sp > MAX_SPEED) { vx *= MAX_SPEED / sp; vy *= MAX_SPEED / sp; }
     bx += vx * h; by += vy * h;
@@ -183,7 +185,7 @@ void nudge(int32_t pulses, float dt, uint32_t now) {
   fx = max(fx, strength);
   fxUntil = now + 250 + (uint32_t)(strength * 400);
   beep(200 + strength * 1200, 40);
-  if (tiltMeter > TILT_LIMIT && !tilted) {
+  if (tiltMeter > TILT_LIMIT * byLevel(1.0f, 0.9f, 0.75f) && !tilted) {
     tilted = true;
     message = "TILT !";
     play(SND_TILT, true);
@@ -256,7 +258,7 @@ void render(uint32_t now) {
     px(x0, y0, CRGB(160, 160, 170)); px(x0 + 1, y0, CRGB::White);
     px(x0, y0 + 1, CRGB::White); px(x0 + 1, y0 + 1, CRGB(160, 160, 170));
   }
-  if (now - ballStart < BALL_SAVE_MS && !ballWaiting && !gameOver) px(7, 15, CRGB(0, 120, 0)), px(8, 15, CRGB(0, 120, 0));  // sauvetage actif
+  if (now - ballStart < ballSaveMs() && !ballWaiting && !gameOver) px(7, 15, CRGB(0, 120, 0)), px(8, 15, CRGB(0, 120, 0));  // sauvetage actif
   if (gameOver) drawScroll("FIN", now % scrollDuration("FIN"), 5, CRGB(255, 200, 0));
   FastLED.show();
 
@@ -323,7 +325,7 @@ GameResult pinballLoop(uint32_t now) {
         tiltMeter = max(0.0f, tiltMeter - 0.8f * dt);
         physics(dt, now);
       }
-      if (by > 16.5f && now - ballStart < BALL_SAVE_MS && !tilted) {  // perdue trop vite : on la rend
+      if (by > 16.5f && now - ballStart < ballSaveMs() && !tilted) {  // perdue trop vite : on la rend
         message = "Bille sauvée !";
         static const Note SAVE[] = {{784, 80}, {1047, 160}, {0, 0}};
         play(SAVE, true);

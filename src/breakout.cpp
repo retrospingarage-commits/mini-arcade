@@ -102,7 +102,7 @@ void sendUp(float a) {
 }
 
 void launch() {
-  speed = lvl().speed + bricksBroken * SPEED_PER_BRICK;
+  speed = lvl().speed * byLevel(1.0f, 1.15f, 1.3f) + bricksBroken * SPEED_PER_BRICK;
   sendUp(random(-40, 41) / 100.0f);  // petit angle aléatoire au départ
   lastMove = lastFall = millis();
   play(SND_LAUNCH);
@@ -125,7 +125,7 @@ void loseLife() {
 
 // La balle garde sa direction mais prend la vitesse du moment
 void updateSpeed() {
-  speed = lvl().speed + bricksBroken * SPEED_PER_BRICK;
+  speed = lvl().speed * byLevel(1.0f, 1.15f, 1.3f) + bricksBroken * SPEED_PER_BRICK;
   float n = sqrtf(vx * vx + vy * vy);
   vx *= speed / n;
   vy *= speed / n;

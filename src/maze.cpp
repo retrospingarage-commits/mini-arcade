@@ -19,7 +19,7 @@ constexpr uint32_t STEP_MS      = 130;    // temps entre deux pas, joystick pous
 constexpr float    SLIME_SPEED  = 2.5f;   // cases/s
 constexpr uint32_t SLIME_ON_MS  = 2600;   // un mochi gluant est dangereux pendant ce temps...
 constexpr uint32_t SLIME_OFF_MS = 1500;   // ... puis il fond en flaque (on peut passer) pendant celui-ci
-constexpr float    LIGHT        = 3.5f;   // rayon de la lumière (cases)
+constexpr float    LIGHT_EASY   = 3.5f;   // rayon de la lumière (cases) ; plus petit en moyen et difficile
 const char* const  ROOM_NAMES[9] = {"L'escalier", "Cave aux bocaux", "Salle des échos", "Cellier gluant",
                                     "Galerie des toiles", "Le puits", "Réserve du roi", "Couloir venteux",
                                     "Crypte oubliée"};
@@ -39,7 +39,7 @@ int      treasureRoom, keyRoom, lockRoom, lockDir;
 int8_t   keyX, keyY, treasureX, treasureY;
 
 struct Slime { int room; int8_t path[10][2]; int len; float pos; float dir; uint32_t phase; };
-Slime    slimes[MENU_SLIMES];
+Slime    slimes[MENU_SLIMES + 4];
 int      nSlimes;
 
 bool     story, hasKey, lockOpen, found, dirty;
@@ -188,7 +188,7 @@ void build(uint32_t seed) {
     if (grid[treasureRoom][ny][nx] == FLOOR) grid[treasureRoom][ny][nx] = FAKE;
   }
   // Mochis gluants : chacun fait des allers-retours sur un bout de couloir
-  nSlimes = story ? STORY_SLIMES : MENU_SLIMES;
+  nSlimes = (story ? STORY_SLIMES : MENU_SLIMES) + (int)byLevel(0, 2, 4);  // plus de mochis gluants selon la difficulté
   for (int i = 0; i < nSlimes; i++) {
     Slime& s = slimes[i];
     s.room = 1 + rnd(N - 1);
@@ -210,6 +210,8 @@ void build(uint32_t seed) {
     s.pos = 0; s.dir = 1; s.phase = rnd(SLIME_ON_MS + SLIME_OFF_MS);
   }
 }
+
+float LIGHT = LIGHT_EASY;
 
 bool slimeMelted(const Slime& s, uint32_t now) { return (now + s.phase) % (SLIME_ON_MS + SLIME_OFF_MS) >= SLIME_ON_MS; }
 
@@ -358,6 +360,7 @@ using namespace maze;
 
 void mazeBegin(bool storyMode) {
   story = storyMode;
+  LIGHT = LIGHT_EASY * byLevel(1.0f, 0.85f, 0.72f);
   build(story ? STORY_SEED : (esp_random() | 1));
   memset(seen, 0, sizeof(seen));
   visited = 0;
@@ -402,7 +405,7 @@ GameResult mazeLoop(uint32_t now) {
     Slime& s = slimes[i];
     if (s.len < 2) continue;
     if (slimeMelted(s, now)) continue;  // en flaque : il ne bouge pas et ne colle pas
-    s.pos += s.dir * SLIME_SPEED * dt;
+    s.pos += s.dir * SLIME_SPEED * byLevel(1.0f, 1.2f, 1.4f) * dt;
     if (s.pos >= s.len - 1) { s.pos = s.len - 1; s.dir = -1; }
     if (s.pos <= 0) { s.pos = 0; s.dir = 1; }
     int k = (int)(s.pos + 0.5f);

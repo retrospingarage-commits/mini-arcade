@@ -23,6 +23,7 @@ void progressLoad() {
   progress.raceBestPlace = prefs.getUChar("rplace", 0);
   progress.raceBestTime  = prefs.getUShort("rtime", 0);
   progress.mazeBest      = prefs.getUShort("mbest", 0);
+  progress.difficulty    = min((int)prefs.getUChar("diff", 0), 2);
   String name = prefs.getString("player", "");
   strncpy(progress.player, name.c_str(), 3);
   progress.player[3] = 0;
@@ -46,13 +47,16 @@ void progressSave() {
   prefs.putUChar("rplace", progress.raceBestPlace);
   prefs.putUShort("rtime", progress.raceBestTime);
   prefs.putUShort("mbest", progress.mazeBest);
+  prefs.putUChar("diff", progress.difficulty);
   prefs.putString("player", progress.player);
   prefs.end();
 }
 
 void progressReset() {
   uint8_t bright = progress.brightness, sleep = progress.sleepMode;  // des réglages, pas une progression : gardés
+  uint8_t diff = progress.difficulty;
   progress = {0, 0, 0, 0, 0, 0, 0, 0, bright, 0, 0, sleep};
+  progress.difficulty = diff;
   progressSave();
 }
 
@@ -67,6 +71,7 @@ bool isUnlocked(Activity a) {
   switch (a) {
     case ACT_ADVENTURE:
     case ACT_SCORES:
+    case ACT_ABOUT:
     case ACT_SETTINGS:  return true;
     case ACT_MOOD:      return progress.charms & CHARM_BOL;
     case ACT_BREAKOUT:  return progress.charms & CHARM_FEUILLE;
@@ -83,8 +88,13 @@ bool isUnlocked(Activity a) {
 
 const char* activityName(Activity a) {
   static const char* const NAMES[ACT_COUNT] = {
-    "Aventure", "Mood light", "Casse-briques", "Jukebox", "Football", "Flipper", "Course", "Labyrinthe", "Atelier", "Galerie", "Scores", "Réglages"};
+    "Aventure", "Mood light", "Casse-briques", "Jukebox", "Football", "Flipper", "Course", "Labyrinthe", "Atelier", "Galerie", "Scores", "À propos", "Réglages"};
   return a < ACT_COUNT ? NAMES[a] : "";
+}
+
+const char* difficultyName() {
+  static const char* const NAMES[] = {"facile", "moyen", "difficile"};
+  return NAMES[progress.difficulty % 3];
 }
 
 int progressPercent() {

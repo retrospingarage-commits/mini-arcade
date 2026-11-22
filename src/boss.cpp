@@ -11,7 +11,7 @@
 namespace boss {
 
 // --- Réglages ---------------------------------------------------------------
-constexpr int      KING_HP         = 60;      // vie du roi
+constexpr int      KING_HP_EASY    = 60;      // vie du roi (facile ; ×1,25 en moyen, ×1,5 en difficile)
 constexpr int      HEARTS          = 3;       // vies de la joueuse
 constexpr int      KING_W          = 6;       // largeur du roi (cases)
 constexpr float    PLAYER_SPEED    = 12.0f;   // cases/s au joystick
@@ -48,6 +48,7 @@ uint32_t shieldBack, hurtUntil, kingFlash, nextBubble, nextShot, endAt, messageU
 const char* message;
 int32_t  encBase;
 
+int KING_HP = KING_HP_EASY;
 int phaseOf(int life) { return life > KING_HP * 2 / 3 ? 0 : life > KING_HP / 3 ? 1 : 2; }
 
 void say(const char* m, uint32_t now) { message = m; messageUntil = now + 2000; dirty = true; }
@@ -155,6 +156,7 @@ void bossBegin(uint8_t charms) {
   powers = charms;
   state = FIGHT;
   px = 7; kx = 5; kdir = 1;
+  KING_HP = (int)(KING_HP_EASY * byLevel(1.0f, 1.25f, 1.5f));
   hp = KING_HP; hearts = HEARTS + (charms & CHARM_PINCEAU ? 1 : 0); phaseIdx = 0;  // Pinceau : une vie de plus
   shieldUp = charms & CHARM_BOL;
   for (Obj& s : shots) s.on = false;
@@ -217,7 +219,7 @@ GameResult bossLoop(uint32_t now) {
   }
 
   // Bulles : tombent sur la joueuse
-  float speed = BUBBLE_SPEED[phaseIdx] * (powers & CHARM_NOTE ? NOTE_SLOW : 1.0f);
+  float speed = BUBBLE_SPEED[phaseIdx] * (powers & CHARM_NOTE ? NOTE_SLOW : 1.0f) * byLevel(1.0f, 1.15f, 1.3f);
   for (Obj& b : bubbles) {
     if (!b.on) continue;
     b.y += speed * dt;

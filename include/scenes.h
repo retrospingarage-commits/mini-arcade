@@ -12,8 +12,8 @@
 enum Cond : uint8_t {
   ALWAYS,
   IF_ALL_CHARMS,       // « si 3 charmes »
-  IF_TWO_CHARMS,       // au moins 2 charmes (pour briser les sceaux du château)
-  UNLESS_TWO_CHARMS,
+  IF_SEALS_OPEN,       // assez de charmes pour briser les sceaux du château (SEAL_CHARMS)
+  UNLESS_SEALS_OPEN,
   IF_LEGEND,           // 3 charmes et 3 trophées (portail de la fin légendaire)
   UNLESS_BOL,          // disparaît une fois le charme ou le trophée obtenu
   UNLESS_FEUILLE,
@@ -32,6 +32,7 @@ enum Effect : uint8_t { FX_NONE, FX_DARK, FX_FOG, FX_WAVES, FX_RAIN, FX_DRIP, FX
 // Mini-jeu lancé par un choix dont la cible est GAME
 enum MiniGame : uint8_t { GAME_NONE, GAME_REFLEX, GAME_FOOTBALL, GAME_PINBALL, GAME_BREAKOUT, GAME_BOSS, GAME_RACE, GAME_MAZE, GAME_RAMEN };
 constexpr uint8_t GAME = 250;
+constexpr int     SEAL_CHARMS = 3;  // charmes qu'il faut pour briser les sceaux du château et affronter le roi
 
 struct Choice {
   const char* label;
@@ -114,7 +115,7 @@ const Scene SCENES[] = {
    {{"Retour au village", 2, ALWAYS}},
    PIC_NOTE, FX_NONE, 0xFFC800, -1, J_MELODIE, CHARM_NOTE, 0, 0, GAME_NONE, 0, 0},
   {9, "Le château de mochi se dresse, tout gluant. Sa porte est fermée par 3 sceaux de couleur.",
-   {{"Briser les sceaux", 10, IF_TWO_CHARMS}, {"Toucher les sceaux", 45, UNLESS_TWO_CHARMS}, {"Aux sous-sols", 53, UNLESS_PINCEAU}, {"Retour au village", 2, ALWAYS}},
+   {{"Briser les sceaux", 10, IF_SEALS_OPEN}, {"Toucher les sceaux", 45, UNLESS_SEALS_OPEN}, {"Aux sous-sols", 53, UNLESS_PINCEAU}, {"Retour au village", 2, ALWAYS}},
    PIC_CHATEAU, FX_NONE, 0xFFFFFF, -1, J_VENT, 0, 0, 0, GAME_NONE, 0, 0},
   {10, "Un garde mochi bloque la porte : Fais-moi rire ou rebrousse chemin !",
    {{"Raconter une blague", 11, ALWAYS}, {"Foncer dans la porte", 17, ALWAYS}},
@@ -221,7 +222,7 @@ const Scene SCENES[] = {
   {47, "La quête|~, le Roi Gluant a volé les couleurs du village et les a cachées au château !",
    {{"Et alors ?", 48, ALWAYS}},
    PIC_CHATEAU, FX_NONE, 0x505050, -1, J_MYSTERE, 0, 0, 0, GAME_NONE, 0, 0},
-  {48, "Sa porte a 3 sceaux. Gagne au moins 2 charmes magiques au village pour les briser...",
+  {48, "Sa porte a 3 sceaux. Gagne les 3 charmes magiques au village pour les briser...",
    {{"Et ensuite ?", 49, ALWAYS}},
    PIC_PLACE, FX_NONE, 0x808080, -1, J_TINTEMENT, 0, 0, 0, GAME_NONE, 0, 0},
   {49, "... puis bats le roi pour rendre les couleurs. Chaque charme te donnera un pouvoir !",
@@ -242,7 +243,7 @@ const Scene SCENES[] = {
   {54, "Le Pinceau Arc-en-ciel ! Mochi : Avec lui, le roi va voir de toutes les couleurs !",
    {{"Remonter", 9, ALWAYS}},
    PIC_PINCEAU, FX_CONFETTI, 0xFFFFFF, -1, J_SPECIAL, CHARM_PINCEAU, 0, 0, GAME_NONE, 0, 0},
-  {45, "Les sceaux restent gris. Mochi : ~, il nous faut au moins 2 charmes pour les briser !",
+  {45, "Les sceaux restent gris. Mochi : ~, il nous faut les 3 charmes pour les briser !",
    {{"Retour au village", 2, ALWAYS}},
    PIC_CHATEAU, FX_NONE, 0x505050, -1, J_TROMBONE, 0, 0, 0, GAME_NONE, 0, 0},
   {46, "Vaincu, le roi fond en larmes de mochi : Snif... Je voulais juste des couleurs à moi !",

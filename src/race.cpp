@@ -152,7 +152,7 @@ void raceBegin(bool storyMode) {
   dist = 0; speed = 0; carX = 7; turbo = 0; turboOn = false; crashes = 0;
   for (int i = 0; i < RIVALS; i++) {
     float x = ROAD_L + (i * 5 % 11);
-    rivals[i] = {RIVAL_START[i], x, x, RIVAL_SPEED[i] - (story ? STORY_SLOWER : 0), (uint8_t)(i * 32 + 60), true};
+    rivals[i] = {RIVAL_START[i], x, x, RIVAL_SPEED[i] - (story ? STORY_SLOWER : 0) + byLevel(0, 0.7f, 1.4f), (uint8_t)(i * 32 + 60), true};
   }
   place = RIVALS + 1; shownPlace = -1; shownTurbo = -1;
   state = COUNTDOWN;
@@ -205,7 +205,7 @@ GameResult raceLoop(uint32_t now) {
   turboOn = turboHeld && turbo > 0 && now >= hurtUntil;
   if (turboOn && !wasTurbo) play(SND_TURBO);
   if (turboOn) turbo = max(0.0f, turbo - TURBO_BURN * dt);
-  else turbo = min(100.0f, turbo + TURBO_TRICKLE * dt);
+  else turbo = min(100.0f, turbo + TURBO_TRICKLE * byLevel(1.0f, 0.6f, 0.3f) * dt);
   float target = turboOn ? TURBO_SPEED : BASE_SPEED;
   speed = speed < target ? min(target, speed + ACCEL * (turboOn ? 3 : 1) * dt) : max(target, speed - ACCEL * dt);
   dist += speed * dt;
