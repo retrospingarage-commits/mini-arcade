@@ -36,5 +36,6 @@ constexpr uint8_t PIN_RGB_B = 33;
 // Modèle de l'écran : 0 = SSD1306 (0,96"), 1 = SH1106 (1,3", souvent 4 broches aussi ; vérifier l'ordre VCC/GND !)
 #define OLED_SH1106 0
 
-// Page ouverte par le QR code de « À propos » : le guide pour reprogrammer la borne avec une IA
-#define ABOUT_URL "https://github.com/retrospingarage-commits/mini-arcade/blob/main/GUIDE-IA.md"
+// Page ouverte par le QR code de « À propos » : le guide pour reprogrammer la borne avec une IA, avec un bouton
+// « Copier » (docs/index.html, publiée par GitHub Pages ; elle affiche toujours le GUIDE-IA.md de main)
+#define ABOUT_URL "https://retrospingarage-commits.github.io/mini-arcade/"
