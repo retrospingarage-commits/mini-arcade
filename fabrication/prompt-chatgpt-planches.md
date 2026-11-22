@@ -43,7 +43,7 @@ Donne aussi un **aperçu** des 4 planches assemblées verticalement, comme elles
 
 ### Planche 4 (tout en bas) : les commandes
 Elle porte toutes les commandes. Place-les comme une manette, confortable pour deux mains, avec l'écran en haut au centre :
-- **Écran OLED 0,96"** : fenêtre rectangulaire de **26 × 15 mm**, centrée horizontalement, à environ 55 mm du haut.
+- **Écran OLED 1,3"** (module d'environ 35 × 34 mm, zone d'affichage d'environ 29 × 15 mm) : fenêtre rectangulaire de **31 × 16,5 mm**, centrée horizontalement, à environ 55 mm du haut, avec **4 petits trous de vis de 2,5 mm** aux coins du module (écartement exact à confirmer : mets-les à titre provisoire, à 30 × 28 mm).
 - **Joystick** (à gauche) : trou rond de **28 mm** de diamètre, pour laisser bouger le manche.
 - **Bouton rotatif (encodeur)** (à droite) : trou rond de **7,5 mm** pour l'axe fileté.
 - **Gros bouton poussoir** (à droite, sous l'encodeur) : trou rond de **13 mm**.
@@ -51,6 +51,9 @@ Elle porte toutes les commandes. Place-les comme une manette, confortable pour d
 - **Buzzer** : une petite grille de 7 trous de 2 mm (en forme de fleur) pour laisser passer le son.
 - Grave autour de chaque commande un petit symbole manga clair : flèches autour du joystick, « tourner » autour de l'encodeur, une étoile sur le bouton, une bulle « !! » près de la LED.
 - Grave dans le bas un petit bandeau avec Mochi qui dit **« À toi de jouer ! »**.
+
+## Fixation des composants
+Tous les composants sont **simplement vissés** sur le bois, par l'arrière. Marque donc, sur les planches 2, 3 et 4, des **trous de vis provisoires de 3,2 mm** (M3) à chaque endroit où un composant doit être fixé, repérés par une **petite croix gravée de 3 mm** à côté du trou, pour que je puisse les déplacer facilement. Ne grave rien sur la face avant à moins de 4 mm de ces trous.
 
 ## L'univers à illustrer (style et personnages)
 
