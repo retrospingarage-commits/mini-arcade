@@ -236,7 +236,7 @@ const Scene SCENES[] = {
   {52, "Les tanukis rient : Pas mal ! Mais seule la 1re place gagne le Volant d'Or.",
    {{"Revanche !", 50, ALWAYS}, {"Retour à la route", 38, ALWAYS}},
    PIC_KART, FX_NONE, 0x0028FF, -1, J_TROMBONE, 0, 0, 0, GAME_NONE, 0, 0},
-  {53, "Un escalier humide descend sous le château. Mochi : Il fait tout noir, ~... Je te suis !",
+  {53, "Sous le château, un trésor dort derrière une porte fermée. Mochi : Trouvons la clé, ~ !",
    {{"Descendre", GAME, ALWAYS}, {"Remonter", 9, ALWAYS}},
    PIC_CHATEAU, FX_DARK, 0x000830, -1, J_MYSTERE, 0, 0, 0, GAME_MAZE, 54, 9},
   {54, "Le Pinceau Arc-en-ciel ! Mochi : Avec lui, le roi va voir de toutes les couleurs !",

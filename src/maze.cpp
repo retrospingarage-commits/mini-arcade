@@ -34,6 +34,7 @@ uint8_t  grid[N][16][16];
 uint16_t seen[N][16];                  // cases déjà éclairées (restent un peu visibles)
 bool     door[N][4];                   // portes de chaque salle
 int      roomDist[N];                  // distance (en salles) jusqu'à la salle du trésor
+int      keyDist[N];                   //   et jusqu'à celle de la clé (la LED guide d'abord vers la clé)
 int      treasureRoom, keyRoom, lockRoom, lockDir;
 int8_t   keyX, keyY, treasureX, treasureY;
 
@@ -41,10 +42,10 @@ struct Slime { int room; int8_t path[10][2]; int len; float pos; float dir; uint
 Slime    slimes[MENU_SLIMES];
 int      nSlimes;
 
-bool     story, hasKey, found, dirty;
+bool     story, hasKey, lockOpen, found, dirty;
 int      room, px, py, mx, my, entryX, entryY;  // joueuse, Mochi, point d'entrée de la salle
 uint16_t visited;
-uint32_t nextStep, startAt, endAt, hurtUntil, hintUntil, elapsed;
+uint32_t nextStep, startAt, endAt, hurtUntil, hintUntil, elapsed, keyFlashUntil;
 const char* hint;
 uint32_t rng;
 
@@ -160,13 +161,17 @@ void build(uint32_t seed) {
   // Clé : la salle la plus loin, à part celle du trésor
   keyRoom = 0;
   for (int i = 1; i < N; i++) if (i != treasureRoom && dist0[i] >= dist0[keyRoom]) keyRoom = i;
-  // Distance de chaque salle jusqu'au trésor (pour la LED qui chauffe)
-  for (int i = 0; i < N; i++) roomDist[i] = -1;
-  qh = qt = 0; roomDist[treasureRoom] = 0; queue[qt++] = treasureRoom;
-  while (qh < qt) {
-    int r = queue[qh++];
-    for (int d = 0; d < 4; d++)
-      if (door[r][d]) { int nb = neighbor(r, d); if (roomDist[nb] < 0) { roomDist[nb] = roomDist[r] + 1; queue[qt++] = nb; } }
+  // Distance de chaque salle jusqu'au trésor et jusqu'à la clé (pour la LED qui chauffe)
+  for (int pass = 0; pass < 2; pass++) {
+    int* dist = pass ? keyDist : roomDist;
+    int from = pass ? keyRoom : treasureRoom;
+    for (int i = 0; i < N; i++) dist[i] = -1;
+    qh = qt = 0; dist[from] = 0; queue[qt++] = from;
+    while (qh < qt) {
+      int r = queue[qh++];
+      for (int d = 0; d < 4; d++)
+        if (door[r][d]) { int nb = neighbor(r, d); if (dist[nb] < 0) { dist[nb] = dist[r] + 1; queue[qt++] = nb; } }
+    }
   }
   for (int r = 0; r < N; r++) carveRoom(r);
   // Porte fermée à clé (des deux côtés)
@@ -232,19 +237,26 @@ void tryMove(int d, uint32_t now) {
   uint8_t t = grid[room][ny][nx];
   if (t == WALL) return;
   if (t == LOCK) {
-    if (!hasKey) { say("Fermé à clé...", now); beep(150, 80); return; }
+    if (!hasKey) { say("Il faut la clé", now); beep(150, 80); return; }
     int x, y;  // la clé ouvre la porte des deux côtés
     doorEdge(lockDir, x, y);
     grid[lockRoom][y][x] = FLOOR;
     doorEdge((lockDir + 2) % 4, x, y);
     grid[treasureRoom][y][x] = FLOOR;
-    say("La porte s'ouvre !", now);
+    lockOpen = true;
+    say("Ça s'ouvre !", now);
     beep(880, 120);
   }
   mx = px; my = py;  // Mochi suit
   px = nx; py = ny;
   if (t == FAKE) say("Un faux mur !", now);
-  if (room == keyRoom && !hasKey && px == keyX && py == keyY) { hasKey = true; say("Une clé !", now); beep(1319, 150); }
+  if (room == keyRoom && !hasKey && px == keyX && py == keyY) {
+    hasKey = true;
+    keyFlashUntil = now + 600;
+    say("Une clé !", now);
+    static const Note KEY[] = {{1319, 80}, {1568, 80}, {2093, 200}, {0, 0}};
+    play(KEY, true);
+  }
   if (room == treasureRoom && px == treasureX && py == treasureY && !found) {
     found = true;
     elapsed = now - startAt;
@@ -255,8 +267,12 @@ void tryMove(int d, uint32_t now) {
   }
 }
 
-// Chaleur : 0 (loin, bleu) à 4 (tout près, orange)
+// Chaleur : 0 (loin, bleu) à 4 (tout près, orange). D'abord vers la clé, puis vers le trésor.
 int heat() {
+  if (!hasKey) {
+    if (room == keyRoom) return abs(px - keyX) + abs(py - keyY) < 5 ? 4 : 3;
+    return max(0, 3 - keyDist[room]);
+  }
   if (room == treasureRoom) return abs(px - treasureX) + abs(py - treasureY) < 5 ? 4 : 3;
   return max(0, 3 - roomDist[room]);
 }
@@ -273,18 +289,21 @@ void drawOled(uint32_t now) {
     else if (visited & (1 << r)) oled.drawFrame(x, y, 11, 11);
     else oled.drawPixel(x + 5, y + 5);
   }
-  oled.setCursor(0, 30);
-  oled.print(hasKey ? "Clé : oui" : "Clé : non");
+  // Objectif en cours, en 3 étapes
+  const char* goal1 = !hasKey ? "1. Trouve la" : !lockOpen ? "2. Ouvre la" : "3. Cherche un";
+  const char* goal2 = !hasKey ? "clé jaune" : !lockOpen ? "porte orange" : "faux mur";
+  oled.setCursor(0, 28); oled.print(goal1);
+  oled.setCursor(0, 39); oled.print(goal2);
   if (!story) {
     char buf[16];
     uint32_t t = (found ? elapsed : now - startAt) / 1000;
     snprintf(buf, sizeof(buf), "%lu:%02lu", (unsigned long)(t / 60), (unsigned long)(t % 60));
-    oled.setCursor(0, 42);
+    oled.setCursor(0, 52);
     oled.print(buf);
   }
   oled.setCursor(0, 63);  // sous le plan
   if (hint && now < hintUntil) { oled.print("Mochi : "); oled.print(hint); }
-  else if (heat() >= 4) oled.print("Mochi : ça sent bon !");
+  else if (heat() >= 4) oled.print(hasKey ? "Mochi : ça sent bon !" : "Mochi : la clé brille");
   else oled.print("Stick : avancer");
   oled.sendBuffer();
 }
@@ -304,6 +323,10 @@ void render(uint32_t now) {
         setPixel(x, y, t == LOCK ? CRGB(30, 15, 0) : CRGB(4, 6, 20));  // souvenir des murs déjà vus
       }
     }
+  // La porte fermée luit faiblement même dans le noir, pour qu'on la remarque
+  for (int y = 0; y < 16; y++)
+    for (int x = 0; x < 16; x++)
+      if (grid[room][y][x] == LOCK) setPixel(x, y, CRGB(120 + sin8(now / 4) / 4, 50, 0));
   // Clé, trésor (scintillent dans la lumière), mochis gluants
   auto lit = [&](int x, int y, float r) { return (x - px) * (x - px) + (y - py) * (y - py) <= r * r; };
   if (room == keyRoom && !hasKey && lit(keyX, keyY, LIGHT + 1)) setPixel(keyX, keyY, CHSV(40, 255, 150 + sin8(now / 3) / 3));
@@ -319,6 +342,7 @@ void render(uint32_t now) {
   if (mx != px || my != py) setPixel(mx, my, CRGB(90, 90, 90));
   if (now >= hurtUntil || (now / 100) % 2) setPixel(px, py, CRGB(255, 60, 140));
   if (found) for (int i = 0; i < 20; i++) leds[random16(NUM_LEDS)] = CHSV(random8(), 200, 255);
+  if (now < keyFlashUntil) for (int i = 0; i < 12; i++) leds[random16(NUM_LEDS)] = CRGB(255, 200, 0);  // clé trouvée
   FastLED.show();
   // LED : chaud-froid vers la planque
   int h = heat();
@@ -337,12 +361,13 @@ void mazeBegin(bool storyMode) {
   build(story ? STORY_SEED : (esp_random() | 1));
   memset(seen, 0, sizeof(seen));
   visited = 0;
-  hasKey = found = false;
+  hasKey = lockOpen = found = false;
+  keyFlashUntil = 0;
   hint = nullptr;
   enterRoom(0, MID, MID);
   uint32_t now = millis();
   startAt = now; nextStep = now; hurtUntil = 0; hintUntil = 0;
-  say("Il fait noir...", now);
+  say("Trouve la clé !", now);
 }
 
 GameResult mazeLoop(uint32_t now) {
