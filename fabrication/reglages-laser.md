@@ -38,6 +38,18 @@ Fais une petite grille de ces essais sur une chute, garde le meilleur. Évite le
 - Deux planches de 4 mm collées font 8 mm si tu veux de la rigidité.
 - Les trous de 5 mm pour les ficelles et les petits trous de vis se percent très bien à la perceuse.
 
+## Méthode conseillée pour le 10 mm : tracer au laser, finir à la scie
+Le laser ne coupe pas le bois, il **trace une rainure** le long des contours et des trous (le SVG), puis on découpe à la scie en suivant la rainure.
+- **Réglage du tracé** : vitesse 300 mm/min, puissance 100 %, **2 passes** (puis une 3e si la rainure est trop légère). Vise 1 à 2 mm de profondeur.
+- **Ne cherche pas à aller très profond** : après 3 à 4 mm, la mise au point se perd, le fond de la rainure noircit, il y a beaucoup de fumée et le risque de flammes augmente. Garde le souffleur d'air allumé, et arrête-toi si le bois s'enflamme ou noircit trop.
+- **Ordre** : d'abord la gravure de l'image, puis le tracé du SVG, sans bouger le bois entre les deux.
+- **À la scie** : scie sauteuse ou scie à chantourner avec une lame fine à bois (dents fines pour moins d'éclats), en sciant **un tout petit peu à l'extérieur** de la rainure (côté déchet). Ponce ensuite jusqu'à la ligne.
+- **Gros trou rond de 70 mm** : perce un trou de départ de 10 mm, passe la lame de la scie sauteuse, ou utilise une scie cloche de 70 mm.
+- **Fenêtres carrées** (matrice de 162 mm, OLED) : perce un trou à chaque coin, puis scie d'un coin à l'autre.
+- **Petits trous** (ficelles 5 mm, vis 3,2 mm) : à la perceuse, au centre du petit cercle tracé.
+- **Coins arrondis de 15 mm** : scie en suivant la courbe tracée, ou arrondis à la ponceuse.
+- Pense à **poser le bois sur une planche de sacrifice** pour que la scie et la perceuse ne déchirent pas le dessous.
+
 ## Après la coupe
 - Ponce légèrement les bords noircis, essuie avec un chiffon sec.
 - Un coup de vernis ou de cire d'abeille met la gravure en valeur.
