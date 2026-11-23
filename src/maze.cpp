@@ -239,7 +239,7 @@ void tryMove(int d, uint32_t now) {
   uint8_t t = grid[room][ny][nx];
   if (t == WALL) return;
   if (t == LOCK) {
-    if (!hasKey) { say("Il faut la clé", now); beep(150, 80); return; }
+    if (!hasKey) { say("Clé requise", now); beep(150, 80); return; }
     int x, y;  // la clé ouvre la porte des deux côtés
     doorEdge(lockDir, x, y);
     grid[lockRoom][y][x] = FLOOR;
@@ -370,7 +370,7 @@ void mazeBegin(bool storyMode) {
   enterRoom(0, MID, MID);
   uint32_t now = millis();
   startAt = now; nextStep = now; hurtUntil = 0; hintUntil = 0;
-  say("Trouve la clé !", now);
+  say("Cherche la clé", now);
 }
 
 GameResult mazeLoop(uint32_t now) {
@@ -414,7 +414,7 @@ GameResult mazeLoop(uint32_t now) {
       play(GLOOP, true);
       hurtUntil = now + 1000;
       px = mx = entryX; py = my = entryY;  // retour à l'entrée de la salle
-      say("Beurk, collée !", now);
+      say("Beurk, collé !", now);
     }
   }
   if (hint && now >= hintUntil) { hint = nullptr; dirty = true; }

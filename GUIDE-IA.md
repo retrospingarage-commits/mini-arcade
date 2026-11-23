@@ -176,7 +176,7 @@ Dans `include/scenes.h`, ajouter une ligne au tableau `SCENES`, dans cet ordre :
 8. mini-jeu (`GAME_NONE`, `GAME_REFLEX`, `GAME_BREAKOUT`, `GAME_FOOTBALL`, `GAME_PINBALL`, `GAME_BOSS`, `GAME_RACE`, `GAME_MAZE`, `GAME_RAMEN`) et scènes d'arrivée en cas de victoire et de défaite. Un choix dont la
    cible est `GAME` lance le mini-jeu.
 
-Quand une récompense débloque une activité, l'OLED l'annonce (« Nouveau dans le menu : … »).
+Quand une récompense débloque une activité, l'OLED l'annonce (« Nouveau au menu : … »).
 Un choix qui mène à une scène pas encore écrite affiche automatiquement « bientôt ». Après une modification,
 vérifier que chaque scène reste accessible et qu'on peut toujours revenir au village ou au lit.
 

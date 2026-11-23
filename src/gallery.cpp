@@ -45,7 +45,7 @@ void drawOled() {
     oled.setCursor(0, 28); oled.printf("Dessin %d / %d", current + 1, count);
     if (confirmDelete) {
       oled.setCursor(0, 44); oled.print("Effacer ce dessin ?");
-      oled.setCursor(0, 58); oled.print("Axe : oui  Bouton : non");
+      oled.setCursor(0, 58); oled.print("Axe:oui  Bouton:non");
     } else {
       oled.setCursor(0, 44); oled.printf("Change toutes les %d s", delaySec);
       oled.setCursor(0, 58); oled.print("Axe : effacer");

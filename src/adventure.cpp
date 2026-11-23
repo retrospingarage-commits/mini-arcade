@@ -131,7 +131,7 @@ void enterScene(uint8_t id) {
   bool reward = giveRewards(s);
   for (int i = 0; i < ACT_COUNT; i++)
     if (!before[i] && isUnlocked((Activity)i)) {  // on l'annonce : sinon on ne le saurait pas
-      showPopup("Nouveau dans le menu :", activityName((Activity)i));
+      showPopup("Nouveau au menu :", activityName((Activity)i));
     }
   if (s->id != SOON && (s->id < 47 || s->id > 49) && !resuming) {  // compteurs de la partie, pour le score (sauf l'introduction)
     progress.runSteps++;
@@ -148,7 +148,7 @@ void enterScene(uint8_t id) {
       scoreAdd(progress.player, finalScore, finalEnding);
       char buf[24];
       snprintf(buf, sizeof(buf), "%s : %u points", progress.player, finalScore);
-      showPopup(rank == 0 ? "Meilleur score !" : "Bienvenue au classement", buf);
+      showPopup(rank == 0 ? "Meilleur score !" : "Au classement !", buf);
     } else if (rank >= 0) {  // pas de prénom (partie commencée avec une ancienne version) : on le demande
       lastInitials(initials);
       letterPos = 0;
@@ -157,7 +157,7 @@ void enterScene(uint8_t id) {
     } else {
       char buf[24];
       snprintf(buf, sizeof(buf), "%u points", finalScore);
-      showPopup("Score de la partie :", buf);
+      showPopup("Ton score :", buf);
     }
   }
   if (s->id != SOON) progress.scene = s->id;
@@ -251,7 +251,7 @@ void drawOled() {
     if (askingName) snprintf(buf, sizeof(buf), "Ton prénom ?");
     else snprintf(buf, sizeof(buf), "Score : %u !", finalScore);
     drawCentered(buf, 11);  // bande jaune
-    drawCentered(askingName ? "3 lettres, bouton = OK" : "Tes initiales :", 29);
+    drawCentered(askingName ? "3 lettres, bouton OK" : "Tes initiales :", 29);
     oled.setFont(u8g2_font_10x20_tf);
     for (int i = 0; i < 3; i++) {
       char c[2] = {initials[i], 0};
@@ -491,7 +491,7 @@ bool adventureLoop(uint32_t now) {
       int rank = scoreAdd(initials, finalScore, finalEnding);
       char buf[24];
       snprintf(buf, sizeof(buf), "%s : %u points", initials, finalScore);
-      showPopup(rank == 0 ? "Meilleur score !" : "Bienvenue au classement", buf);
+      showPopup(rank == 0 ? "Meilleur score !" : "Au classement !", buf);
       phase = SCENE;
       play(J_FANFARE, true);
     }

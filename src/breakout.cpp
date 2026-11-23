@@ -344,8 +344,8 @@ void drawOled() {
     case SERVE:     oled.print("Bouton 1 : lancer"); break;
     case PAUSE:     oled.print("PAUSE - axe : menu"); break;
     case CLEAR:     oled.print("Niveau reussi !"); break;
-    case GAME_OVER: oled.print(story ? "Perdu ! Bouton : suite" : "Perdu ! Bouton : menu"); break;
-    case VICTORY:   oled.print(story ? "Gagné ! Bouton : suite" : "Bravo ! Bouton : menu"); break;
+    case GAME_OVER: oled.print(story ? "Perdu ! Bouton:suite" : "Perdu ! Bouton : menu"); break;
+    case VICTORY:   oled.print(story ? "Gagné ! Bouton:suite" : "Bravo ! Bouton : menu"); break;
     default: break;
   }
   oled.sendBuffer();
