@@ -35,7 +35,3 @@ constexpr uint8_t PIN_RGB_B = 33;
 // OLED 128x64 en I2C (connecteur T H AIR 2) : SDA = 21, SCL = 22, adresse 0x3C
 // Modèle de l'écran : 0 = SSD1306 (0,96"), 1 = SH1106 (1,3", souvent 4 broches aussi ; vérifier l'ordre VCC/GND !)
 #define OLED_SH1106 1  // cette borne a maintenant l'écran 1,3" (mettre 0 pour revenir au 0,96")
-
-// Page ouverte par le QR code de « À propos » : le guide pour reprogrammer la borne avec une IA, avec un bouton
-// « Copier » (docs/index.html, publiée par GitHub Pages ; elle affiche toujours le GUIDE-IA.md de main)
-#define ABOUT_URL "https://retrospingarage-commits.github.io/mini-arcade/"

@@ -49,7 +49,8 @@ void       atelierBegin();   // Atelier pixel art : dessiner depuis le télépho
 GameResult atelierLoop(uint32_t now);
 void       galleryBegin();   // Galerie : diaporama des dessins enregistrés
 GameResult galleryLoop(uint32_t now);
-void       aboutBegin();     // À propos : QR code vers le guide pour IA (GUIDE-IA.md)
+void       aboutBegin();     // À propos : le Wi-Fi de la borne ouvre une page avec le guide pour IA (GUIDE-IA.md) à copier
+void       atelierGuideBegin();  // (utilisé par aboutBegin) Wi-Fi allumé en mode « guide »
 GameResult aboutLoop(uint32_t now);
 void       scoresBegin();    // Meilleurs scores de l'Aventure
 GameResult scoresLoop(uint32_t now);

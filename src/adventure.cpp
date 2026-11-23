@@ -462,6 +462,9 @@ bool adventureLoop(uint32_t now) {
     if (r != GAME_RUNNING) {
       encBase = encoderCount();
       enterScene(r == GAME_WON ? scene->winTarget : r == GAME_QUIT ? scene->id : scene->loseTarget);  // abandon : on reste là
+      if (r != GAME_WON)  // après une défaite ou un abandon, le curseur ne retombe pas sur « rejouer » : il faut le choisir
+        for (uint8_t i = 0; i < nVisible; i++)
+          if (visible[i]->target != GAME) { selected = i; break; }
     }
     return true;
   }

@@ -11,6 +11,8 @@
 #include "hw.h"
 #include "gallery.h"
 #include "activities.h"
+#include "pictures.h"
+#include "guide_text.h"  // GUIDE_TEXT : le guide pour l'IA, rangé par tools/embed_guide.py
 #if __has_include("qrcode.h")
 #include "qrcode.h"  // générateur de QR code fourni avec l'ESP32
 #define HAS_QRCODE 1
@@ -49,6 +51,31 @@ function fill(c){px.fill(c);[...g.children].forEach(d=>d.style.background=pal[c]
 function save(){fetch('/save',{method:'POST'}).then(r=>r.text()).then(t=>m.textContent=t)}
 </script></body></html>)rawliteral";
 
+// Page « À propos » : le guide pour l'IA à copier d'un coup, servie par la borne elle-même (sans internet ni GitHub)
+const char GUIDE_PAGE[] PROGMEM = R"rawliteral(<!doctype html><html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>Guide pour ton IA</title>
+<style>body{margin:0;background:#fff8fb;color:#222;font-family:sans-serif}header{background:#ff3c8c;color:#fff;padding:18px 14px;text-align:center}
+header h2{margin:0 0 4px}main{max-width:760px;margin:auto;padding:14px}li{margin:4px 0}
+button{width:100%;font-size:1.15em;padding:15px;border:0;border-radius:12px;background:#ff3c8c;color:#fff;margin:14px 0}
+button:disabled{background:#bbb}#s{text-align:center;color:#555;min-height:1.4em}
+pre{white-space:pre-wrap;word-break:break-word;background:#fff;border-radius:10px;padding:10px;font-size:.82em}</style></head><body>
+<header><h2>Mini-arcade</h2><div>Le guide pour reprogrammer ta borne avec ton IA</div></header><main>
+<ol><li>Appuie sur le bouton rose : tout le guide est copié.</li>
+<li>Reconnecte ton téléphone à internet, ouvre ton assistant IA (Claude, ChatGPT, Gemini…) et colle le texte.</li>
+<li>Dis-lui ce que tu veux changer : une scène, un jeu, un dessin, des couleurs…</li></ol>
+<button id="c" disabled>Copier tout le guide pour mon IA</button><p id="s">Chargement du guide…</p><pre id="g"></pre></main>
+<script>
+var t="",s=document.getElementById("s"),b=document.getElementById("c");
+fetch("/guide.txt").then(function(r){return r.text()}).then(function(x){t=x;document.getElementById("g").textContent=x;b.disabled=false;s.textContent=""})
+.catch(function(){s.textContent="Impossible de charger le guide."});
+b.onclick=function(){
+  function ok(){s.textContent="Copié ! Colle-le maintenant dans ton IA."}
+  if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(t).then(ok)}
+  else{var a=document.createElement("textarea");a.value=t;document.body.appendChild(a);a.select();document.execCommand("copy");a.remove();ok()}
+};
+</script></body></html>)rawliteral";
+
+bool        guideMode = false;  // vrai quand le Wi-Fi sert à la page « À propos » (et pas à l'Atelier)
 WebServer   server(80);
 DNSServer   dns;
 Preferences prefs;
@@ -141,7 +168,9 @@ void drawOled(int stations) {
   esp_qrcode_generate(&cfg, wifi.c_str());
   textX = qrSize + 8;
 #endif
-  oled.setCursor(0, 11); oled.print("Wi-Fi : "); oled.print(SSID);  // bande jaune
+  oled.setCursor(0, 11);  // bande jaune
+  if (guideMode) oled.print("Guide pour ton IA");
+  else { oled.print("Wi-Fi : "); oled.print(SSID); }
   oled.setCursor(textX, 28); oled.print("Mot de passe");
   oled.setCursor(textX, 41); oled.print(password);
   oled.setCursor(textX, 60);
@@ -161,7 +190,8 @@ void startPortal() {
   static bool routesReady = false;  // les pages ne s'enregistrent qu'une fois, même si on rouvre l'Atelier
   if (!routesReady) {
     routesReady = true;
-    server.on("/", HTTP_GET, [] { server.send_P(200, "text/html; charset=utf-8", PAGE); });
+    server.on("/", HTTP_GET, [] { server.send_P(200, "text/html; charset=utf-8", guideMode ? GUIDE_PAGE : PAGE); });
+    server.on("/guide.txt", HTTP_GET, [] { server.send_P(200, "text/plain; charset=utf-8", GUIDE_TEXT); });
     server.on("/state", HTTP_GET, sendState);
     server.on("/px", HTTP_POST, handlePixels);
     server.on("/fill", HTTP_POST, handleFill);
@@ -198,6 +228,14 @@ void stopPortal() {
 }  // namespace
 
 void atelierBegin() {
+  guideMode = false;
+  if (!running) startPortal();
+  lastStations = -1;
+  dirty = true;
+}
+
+void atelierGuideBegin() {  // « À propos » : même Wi-Fi, mais la page ouverte sur le téléphone est le guide à copier
+  guideMode = true;
   if (!running) startPortal();
   lastStations = -1;
   dirty = true;
@@ -208,18 +246,25 @@ GameResult atelierLoop(uint32_t now) {
   dns.processNextRequest();
   server.handleClient();
   ArduinoOTA.handle();
-  if (btn2.pressed()) { stopPortal(); return GAME_QUIT; }
-  btn1.pressed();
-  btnEnc.pressed();
+  bool other = btn1.pressed();
+  other |= btnEnc.pressed();
+  if (btn2.pressed() || (guideMode && other)) { stopPortal(); return GAME_QUIT; }
 
   int stations = WiFi.softAPgetStationNum();
   if (stations != lastStations) { lastStations = stations; dirty = true; }
   if (now - lastFrame >= 40) {
     lastFrame = now;
     FastLED.clear();
-    drawDrawing(canvas, now);
-    FastLED.show();
-    setRgb(drawingColor(lastColor, 8, 8, now));
+    if (guideMode) {  // Mochi et des étincelles
+      drawPicture(PIC_CHAT);
+      for (int i = 0; i < 3; i++) leds[random16(NUM_LEDS)] = CHSV(random8(), 150, 255);
+      FastLED.show();
+      setRgb(CHSV(now / 20, 200, 120));
+    } else {
+      drawDrawing(canvas, now);
+      FastLED.show();
+      setRgb(drawingColor(lastColor, 8, 8, now));
+    }
   }
   if (dirty) { drawOled(stations); dirty = false; }
   return GAME_RUNNING;

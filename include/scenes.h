@@ -103,7 +103,7 @@ const Scene SCENES[] = {
    {{"Retour au village", 2, ALWAYS}},
    PIC_BOL, FX_NONE, 0xFF5A00, -1, J_FANFARE, CHARM_BOL, 0, 0, GAME_NONE, 0, 0},
   {5, "Un tanuki te défie : casse toutes ses briques-feuilles ! Si tu gagnes, cadeau !",
-   {{"Relever le défi", GAME, ALWAYS}, {"Refuser poliment", 33, ALWAYS}},
+   {{"Relever le défi", GAME, ALWAYS}, {"Retour au village", 2, ALWAYS}, {"Refuser poliment", 33, ALWAYS}},
    PIC_TANUKI, FX_NONE, 0x00C000, -1, J_TAMBOUR, 0, 0, 0, GAME_BREAKOUT, 6, 5},
   {6, "Bravo ! Le tanuki, beau joueur, t'offre la Feuille Magique. Charme obtenu !",
    {{"Retour au village", 2, ALWAYS}},

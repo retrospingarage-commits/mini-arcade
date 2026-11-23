@@ -338,11 +338,12 @@ void drawOled() {
   oled.print(score);
   for (int i = 0; i < lives; i++) oled.drawDisc(123 - i * 9, 30, 3);  // vies restantes
   oled.setFont(u8g2_font_6x10_tf);
+  if (state == PAUSE) { oled.setCursor(0, 51); oled.print("Bouton : reprendre"); }
   oled.setCursor(0, 62);
   switch (state) {
     case TITLE:     oled.print("Pret ?"); break;
     case SERVE:     oled.print("Bouton 1 : lancer"); break;
-    case PAUSE:     oled.print("PAUSE - axe : menu"); break;
+    case PAUSE:     oled.print("Encodeur : sortir"); break;
     case CLEAR:     oled.print("Niveau reussi !"); break;
     case GAME_OVER: oled.print(story ? "Perdu ! Bouton:suite" : "Perdu ! Bouton : menu"); break;
     case VICTORY:   oled.print(story ? "Gagné ! Bouton:suite" : "Bravo ! Bouton : menu"); break;

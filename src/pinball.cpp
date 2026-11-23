@@ -206,8 +206,9 @@ void drawOled() {
   oled.print(score);
   oled.setFont(u8g2_font_6x10_tf);
   for (int i = 0; i < balls; i++) oled.drawDisc(122 - i * 9, 30, 3);
+  if (paused) { oled.setCursor(0, 51); oled.print("Bouton : reprendre"); }
   oled.setCursor(0, 62);
-  if (paused) oled.print("PAUSE - axe : menu");
+  if (paused) oled.print("Encodeur : sortir");
   else if (message) oled.print(message);
   else if (story) oled.printf("Record : %d", storyRecord());
   else oled.printf("Meilleur : %d", best);
