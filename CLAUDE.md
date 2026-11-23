@@ -2,7 +2,7 @@
 
 Projet d'apprentissage de Claude Code. Matériel : carte « Shield capteurs v2.1 » (Les Jardins du Treille)
 + ESP32 DevKit 30 broches (WROOM-32D), matrice WS2812B 16x16, encodeur KY-040 (HW-040), bouton HW-483, joystick 2 axes,
-buzzer passif HW-508, LED RVB HW-478, OLED SSD1306 0,96" (128x64).
+buzzer passif HW-508, LED RVB HW-478, OLED SH1106 1,3" (128x64, monochrome ; l'ancien SSD1306 0,96" bicolore marche avec OLED_SH1106 0).
 
 ## Commandes
 - `pio run` : compiler
