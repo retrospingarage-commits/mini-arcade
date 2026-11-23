@@ -88,7 +88,7 @@ Commandes utiles dans le moniteur série : `u` débloque tout (pour tester), `r`
 | `src/maze.cpp` | le labyrinthe des sous-sols (9 salles générées : celles de l'histoire viennent toujours de `STORY_SEED`, celles du menu sont tirées au hasard) ; réglages en haut du fichier |
 | `src/race.cpp` | la course manga (aussi en version courte dans l'histoire, scène 50) ; vitesses des rivales et réglages du turbo en haut du fichier |
 | `src/mood.cpp` | la Mood light (7 ambiances, luminosité, veille) |
-| `src/jukebox.cpp` | le Jukebox des jingles, avec égaliseur |
+| `src/circle.cpp`, `include/songs.h` | le Cercle de rythme et ses 6 morceaux. Les morceaux s'écrivent en texte (notation expliquée en tête de `songs.h`) ; le tracé du jeu (quelle note, quelle direction) en est déduit tout seul. `python tools/check_songs.py` vérifie que chaque mesure est juste |
 | `src/atelier.cpp` | l'Atelier pixel art : Wi-Fi de la borne, page de dessin pour téléphone, QR code, mise à jour sans câble |
 | `src/gallery.cpp`, `include/gallery.h` | la palette des dessins, leur enregistrement (20 maximum, rangés du plus ancien au plus récent ; un dessin tout noir n'est pas enregistré), l'effacement et la Galerie |
 | `include/font.h` | la petite police 3×5 pour écrire sur la matrice |
@@ -127,7 +127,7 @@ Outils disponibles dans `hw.h` :
 | Concert de la grenouille (Aventure) | la grenouille joue une suite de notes : rouge = le bouton, bleu = un cran d'encodeur, vert = pousser le joystick. Rejouer la même suite ; 3 manches de plus en plus longues, quelques erreurs permises ; bouton du joystick : abandonner |
 | Labyrinthe | joystick : se déplacer (le garder poussé pour avancer) ; passer une porte au bord = salle voisine. Noir : seule une petite lumière éclaire autour de soi, Mochi suit ; la LED RVB chauffe près de la planque. L'OLED donne l'étape en cours : 1. trouver la clé jaune (la LED guide d'abord vers elle), 2. ouvrir la porte orange (elle luit même dans le noir), 3. chercher le faux mur un peu plus clair qui cache le trésor. Toucher un mochi gluant renvoie à l'entrée de la salle (il fond en flaque de temps en temps : on peut alors passer). Bouton du joystick : menu |
 | Mood light | encodeur : ambiance ; bouton de l'encodeur : réglage de la luminosité ; bouton : veille ; bouton du joystick : menu |
-| Jukebox | encodeur : choisir ; bouton : jouer ; bouton du joystick : menu |
+| Cercle de rythme | encodeur ou joystick haut/bas : choisir le morceau ; bouton : jouer. Pendant le morceau, la mélodie joue toute seule : une **lumière colorée** qui part du centre vers l'anneau de 8 cibles = pousser le joystick dans cette direction (8 directions) quand elle arrive ; un **cercle doré** qui grandit = appuyer sur le bouton quand il touche l'anneau ; une **toupie bleue** au centre = tourner l'encodeur tant qu'elle tourne. Marges de temps, vitesse et nombre de notes selon la difficulté ; rang S / A / B / C / D et record par morceau et par difficulté ; bouton du joystick : quitter |
 | Atelier | on dessine sur le téléphone ; bouton du joystick : fermer (le Wi-Fi s'éteint) |
 | Galerie | encodeur : durée de chaque dessin ; bouton : suivant ; bouton de l'encodeur : effacer le dessin affiché (un 2e appui confirme, tourner ou le bouton annule) ; bouton du joystick : menu |
 
@@ -144,6 +144,7 @@ Outils disponibles dans `hw.h` :
 | Flipper | flippers longs, bille sauvée 6 s | flippers plus courts, gravité plus forte, bille sauvée 3 s, record plus haut | flippers courts, forte gravité, pas de bille sauvée, record encore plus haut |
 | Casse-briques | balle normale, raquette entière, 3 vies | balle 1,57 fois plus rapide, raquette réduite, 2 vies | balle 1,68 fois plus rapide, raquette réduite, 2 vies |
 | Étoiles du Mochi-Mage | 0,9 / 0,7 / 0,55 s pour appuyer | 0,36 / 0,32 / 0,29 s | 0,315 / 0,29 / 0,27 s |
+| Cercle de rythme | marge de 0,19 s, lumières lentes (1,7 s), une note sur deux environ | marge de 0,115 s, lumières plus rapides, toutes les croches | marge de 0,08 s, lumières très rapides (0,9 s), toutes les notes, toupie plus exigeante |
 | Labyrinthe (histoire) | sans limite de temps | 4 min 30, moins de lumière, plus de mochis gluants | 2 min 50, très peu de lumière, beaucoup de mochis gluants |
 
 **Score de l'Aventure** (calculé à chaque fin, dans `src/adventure.cpp`) : fin heureuse 300 (légendaire 1 000), +100 par

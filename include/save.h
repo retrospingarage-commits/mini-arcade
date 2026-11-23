@@ -24,7 +24,8 @@ struct Progress {
   uint16_t raceBestTime;     //   et son temps, en dixièmes de seconde
   uint8_t  difficulty;       // 0 facile, 1 moyen, 2 difficile (pour tous les jeux)
   uint16_t mazeBest;         // meilleur temps au Labyrinthe, en dixièmes de seconde (0 = jamais fini)
-  char     player[4];        // prénom en 3 lettres, demandé au début de l'Aventure ("" = pas encore demandé)
+  char     player[4];
+  uint8_t  circleBest[6][3];  // meilleur score (en %) à chaque morceau du Cercle de rythme, pour chaque difficulté        // prénom en 3 lettres, demandé au début de l'Aventure ("" = pas encore demandé)
 };
 extern Progress progress;
 
@@ -35,7 +36,7 @@ void progressUnlockAll();  // pour tester : tous les charmes, trophées et fins
 
 // Activités du menu, dans l'ordre d'affichage
 enum Activity : uint8_t {
-  ACT_ADVENTURE, ACT_MOOD, ACT_BREAKOUT, ACT_JUKEBOX, ACT_FOOTBALL, ACT_PINBALL, ACT_RACE, ACT_MAZE, ACT_ATELIER, ACT_GALLERY,
+  ACT_ADVENTURE, ACT_MOOD, ACT_BREAKOUT, ACT_CIRCLE, ACT_FOOTBALL, ACT_PINBALL, ACT_RACE, ACT_MAZE, ACT_ATELIER, ACT_GALLERY,
   ACT_SCORES,    // meilleurs scores de l'Aventure
   ACT_ABOUT,     // À propos : QR code vers le guide pour reprogrammer la borne avec une IA
   ACT_SETTINGS,  // Réglages : géré par le menu lui-même (luminosité, veille, recommencer, tout effacer)

@@ -43,8 +43,10 @@ GameResult sunLoop(uint32_t now);
 
 void       moodBegin();      // Mood light : ambiances lumineuses
 GameResult moodLoop(uint32_t now);
-void       jukeboxBegin();   // Jukebox : réécouter les jingles de l'histoire
-GameResult jukeboxLoop(uint32_t now);
+// Cercle de rythme : des lumières partent du centre vers un anneau de 8 cibles ; joystick (8 directions), bouton
+// (cercle doré) et encodeur (toupie) au bon moment, en rythme avec 6 morceaux (voir include/songs.h).
+void       circleBegin();
+GameResult circleLoop(uint32_t now);
 void       atelierBegin();   // Atelier pixel art : dessiner depuis le téléphone par le Wi-Fi de la borne
 GameResult atelierLoop(uint32_t now);
 void       galleryBegin();   // Galerie : diaporama des dessins enregistrés

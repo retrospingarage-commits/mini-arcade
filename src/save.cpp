@@ -23,6 +23,8 @@ void progressLoad() {
   progress.raceBestPlace = prefs.getUChar("rplace", 0);
   progress.raceBestTime  = prefs.getUShort("rtime", 0);
   progress.mazeBest      = prefs.getUShort("mbest", 0);
+  if (prefs.getBytes("cbest", progress.circleBest, sizeof(progress.circleBest)) != sizeof(progress.circleBest))
+    memset(progress.circleBest, 0, sizeof(progress.circleBest));
   progress.difficulty    = min((int)prefs.getUChar("diff", 0), 2);
   String name = prefs.getString("player", "");
   strncpy(progress.player, name.c_str(), 3);
@@ -47,6 +49,7 @@ void progressSave() {
   prefs.putUChar("rplace", progress.raceBestPlace);
   prefs.putUShort("rtime", progress.raceBestTime);
   prefs.putUShort("mbest", progress.mazeBest);
+  prefs.putBytes("cbest", progress.circleBest, sizeof(progress.circleBest));
   prefs.putUChar("diff", progress.difficulty);
   prefs.putString("player", progress.player);
   prefs.end();
@@ -75,7 +78,7 @@ bool isUnlocked(Activity a) {
     case ACT_SETTINGS:  return true;
     case ACT_MOOD:      return progress.charms & CHARM_BOL;
     case ACT_BREAKOUT:  return progress.charms & CHARM_FEUILLE;
-    case ACT_JUKEBOX:   return progress.charms & CHARM_NOTE;
+    case ACT_CIRCLE:    return progress.charms & CHARM_NOTE;
     case ACT_FOOTBALL:  return progress.trophies & TROPHY_BALLON;
     case ACT_PINBALL:   return progress.trophies & TROPHY_BILLE;
     case ACT_RACE:      return progress.trophies & TROPHY_VOLANT;
@@ -88,7 +91,7 @@ bool isUnlocked(Activity a) {
 
 const char* activityName(Activity a) {
   static const char* const NAMES[ACT_COUNT] = {
-    "Aventure", "Mood light", "Casse-briques", "Jukebox", "Football", "Flipper", "Course", "Labyrinthe", "Atelier", "Galerie", "Scores", "À propos", "Réglages"};
+    "Aventure", "Mood light", "Casse-briques", "Cercle rythme", "Football", "Flipper", "Course", "Labyrinthe", "Atelier", "Galerie", "Scores", "À propos", "Réglages"};
   return a < ACT_COUNT ? NAMES[a] : "";
 }
 

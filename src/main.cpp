@@ -29,7 +29,7 @@ static void start(int a) {
     case ACT_ADVENTURE: adventureBegin(); break;
     case ACT_MOOD:      moodBegin(); break;
     case ACT_BREAKOUT:  breakoutBegin(); break;
-    case ACT_JUKEBOX:   jukeboxBegin(); break;
+    case ACT_CIRCLE:    circleBegin(); break;
     case ACT_FOOTBALL:  footballBegin(false); break;
     case ACT_PINBALL:   pinballBegin(false); break;
     case ACT_RACE:      raceBegin(false); break;
@@ -48,7 +48,7 @@ static bool runCurrent(uint32_t now) {
     case ACT_ADVENTURE: return adventureLoop(now);
     case ACT_BREAKOUT:  return breakoutLoop(now);
     case ACT_MOOD:      return moodLoop(now) == GAME_RUNNING;
-    case ACT_JUKEBOX:   return jukeboxLoop(now) == GAME_RUNNING;
+    case ACT_CIRCLE:    return circleLoop(now) == GAME_RUNNING;
     case ACT_FOOTBALL:  return footballLoop(now) == GAME_RUNNING;
     case ACT_PINBALL:   return pinballLoop(now) == GAME_RUNNING;
     case ACT_RACE:      return raceLoop(now) == GAME_RUNNING;

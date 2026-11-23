@@ -26,7 +26,7 @@ fin : « La Fête des Couleurs », « La Cheffe pâtissière », « La Pluie arc
 |---|---|
 | Mood light (7 ambiances) | le Bol Magique |
 | Casse-briques (6 niveaux) | la Feuille Magique (défi du tanuki, un mini casse-briques) |
-| Jukebox des jingles | la Note Magique (concert de la grenouille DJ, un jeu de rythme) |
+| Cercle de rythme (jeu de rythme à 6 morceaux : joystick, bouton et encodeur) | la Note Magique (concert de la grenouille DJ) |
 | Football manga | le Ballon d'Or (finale au stade) |
 | Flipper manga | la Bille Étoile (record du vieux flipper) |
 | Course manga (doubler 8 karts, turbo) | le Volant d'Or (course des tanukis, sur la route du château) |

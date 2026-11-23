@@ -28,6 +28,9 @@ jobs:
           path: ~/.platformio
           key: platformio-${{ hashFiles('platformio.ini') }}
 
+      - name: Vérifier les morceaux du Cercle de rythme
+        run: python tools/check_songs.py
+
       - name: Installer PlatformIO et esptool
         run: pip install "platformio==6.2.0" "esptool==4.8.1"
 
