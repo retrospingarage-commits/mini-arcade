@@ -1,2 +1,6 @@
 .pio/
 .vscode/
+
+# banc d'essai sur PC : programmes compilés
+tools/sim/simD
+tools/sim/sim8

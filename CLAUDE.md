@@ -44,3 +44,13 @@ Le fichier KiCad de la carte nomme mal 4 pastilles de l'empreinte ESP32, mais le
 - Le cahier des charges (scénario, déblocages, commandes des jeux) est le document Claude Docs
   « Mini-arcade – Cahier des charges + Aventure manga ».
 - Code en français pour les commentaires, noms de variables en anglais.
+
+## État du projet (23 novembre 2026) : à lire en reprenant le travail
+- **Branche de travail** `ccr-118c22dc-37f6y7`, **PR n° 2 ouverte vers `main`, pas encore fusionnée** (c'est à sa propriétaire de la fusionner). Dernier .bin testé par CI : compilation n° 57 (artifact `mini-arcade-firmware`, fichier `mini-arcade-complet.bin` à flasher en 0x0).
+- Matériel : OLED **SH1106 1,3"** (`OLED_SH1106 1` dans `include/config.h`).
+- Le jeu : histoire « Les Couleurs du Roi Gluant » (55 scènes, `include/scenes.h`) et mini-jeux : casse-briques, football, flipper, course (virages, taches d'huile), labyrinthe (noir, clé, mochis gluants), ramen, rythme (grenouille), « 1, 2, 3, soleil » (garde), combat du roi, étoiles. Prénom demandé à la 1re partie, avancement en %, scores gardés pour toujours.
+- **Difficulté** (Réglages) : facile = exploration (presque tout le monde réussit), moyen = on échoue parfois, difficile = environ 1 réussite sur 6. Réglée avec des robots : `tools/sim/build.sh simD && tools/sim/simD`. Les temps limites du labyrinthe (4 min 30 / 2 min 50) sont **estimés, à vérifier avec de vraies parties** ; les réglages sont à ajuster d'après les retours.
+- « À propos » : le Wi-Fi de la borne sert une page avec le guide à copier (`tools/embed_guide.py` range `GUIDE-IA.md` dans `include/guide_text.h`). Après toute modification de `GUIDE-IA.md`, lancer `python tools/embed_guide.py` et commiter le fichier. Page web facultative : `docs/index.html` (GitHub Pages, à activer sur `main` / `docs` après la fusion).
+- Les textes de l'OLED tiennent sur **21 caractères** (6 px chacun) ; `tools/sim/sim8` vérifie les scènes.
+- `fabrication/` : réglages du laser (diode 10 W, LaserGRBL, bois de 10 mm : tracer puis scier) et prompts pour faire dessiner 4 planches de 24 × 24 cm. **Ce projet de décor a été mis de côté** (les images générées par ChatGPT et Gemini étaient trop chargées pour la gravure : il faut un style d'estampe, contours épais, grandes zones blanches).
+- Le cahier des charges (Claude Docs) et `GUIDE-IA.md` sont à jour avec tout ce qui précède.
