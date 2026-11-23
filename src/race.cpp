@@ -3,6 +3,9 @@
 // Chaque voiture doublée remplit la jauge de turbo, rouler juste derrière une voiture aussi (aspiration).
 // Les premières voitures sont lentes, les dernières plus rapides que nous : il faut garder du turbo pour elles.
 // Un choc ralentit beaucoup et vide un peu la jauge. Après quelques tours : classement.
+// La route a des virages : elle ondule, et la voiture est poussée vers l'extérieur (il faut tourner l'encodeur
+// pour rester dessus ; sur l'herbe on ralentit). Des taches d'huile font déraper (on perd la direction un instant).
+// La difficulté règle l'amplitude des virages et le nombre de taches.
 // Bouton du joystick : quitter.
 #include "hw.h"
 #include "save.h"
@@ -16,19 +19,30 @@ constexpr int      LAPS           = 3;       // tours (2 dans l'histoire)
 constexpr int      STORY_LAPS     = 2;
 constexpr float    LAP_LENGTH     = 300.0f;  // longueur d'un tour (cases)
 constexpr float    BASE_SPEED     = 12.0f;   // cases/s sans turbo
-constexpr float    TURBO_SPEED    = 22.0f;   // cases/s avec turbo
+constexpr float    TURBO_SPEED    = 18.0f;   // cases/s avec turbo
 constexpr float    ACCEL          = 6.0f;    // reprise après un choc (cases/s²)
 constexpr float    STEER_STEP     = 0.5f;    // cases par impulsion de l'encodeur
-constexpr float    TURBO_PER_PASS = 50.0f;   // jauge gagnée par voiture doublée (sur 100)
+constexpr float    TURBO_PER_PASS = 40.0f;   // jauge gagnée par voiture doublée (sur 100)
 constexpr float    TURBO_DRAFT    = 15.0f;   // jauge gagnée par seconde dans l'aspiration d'une voiture
-constexpr float    TURBO_BURN     = 25.0f;   // jauge consommée par seconde de turbo
-constexpr float    TURBO_TRICKLE  = 3.0f;    // jauge gagnée par seconde en roulant (sans turbo)
+constexpr float    TURBO_BURN     = 35.0f;   // jauge consommée par seconde de turbo
+constexpr float    TURBO_TRICKLE  = 1.5f;    // jauge gagnée par seconde en roulant (sans turbo)
 constexpr float    CRASH_SPEED    = 4.0f;    // vitesse juste après un choc
 constexpr float    CRASH_TURBO    = 25.0f;   // jauge perdue à chaque choc
 // Vitesse (cases/s) et avance au départ (cases) de chaque rivale, de la plus facile à la plus dure
-const float RIVAL_SPEED[RIVALS] = {6.0f, 7.0f, 8.0f, 9.0f, 10.0f, 11.0f, 12.0f, 13.0f};
+const float RIVAL_SPEED[RIVALS] = {6.0f, 7.0f, 8.0f, 9.0f, 10.0f, 11.5f, 12.8f, 13.8f};
 const float RIVAL_START[RIVALS] = {6, 14, 22, 30, 38, 46, 54, 62};
 constexpr float    STORY_SLOWER   = 1.0f;    // l'histoire : rivales un peu moins rapides (cases/s en moins)
+// Virages : décalage maximal de la route (cases) et longueur d'onde (cases), selon la difficulté
+inline float curveAmp()   { return byLevel(2.0f, 3.2f, 4.4f); }
+inline float curveLen()   { return byLevel(80.0f, 60.0f, 46.0f); }
+constexpr float    CURVE_GRIP     = 0.8f;    // part de la dérive due au virage que la voiture subit
+constexpr float    GRASS_SPEED    = 0.55f;   // vitesse sur l'herbe (part de la vitesse normale)
+// Taches d'huile : nombre pour une course de 3 tours, selon la difficulté
+inline int   oilCount()   { return (int)byLevel(5, 9, 13); }
+constexpr int      OIL_MAX        = 16;
+constexpr uint32_t SKID_MS        = 1100;    // temps sans direction après une tache d'huile
+constexpr float    SKID_SIDE      = 3.5f;    // dérive sur le côté pendant le dérapage (cases/s)
+constexpr float    SKID_SPEED     = 0.45f;   // vitesse après une tache (part de la vitesse normale)
 // ---------------------------------------------------------------------------
 constexpr int ROAD_L = 2, ROAD_R = 13;  // bords de la route (colonnes)
 constexpr int CAR_Y  = 12;              // ligne du haut de notre voiture (elle fait 3 lignes)
@@ -43,6 +57,12 @@ const Note SND_END[]   = {{523, 150}, {440, 150}, {392, 400}, {0, 0}};
 
 struct Rival { float dist, x, targetX, speed; uint8_t hue; bool ahead; };
 Rival rivals[RIVALS];
+struct Oil { float dist, x; bool hit; };  // x en cases de route
+Oil  oils[OIL_MAX];
+int  nOils;
+float skidDir;
+uint32_t skidUntil, msgUntil;
+const char* msg;
 
 enum State : uint8_t { COUNTDOWN, RACE, FINISH };
 State    state;
@@ -53,6 +73,14 @@ bool     turboOn, dirty;
 uint32_t startAt, finishAt, raceStart, raceTime, hurtUntil, nextLaneChange;
 int      lastLap, shownPlace, shownTurbo;
 int32_t  encBase;
+
+// Décalage de la route (cases) à la distance d : plusieurs ondulations, tout droit au départ
+float curve(float d) {
+  float ramp = constrain(d / 40.0f, 0.0f, 1.0f), k = 6.2832f / curveLen();
+  return ramp * curveAmp() * (sinf(d * k) + 0.5f * sinf(d * k * 2.3f + 1.0f)) / 1.5f;
+}
+float curveSlope(float d) { return curve(d + 0.5f) - curve(d - 0.5f); }  // cases de décalage par case parcourue
+int roadShift(int row) { return (int)roundf(curve(dist + (CAR_Y - row)) - curve(dist)); }  // décalage de la route sur cette ligne
 
 int rivalsAhead() { int n = 0; for (Rival& r : rivals) n += r.dist > dist; return n; }
 
@@ -78,6 +106,12 @@ void drawOled() {
   if (state == FINISH) {
     snprintf(buf, sizeof(buf), "Arrivée : %lu,%lu s", (unsigned long)(raceTime / 1000), (unsigned long)(raceTime / 100 % 10));
     oled.print(buf);
+  } else if (msg && millis() < msgUntil) {
+    oled.print(msg);
+  } else if (curveSlope(dist + 6) > 0.06f) {
+    oled.print("Virage à droite >>");
+  } else if (curveSlope(dist + 6) < -0.06f) {
+    oled.print("<< Virage à gauche");
   } else if (crashes) {
     snprintf(buf, sizeof(buf), "Chocs : %d", crashes);
     oled.print(buf);
@@ -92,28 +126,41 @@ void drawCar(int x, int y, CRGB body, CRGB top) {
 
 void render(uint32_t now) {
   int scroll = (int)dist;
-  // Herbe, bordures rouge et blanc, route et pointillés qui défilent
+  // Herbe, bordures rouge et blanc, route et pointillés qui défilent (la route ondule : décalage par ligne)
   for (int y = 0; y < 16; y++) {
     int w = y - scroll;  // position « dans le monde » de cette ligne
+    int sh = roadShift(y);
     bool stripe = ((w % 4) + 4) % 4 < 2;
     for (int x = 0; x < 16; x++) {
+      int rx = x - sh;  // colonne dans le repère de la route
       CRGB c;
-      if (x < ROAD_L - 1 || x > ROAD_R + 1) c = stripe ? CRGB(0, 40, 0) : CRGB(0, 28, 0);
-      else if (x == ROAD_L - 1 || x == ROAD_R + 1) c = stripe ? CRGB(120, 0, 0) : CRGB(110, 110, 110);
+      if (rx < ROAD_L - 1 || rx > ROAD_R + 1) c = stripe ? CRGB(0, 40, 0) : CRGB(0, 28, 0);
+      else if (rx == ROAD_L - 1 || rx == ROAD_R + 1) c = stripe ? CRGB(120, 0, 0) : CRGB(110, 110, 110);
       else c = CRGB(12, 12, 14);
       setPixel(x, y, c);
     }
-    if ((((w % 6) + 6) % 6) < 3) setPixel(7, y, CRGB(70, 70, 70)), setPixel(8, y, CRGB(70, 70, 70));
+    if ((((w % 6) + 6) % 6) < 3) setPixel(7 + sh, y, CRGB(70, 70, 70)), setPixel(8 + sh, y, CRGB(70, 70, 70));
     // Ligne d'arrivée en damier à chaque tour
     float worldY = dist + (CAR_Y - y);
     int lapLine = (int)((worldY + 0.5f) / LAP_LENGTH);
     if (lapLine >= 1 && lapLine <= laps && fabsf(worldY - lapLine * LAP_LENGTH) < 0.5f)
-      for (int x = ROAD_L; x <= ROAD_R; x++) setPixel(x, y, (x + y) % 2 ? CRGB::White : CRGB::Black);
+      for (int x = ROAD_L; x <= ROAD_R; x++) setPixel(x + sh, y, (x + y) % 2 ? CRGB::White : CRGB::Black);
+  }
+  // Taches d'huile (violet sombre avec un reflet qui brille)
+  for (int i = 0; i < nOils; i++) {
+    Oil& o = oils[i];
+    int y = CAR_Y - (int)roundf(o.dist - dist);
+    if (y < -1 || y > 15) continue;
+    int x = (int)roundf(o.x) + roadShift(y);
+    bool shine = !o.hit && (now / 180 + i) % 3 == 0;
+    CRGB base = o.hit ? CRGB(14, 4, 20) : CRGB(40, 0, 70);
+    for (int dy = 0; dy < 2; dy++) for (int dx = 0; dx < 2; dx++) setPixel(x + dx, y + dy, base);
+    setPixel(x, y, shine ? CRGB(160, 90, 255) : base);
   }
   // Rivales
   for (Rival& r : rivals) {
     int y = CAR_Y - (int)roundf(r.dist - dist);
-    if (y > -3 && y < 16) drawCar((int)roundf(r.x), y, CHSV(r.hue, 230, 200), CHSV(r.hue, 120, 255));
+    if (y > -3 && y < 16) drawCar((int)roundf(r.x) + roadShift(y), y, CHSV(r.hue, 230, 200), CHSV(r.hue, 120, 255));
   }
   // Notre voiture (clignote après un choc), flammes du turbo
   if (now >= hurtUntil || (now / 90) % 2) drawCar((int)roundf(carX), CAR_Y, CRGB(255, 40, 140), CRGB(255, 200, 220));
@@ -138,6 +185,7 @@ void render(uint32_t now) {
   FastLED.show();
   // LED : rouge après un choc, arc-en-ciel au turbo, sinon la jauge (bleu → cyan quand elle est pleine)
   if (now < hurtUntil) setRgb(CRGB(255, 0, 0));
+  else if (now < skidUntil) setRgb(CRGB(160, 0, 255));  // violet : dérapage
   else if (turboOn) setRgb(CHSV(now / 2, 255, 255));
   else setRgb(blend(CRGB(0, 0, 60), CRGB(0, 255, 255), (uint8_t)(turbo * 2.55f)));
 }
@@ -152,8 +200,15 @@ void raceBegin(bool storyMode) {
   dist = 0; speed = 0; carX = 7; turbo = 0; turboOn = false; crashes = 0;
   for (int i = 0; i < RIVALS; i++) {
     float x = ROAD_L + (i * 5 % 11);
-    rivals[i] = {RIVAL_START[i], x, x, RIVAL_SPEED[i] - (story ? STORY_SLOWER : 0) + byLevel(0, 0.7f, 1.4f), (uint8_t)(i * 32 + 60), true};
+    rivals[i] = {RIVAL_START[i], x, x, RIVAL_SPEED[i] - (story ? STORY_SLOWER : 0) + byLevel(0.5f, 1.3f, 2.1f), (uint8_t)(i * 32 + 60), true};
   }
+  // Taches d'huile réparties sur la course (pas dans les 60 premières cases)
+  nOils = min(oilCount() * laps / LAPS, OIL_MAX);
+  for (int i = 0; i < nOils; i++) {
+    float span = laps * LAP_LENGTH - 90 - 60;
+    oils[i] = {60 + span * (i + 0.5f) / nOils + random(-10, 11), (float)random(ROAD_L, ROAD_R - 1), false};
+  }
+  skidUntil = 0; msg = nullptr; msgUntil = 0; skidDir = 1;
   place = RIVALS + 1; shownPlace = -1; shownTurbo = -1;
   state = COUNTDOWN;
   startAt = millis(); hurtUntil = 0; nextLaneChange = startAt + 3000;
@@ -199,17 +254,37 @@ GameResult raceLoop(uint32_t now) {
     return GAME_QUIT;
   }
 
-  // Notre voiture : direction à l'encodeur, turbo au bouton
-  carX = constrain(carX + pulses * STEER_STEP * ENC_X_SIGN, (float)ROAD_L, ROAD_R - 1.0f);
+  // Notre voiture : direction à l'encodeur (perdue pendant un dérapage), turbo au bouton
+  bool skidding = now < skidUntil;
+  if (skidding) carX += skidDir * SKID_SIDE * dt;                      // la tache d'huile nous envoie sur le côté
+  else carX += pulses * STEER_STEP * ENC_X_SIGN;
+  carX -= curveSlope(dist) * speed * CURVE_GRIP * dt;                  // le virage nous pousse vers l'extérieur
+  carX = constrain(carX, 0.0f, 14.0f);
+  bool onGrass = carX < ROAD_L - 0.5f || carX > ROAD_R - 1.0f + 0.5f;
   bool wasTurbo = turboOn;
-  turboOn = turboHeld && turbo > 0 && now >= hurtUntil;
+  turboOn = turboHeld && turbo > 0 && now >= hurtUntil && !skidding;
   if (turboOn && !wasTurbo) play(SND_TURBO);
   if (turboOn) turbo = max(0.0f, turbo - TURBO_BURN * dt);
   else turbo = min(100.0f, turbo + TURBO_TRICKLE * byLevel(1.0f, 0.6f, 0.3f) * dt);
-  float target = turboOn ? TURBO_SPEED : BASE_SPEED;
+  float target = (turboOn ? TURBO_SPEED : BASE_SPEED) * (onGrass ? GRASS_SPEED : 1.0f) * (skidding ? SKID_SPEED : 1.0f);
   speed = speed < target ? min(target, speed + ACCEL * (turboOn ? 3 : 1) * dt) : max(target, speed - ACCEL * dt);
   dist += speed * dt;
 
+  // Taches d'huile : si on passe dessus, on dérape
+  for (int i = 0; i < nOils; i++) {
+    Oil& o = oils[i];
+    float rel = o.dist - dist;
+    if (!o.hit && rel < 1.0f && rel > -2.0f && fabsf(o.x - carX) < 2.0f) {
+      o.hit = true;
+      skidUntil = now + SKID_MS;
+      skidDir = o.x + 1 > carX + 1 ? -1.0f : 1.0f;  // on part du côté opposé au centre de la tache
+      turbo = max(0.0f, turbo - 20.0f);
+      static const Note SND_SKID[] = {{500, 40}, {350, 60}, {250, 80}, {180, 120}, {0, 0}};
+      play(SND_SKID, true);
+      msg = "Dérapage !"; msgUntil = now + 1200;
+      dirty = true;
+    }
+  }
   // Rivales : elles avancent et changent de file de temps en temps
   if (now >= nextLaneChange) {
     Rival& r = rivals[random(RIVALS)];
@@ -235,10 +310,14 @@ GameResult raceLoop(uint32_t now) {
     if (sideBySide && rel >= 3.0f && rel < 7.0f) turbo = min(100.0f, turbo + TURBO_DRAFT * dt);
     // Dépassement
     bool ahead = rel > 0;
-    if (r.ahead && !ahead) { turbo = min(100.0f, turbo + TURBO_PER_PASS); play(SND_PASS); }
+    if (r.ahead && !ahead) { turbo = min(100.0f, turbo + TURBO_PER_PASS * byLevel(1.0f, 0.8f, 0.6f)); play(SND_PASS); }
     r.ahead = ahead;
   }
   place = rivalsAhead() + 1;
+  static int lastCurve = 0;
+  int curveNow = curveSlope(dist + 6) > 0.06f ? 1 : curveSlope(dist + 6) < -0.06f ? -1 : 0;
+  if (curveNow != lastCurve) { lastCurve = curveNow; dirty = true; }
+  if (msg && now >= msgUntil) { msg = nullptr; dirty = true; }
   if (place != shownPlace || (int)turbo / 5 != shownTurbo) { shownPlace = place; shownTurbo = (int)turbo / 5; dirty = true; }
   int lap = (int)(dist / LAP_LENGTH);
   if (lap != lastLap) { lastLap = lap; dirty = true; if (lap < laps) play(SND_BEEP); }

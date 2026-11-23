@@ -79,6 +79,7 @@ Commandes utiles dans le moniteur série : `u` débloque tout (pour tester), `r`
 | `src/football.cpp` | le football manga (aussi en version courte dans l'histoire, scène 26) |
 | `src/about.cpp` | la page « À propos » et son QR code |
 | `docs/index.html` | la page web ouverte par le QR code (GitHub Pages) : elle affiche ce guide et un bouton « Copier » |
+| `src/rhythm.cpp` | le concert de la grenouille DJ (scène 7) : jeu de rythme où il faut rejouer une suite de commandes |
 | `src/ramen.cpp` | le ramen du fantôme (scène 3) : attraper les ingrédients de la recette dans un bol, éviter le piment |
 | `src/boss.cpp` | le combat final contre le Roi Gluant (scène 11) ; ses réglages (vie du roi, vitesse des bulles…) sont en haut du fichier |
 | `src/pinball.cpp` | le flipper manga (aussi en version courte dans l'histoire, scène 28) |
@@ -120,7 +121,8 @@ Outils disponibles dans `hw.h` :
 | Casse-briques | encodeur ou joystick : raquette ; bouton ou joystick vers le haut : lancer ; bouton du joystick : pause |
 | Football | encodeur ou joystick : se déplacer ; maintenir le bouton : charger le tir, et pendant la charge tourner l'encodeur ou pousser le joystick : viser en biais (ligne de points) ; relâcher : tirer ; tourner pendant le tir : le courber. Le gardien « lit » une partie des tirs (de plus en plus avec les niveaux) : réglages en haut de `src/football.cpp` |
 | Flipper | bouton : flipper gauche ; joystick (toute action) : flipper droit ; tourner l'encodeur : secouer (vite = fort, trop = TILT) ; bouton de l'encodeur : pause, deux fois : menu. Rampe à gauche (entrée violette) : y lancer la bille fort fait le tour de la table (500 points, 1000 en combo si l'entrée clignote en jaune). Les 6 premières secondes d'une bille, elle est rendue si on la perd (2 pixels verts en bas) |
-| Course | encodeur : aller à gauche ou à droite pour doubler ; bouton (ou bouton de l'encodeur) maintenu : turbo. La jauge se remplit en doublant, en roulant juste derrière une voiture (aspiration) et un peu toute seule ; un choc ralentit et vide un peu la jauge. 3 tours, puis la place et le temps (record gardé) ; bouton du joystick : menu |
+| Course | encodeur : aller à gauche ou à droite pour doubler ; bouton (ou bouton de l'encodeur) maintenu : turbo. La jauge se remplit en doublant, en roulant juste derrière une voiture (aspiration) et un peu toute seule ; un choc ralentit et vide un peu la jauge. La route a des virages (elle ondule et pousse la voiture vers l'extérieur : tourner l'encodeur pour rester dessus, l'herbe ralentit) et des taches d'huile violettes qui font déraper (la direction est perdue un instant) ; la difficulté règle leur nombre et la force des virages. 3 tours, puis la place et le temps (record gardé) ; bouton du joystick : menu |
+| Concert de la grenouille (Aventure) | la grenouille joue une suite de notes : rouge = le bouton, bleu = un cran d'encodeur, vert = pousser le joystick. Rejouer la même suite ; 3 manches de plus en plus longues, quelques erreurs permises ; bouton du joystick : abandonner |
 | Labyrinthe | joystick : se déplacer (le garder poussé pour avancer) ; passer une porte au bord = salle voisine. Noir : seule une petite lumière éclaire autour de soi, Mochi suit ; la LED RVB chauffe près de la planque. L'OLED donne l'étape en cours : 1. trouver la clé jaune (la LED guide d'abord vers elle), 2. ouvrir la porte orange (elle luit même dans le noir), 3. chercher le faux mur un peu plus clair qui cache le trésor. Toucher un mochi gluant renvoie à l'entrée de la salle (il fond en flaque de temps en temps : on peut alors passer). Bouton du joystick : menu |
 | Mood light | encodeur : ambiance ; bouton de l'encodeur : réglage de la luminosité ; bouton : veille ; bouton du joystick : menu |
 | Jukebox | encodeur : choisir ; bouton : jouer ; bouton du joystick : menu |
@@ -144,11 +146,12 @@ qui expliquent la quête (scènes 47 à 49, prénom demandé la première fois),
 |---|---|---|
 | Ramen du fantôme (mini-jeu, scène 3) | rue des étals | Bol Magique (charme) |
 | Défi du tanuki (mini casse-briques, scène 5) | forêt | Feuille Magique (charme) |
-| Concert de la grenouille DJ (scène 7) | lac | Note Magique (charme) |
+| Concert de la grenouille DJ (jeu de rythme, scène 7) | lac | Note Magique (charme) |
 | Finale de football (scène 26) | route du château | Ballon d'Or (trophée) |
 | Record du vieux flipper (scène 28) | rue des étals | Bille Étoile (trophée) |
 | Course des tanukis (scène 50) | route du château | Volant d'Or (trophée) |
 | Labyrinthe des sous-sols (scène 53) | château | Pinceau Arc-en-ciel (bonus du combat) |
+| Garde du château (blagues, scènes 10 et 55 à 58) | château | il adore ce qui est mou et plein de trous : une seule blague le fait rire (l'éponge), la porte du roi s'ouvre |
 | Sceaux du château (scène 9) | château | il faut les 3 charmes (`SEAL_CHARMS` dans `include/scenes.h`) |
 | Combat contre le roi (scène 11) | salle du trône | puis le choix de la fin (scène 46) |
 | Fins (scènes 18, 19, 20) | après le combat | La Fête des Couleurs, La Cheffe pâtissière, La Pluie arc-en-ciel |
@@ -173,7 +176,7 @@ Dans `include/scenes.h`, ajouter une ligne au tableau `SCENES`, dans cet ordre :
    4 = tout près (LED orange qui bat vite) ; -1 = utiliser la couleur ;
 6. jingle (`J_…`) ;
 7. récompense donnée en arrivant : charme, trophée, fin (0 si aucune) ;
-8. mini-jeu (`GAME_NONE`, `GAME_REFLEX`, `GAME_BREAKOUT`, `GAME_FOOTBALL`, `GAME_PINBALL`, `GAME_BOSS`, `GAME_RACE`, `GAME_MAZE`, `GAME_RAMEN`) et scènes d'arrivée en cas de victoire et de défaite. Un choix dont la
+8. mini-jeu (`GAME_NONE`, `GAME_REFLEX`, `GAME_BREAKOUT`, `GAME_FOOTBALL`, `GAME_PINBALL`, `GAME_BOSS`, `GAME_RACE`, `GAME_MAZE`, `GAME_RAMEN`, `GAME_RHYTHM`) et scènes d'arrivée en cas de victoire et de défaite. Un choix dont la
    cible est `GAME` lance le mini-jeu.
 
 Quand une récompense débloque une activité, l'OLED l'annonce (« Nouveau au menu : … »).

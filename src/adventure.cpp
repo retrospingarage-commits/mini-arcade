@@ -190,7 +190,7 @@ void enterScene(uint8_t id) {
 }
 
 void startGame(uint32_t now) {
-  if (scene->game == GAME_FOOTBALL || scene->game == GAME_PINBALL || scene->game == GAME_BREAKOUT || scene->game == GAME_BOSS || scene->game == GAME_RACE || scene->game == GAME_MAZE || scene->game == GAME_RAMEN) {
+  if (scene->game == GAME_FOOTBALL || scene->game == GAME_PINBALL || scene->game == GAME_BREAKOUT || scene->game == GAME_BOSS || scene->game == GAME_RACE || scene->game == GAME_MAZE || scene->game == GAME_RAMEN || scene->game == GAME_RHYTHM) {
     phase = EXTERNAL_GAME;  // version courte du jeu complet, qui se débloque ensuite dans le menu
     if (scene->game == GAME_FOOTBALL) footballBegin(true);
     else if (scene->game == GAME_PINBALL) pinballBegin(true);
@@ -198,6 +198,7 @@ void startGame(uint32_t now) {
     else if (scene->game == GAME_RACE) raceBegin(true);
     else if (scene->game == GAME_MAZE) mazeBegin(true);
     else if (scene->game == GAME_RAMEN) ramenBegin();
+    else if (scene->game == GAME_RHYTHM) rhythmBegin();
     else breakoutBeginStory();
     return;
   }
@@ -453,6 +454,7 @@ bool adventureLoop(uint32_t now) {
     else if (scene->game == GAME_RACE)    { r = raceLoop(now); if (r == GAME_QUIT) r = GAME_LOST; }
     else if (scene->game == GAME_MAZE)    r = mazeLoop(now);
     else if (scene->game == GAME_RAMEN)   r = ramenLoop(now);
+    else if (scene->game == GAME_RHYTHM)  r = rhythmLoop(now);
     else r = breakoutLoop(now) ? GAME_RUNNING : breakoutWon() ? GAME_WON : GAME_LOST;
     if (r != GAME_RUNNING) {
       encBase = encoderCount();

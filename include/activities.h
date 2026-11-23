@@ -33,6 +33,10 @@ GameResult mazeLoop(uint32_t now);
 void       ramenBegin();
 GameResult ramenLoop(uint32_t now);
 
+// Concert de la grenouille DJ (Aventure) : jeu de rythme, rejouer la suite de commandes (bouton, encodeur, joystick).
+void       rhythmBegin();
+GameResult rhythmLoop(uint32_t now);
+
 void       moodBegin();      // Mood light : ambiances lumineuses
 GameResult moodLoop(uint32_t now);
 void       jukeboxBegin();   // Jukebox : réécouter les jingles de l'histoire
