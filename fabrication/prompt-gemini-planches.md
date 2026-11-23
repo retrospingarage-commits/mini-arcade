@@ -12,6 +12,8 @@ Je vais te demander 4 illustrations carrées (format 1:1) qui forment une seule 
 
 **Technique** : encrage noir et blanc uniquement. Traits nets, hachures, trames de points (screentones) pour les ombres et les textures. Pas de gris, pas de dégradés, pas de couleur : du noir pur et du blanc pur. Traits assez épais, pas de détails microscopiques, pas de grandes surfaces entièrement noires (préfère les hachures ou les trames). C'est destiné à la gravure laser sur bois.
 
+**Texte** : n'écris **aucun texte** dans les images : aucune lettre de notre alphabet, aucun chiffre, aucune légende, aucun titre, aucun logo. Seule exception : de la **calligraphie japonaise au pinceau**, purement décorative, avec uniquement les caractères que je t'indiquerai (un seul grand caractère par image, jamais de phrase).
+
 **Cadre commun** : chaque image est entourée du même cadre, un double filet fin avec de petits ornements dans les coins, à 4 % du bord. Ne dessine **aucun trou** ni aucun repère de perçage.
 
 **Histoire** : le Roi Gluant, un roi en mochi pâle et collant, élégant, avec une couronne, a volé toutes les couleurs de Pixelville, devenue toute grise. Il les garde dans des bocaux de verre dans son château. Une jeune femme de 19 ans et son chat Mochi partent les rendre. À la fin, le roi pleure : il voulait juste des couleurs à lui. Le ton reste tendre, jamais effrayant.
@@ -30,9 +32,9 @@ Commence par me proposer une **planche de personnages** (l'héroïne, Mochi et l
 
 ## Message 2 : planche 1 (tout en haut, le titre)
 
-Planche 1, la première en haut. Même style, même cadre, noir et blanc pur.
+Planche 1, la première en haut. Même style, même cadre, noir et blanc pur. Aucun autre texte que le caractère indiqué.
 
-Le titre **« Les Couleurs du Roi Gluant »** en grandes lettres calligraphiques de style manga, en haut. En dessous, le château de mochi blanc et gluant au sommet d'une falaise, sous une immense lune. Le Roi Gluant sur un balcon, vu de loin, entouré de bocaux d'où s'échappent des rubans de couleurs. Le ruban sort par le bas de l'image, au centre.
+En haut, un seul grand caractère japonais en calligraphie au pinceau, large et expressif : **色** (« couleur »), accompagné d'un petit tampon carré (un carré noir avec un caractère blanc, façon sceau japonais). En dessous, le château de mochi blanc et gluant au sommet d'une falaise, sous une immense lune. Le Roi Gluant sur un balcon, vu de loin, entouré de bocaux d'où s'échappent des rubans de couleurs. Le ruban sort par le bas de l'image, au centre.
 
 Garde le haut de l'image calme (ciel, nuages en trame) : pas de détail important dans les 15 % du bord.
 
@@ -52,7 +54,7 @@ Important : on posera un écran par-dessus le centre. Le **centre de l'image (un
 
 Planche 3. Même style, même cadre, même personnages.
 
-Au **centre exact** de l'image, un **disque blanc uni, parfaitement rond, vide**, dont le diamètre est **29 % de la largeur de l'image**. On y verra un logo : il ne doit contenir aucun trait.
+Au **centre exact** de l'image, un **disque blanc uni, parfaitement rond, vide**, dont le diamètre est **29 % de la largeur de l'image**. On y verra un logo : il ne doit contenir aucun trait ni aucun texte. Dans le halo, tu peux placer un seul grand caractère calligraphié **月** (« lune »), petit, au-dessus du disque.
 
 Fais de ce disque le cœur du dessin : c'est la pleine lune de Pixelville. Autour, un grand halo en anneaux concentriques de trames, des étoiles et de petites runes gravées, et des rubans de couleurs qui tourbillonnent autour de la lune comme un cyclone qui s'échappe des bocaux. En bas de l'image, l'héroïne et Mochi, vus de dos, regardent la lune. Le ruban entre par le haut, au centre, et ressort par le bas, au centre.
 
@@ -62,7 +64,7 @@ Fais de ce disque le cœur du dessin : c'est la pleine lune de Pixelville. Autou
 
 Planche 4, la dernière. Même style, même cadre, même personnages.
 
-Le ruban de couleurs entre par le haut, au centre, et se déploie en arc-en-ciel au-dessus de Pixelville, le village gris la nuit aux fenêtres éclairées : les couleurs reviennent, représentées par des trames différentes. Sur les bords : le lapin capitaine avec son ballon, un vieux flipper, des karts de tanukis en pleine course, le fantôme et son bol de ramen, le Mochi-Mage étoilé. En bas, un petit bandeau avec Mochi qui dit « À toi de jouer ! ».
+Le ruban de couleurs entre par le haut, au centre, et se déploie en arc-en-ciel au-dessus de Pixelville, le village gris la nuit aux fenêtres éclairées : les couleurs reviennent, représentées par des trames différentes. Sur les bords : le lapin capitaine avec son ballon, un vieux flipper, des karts de tanukis en pleine course, le fantôme et son bol de ramen, le Mochi-Mage étoilé. En bas, Mochi assis qui regarde la lune, et à côté de lui un seul caractère japonais calligraphié au pinceau : **遊** (« jouer »). Aucun autre texte.
 
 Important : on fixera des commandes par-dessus le centre. Garde le **centre léger** (motifs simples, ciel étoilé en trame) et les détails dans la bordure.
 
@@ -71,5 +73,6 @@ Important : on fixera des commandes par-dessus le centre. Garde le **centre lég
 ## Conseils
 
 - Si une image n'est pas bonne, demande-lui de **la refaire en gardant le même style**, ou de corriger un seul point (« le disque n'est pas centré », « il y a du gris »).
-- Gemini écrit parfois mal les lettres : si le titre ou « À toi de jouer ! » est faux, on le remplacera ensuite par un vrai texte au moment de graver.
+- Si Gemini ajoute quand même du texte en lettres latines, ou invente de faux caractères, demande-lui de **refaire l'image sans aucun texte** : on peut très bien se passer du caractère japonais.
+- Les caractères proposés : 色 (couleur), 月 (lune), 遊 (jouer). Je peux en proposer d'autres : 王 (roi), 猫 (chat), 虹 (arc-en-ciel).
 - Envoie-moi les 4 images quand elles te plaisent : je vérifie le cercle de la planche 3, je les convertis en **noir et blanc pur** à la bonne taille (2835 × 2835 pixels) et je te prépare les fichiers pour la gravure.
