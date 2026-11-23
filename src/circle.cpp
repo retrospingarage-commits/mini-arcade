@@ -342,18 +342,14 @@ void drawOled(uint32_t now) {
   oled.sendBuffer();
 }
 
-}  // namespace circle
-
-using namespace circle;
-
-void circleBegin() {
+void begin() {
   mode = SELECT; sel = constrain(sel, 0, NUM_SONGS - 1);
   encBase = encoderCount();
   lastSector = -1;
   dirty = true;
 }
 
-GameResult circleLoop(uint32_t now) {
+GameResult loop(uint32_t now) {
   static uint32_t lastFrame = 0;
   static int8_t jyWas = 0;
   bool fire = btn1.pressed();
@@ -417,3 +413,9 @@ GameResult circleLoop(uint32_t now) {
   if (dirty && canDraw) { drawOled(now); dirty = false; lastOled = now; }
   return GAME_RUNNING;
 }
+
+}  // namespace circle
+
+// Les noms de ce jeu (PENDING, PLAY…) existent aussi dans les bibliothèques de la carte : tout reste dans l'espace de noms
+void circleBegin() { circle::begin(); }
+GameResult circleLoop(uint32_t now) { return circle::loop(now); }
