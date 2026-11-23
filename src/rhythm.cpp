@@ -13,7 +13,7 @@ namespace rhythm {
 constexpr int      ROUNDS        = 3;
 constexpr int      MAX_LEN       = 12;
 inline int      baseLen()  { return (int)byLevel(3, 4, 5); }        // longueur de la 1re manche (+1 par manche)
-inline int      lives()    { return (int)byLevel(3, 2, 2); }        // erreurs permises avant de perdre
+inline int      lives()    { return (int)byLevel(4, 3, 2); }        // erreurs permises avant de perdre
 inline uint32_t noteMs()   { return (uint32_t)byLevel(480, 380, 300); }  // durée d'une note jouée par la grenouille
 inline uint32_t gapMs()    { return (uint32_t)byLevel(180, 130, 100); }  // silence entre deux notes
 constexpr uint32_t ANSWER_MS  = 4500;   // temps pour répondre à chaque note

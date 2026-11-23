@@ -9,7 +9,7 @@
 namespace ramen {
 
 // --- Réglages ---------------------------------------------------------------
-constexpr int      BOWL_W       = 4;       // largeur du bol (pixels)
+inline int BOWL_W() { return (int)byLevel(4, 4, 3); }  // largeur du bol (pixels)
 constexpr float    BOWL_STEP    = 0.5f;    // pixels par impulsion de l'encodeur
 constexpr float    JOY_SPEED    = 12.0f;   // pixels/s au joystick
 constexpr float    FALL_SPEED   = 4.0f;    // vitesse de chute au début (pixels/s)
@@ -21,7 +21,7 @@ constexpr int      CHANCE_CHILI = 15;      // % de piments
 
 enum Kind : uint8_t { NOODLES, EGG, SEAWEED, SOCK, BONE, ROCK, CHILI, KINDS };
 constexpr int RECIPE_ITEMS = 3;
-const int     NEEDED[RECIPE_ITEMS] = {3, 2, 2};  // nouilles, oeufs, algues
+inline int NEEDED(int i) { static const int EASY[3] = {3, 2, 2}, HARD[3] = {4, 3, 3}; return progress.difficulty == 2 ? HARD[i] : EASY[i]; }  // nouilles, oeufs, algues
 const char* const NAMES[RECIPE_ITEMS] = {"Nouilles jaunes", "Oeufs blancs", "Algues vertes"};
 const char* const YUCK[] = {"Beurk, chaussette !", "Beurk, une arête !", "Aïe, un caillou !"};
 
@@ -34,8 +34,9 @@ struct Item { float x, y; Kind kind; bool on; };
 Item     items[6];
 int      have[RECIPE_ITEMS];
 float    bowlX, ghostX, ghostDir, fallSpeed;
-uint32_t nextSpawn, endAt, msgUntil;
-enum State : uint8_t { PLAY, WIN, BURNT };
+uint32_t nextSpawn, endAt, msgUntil, startAt;
+enum State : uint8_t { PLAY, WIN, BURNT, COLD };
+inline uint32_t timeLimit() { return (uint32_t)byLevel(0, 50, 24) * 1000UL; }  // le ramen refroidit (0 = sans limite)
 State    state;
 const char* message;
 int32_t  encBase;
@@ -54,7 +55,7 @@ void itemColors(Kind k, CRGB c[4]) {
   }
 }
 
-bool recipeDone() { for (int i = 0; i < RECIPE_ITEMS; i++) if (have[i] < NEEDED[i]) return false; return true; }
+bool recipeDone() { for (int i = 0; i < RECIPE_ITEMS; i++) if (have[i] < NEEDED(i)) return false; return true; }
 
 void say(const char* m, uint32_t now) { message = m; msgUntil = now + 1500; dirty = true; }
 
@@ -63,11 +64,11 @@ void spawn() {
     if (!it.on) {
       int r = random(100);
       Kind k;
-      if (r < CHANCE_GOOD) {  // de préférence un ingrédient qui manque encore
+      if (r < (int)byLevel(CHANCE_GOOD, CHANCE_GOOD, CHANCE_GOOD - 8)) {  // de préférence un ingrédient qui manque encore
         int missing[RECIPE_ITEMS], n = 0;
-        for (int i = 0; i < RECIPE_ITEMS; i++) if (have[i] < NEEDED[i]) missing[n++] = i;
+        for (int i = 0; i < RECIPE_ITEMS; i++) if (have[i] < NEEDED(i)) missing[n++] = i;
         k = (Kind)(n ? missing[random(n)] : random(RECIPE_ITEMS));
-      } else if (r < CHANCE_GOOD + CHANCE_CHILI * byLevel(1.0f, 1.4f, 2.0f)) k = CHILI;
+      } else if (r < CHANCE_GOOD + CHANCE_CHILI * byLevel(0.3f, 1.2f, 2.8f)) k = CHILI;
       else k = (Kind)(SOCK + random(3));
       it = {constrain(ghostX, 0.0f, 14.0f), 2, k, true};
       return;
@@ -77,7 +78,7 @@ void spawn() {
 void catchItem(Item& it, uint32_t now) {
   it.on = false;
   if (it.kind < RECIPE_ITEMS) {
-    if (have[it.kind] < NEEDED[it.kind]) { have[it.kind]++; fallSpeed += FALL_GAIN; }
+    if (have[it.kind] < NEEDED(it.kind)) { have[it.kind]++; fallSpeed += FALL_GAIN; }
     play(SND_CATCH);
     dirty = true;
     if (recipeDone()) { state = WIN; endAt = now + 2500; play(SND_SLURP, true); say("Slurp ! Délicieux !", now); }
@@ -100,12 +101,14 @@ void drawOled(uint32_t now) {
   oled.print(title);
   for (int i = 0; i < RECIPE_ITEMS; i++) {
     char buf[28];
-    snprintf(buf, sizeof(buf), "%-15s %d/%d", NAMES[i], have[i], NEEDED[i]);
+    snprintf(buf, sizeof(buf), "%-15s %d/%d", NAMES[i], have[i], NEEDED(i));
     oled.setCursor(0, 25 + i * 11);
     oled.print(buf);
   }
   oled.setCursor(0, 62);
-  oled.print(message && now < msgUntil ? message : "Piment rouge : NON !");
+  if (message && now < msgUntil) oled.print(message);
+  else if (timeLimit()) { char t[24]; snprintf(t, sizeof(t), "Pas de piment ! %lu s", (unsigned long)(max(0L, (long)(timeLimit() - (now - startAt)) / 1000))); oled.print(t); }
+  else oled.print("Piment rouge : NON !");
   oled.sendBuffer();
 }
 
@@ -128,11 +131,11 @@ void render(uint32_t now) {
   // Le bol (bouillon qui monte avec la recette)
   int b = (int)roundf(bowlX);
   CRGB bowl(230, 230, 230);
-  setPixel(b - 1, 14, bowl); setPixel(b + BOWL_W, 14, bowl);
-  for (int dx = -1; dx <= BOWL_W; dx++) setPixel(b + dx, 15, bowl);
+  setPixel(b - 1, 14, bowl); setPixel(b + BOWL_W(), 14, bowl);
+  for (int dx = -1; dx <= BOWL_W(); dx++) setPixel(b + dx, 15, bowl);
   int total = 0, need = 0;
-  for (int i = 0; i < RECIPE_ITEMS; i++) { total += have[i]; need += NEEDED[i]; }
-  for (int dx = 0; dx < BOWL_W * total / need; dx++) setPixel(b + dx, 14, CRGB(200, 120, 20));
+  for (int i = 0; i < RECIPE_ITEMS; i++) { total += have[i]; need += NEEDED(i); }
+  for (int dx = 0; dx < BOWL_W() * total / need; dx++) setPixel(b + dx, 14, CRGB(200, 120, 20));
   // Flammes ou étincelles de victoire
   if (state == BURNT)
     for (int y = 2; y < 16; y++)
@@ -152,8 +155,8 @@ using namespace ramen;
 void ramenBegin() {
   for (Item& it : items) it.on = false;
   for (int& h : have) h = 0;
-  bowlX = 6; ghostX = 8; ghostDir = 1; fallSpeed = FALL_SPEED * byLevel(1.0f, 1.25f, 1.6f);
-  state = PLAY; message = nullptr;
+  bowlX = 6; ghostX = 8; ghostDir = 1; fallSpeed = FALL_SPEED * byLevel(1.0f, 1.4f, 2.4f);
+  state = PLAY; message = nullptr; startAt = millis();
   nextSpawn = millis() + 1200;
   encBase = encoderCount();
   dirty = true;
@@ -171,7 +174,7 @@ GameResult ramenLoop(uint32_t now) {
   encBase += pulses;
 
   if (state == PLAY) {
-    bowlX = constrain(bowlX + pulses * BOWL_STEP * ENC_X_SIGN + joyX() * JOY_SPEED * dt, 1.0f, 15.0f - BOWL_W);
+    bowlX = constrain(bowlX + pulses * BOWL_STEP * ENC_X_SIGN + joyX() * JOY_SPEED * dt, 1.0f, 15.0f - BOWL_W());
     ghostX += ghostDir * 3.0f * dt;
     if (ghostX < 1) { ghostX = 1; ghostDir = 1; }
     if (ghostX > 14) { ghostX = 14; ghostDir = -1; }
@@ -180,18 +183,23 @@ GameResult ramenLoop(uint32_t now) {
       spawn();
       int done = 0;
       for (int h : have) done += h;
-      nextSpawn = now + SPAWN_MS - done * 40 + random(0, 300);
+      nextSpawn = now + (uint32_t)((SPAWN_MS - done * 40 + random(0, 300)) * byLevel(1.0f, 0.8f, 0.62f));
     }
     for (Item& it : items) {
       if (!it.on) continue;
       it.y += fallSpeed * dt;
       int b = (int)roundf(bowlX);
-      if (it.y >= 12.5f && it.y < 14.0f && it.x + 1 >= b && it.x <= b + BOWL_W - 1) { catchItem(it, now); if (state != PLAY) break; }
+      if (it.y >= 12.5f && it.y < 14.0f && it.x + 1 >= b && it.x <= b + BOWL_W() - 1) { catchItem(it, now); if (state != PLAY) break; }
       else if (it.y >= 16) it.on = false;
     }
   } else if (now >= endAt) {
     return state == WIN ? GAME_WON : GAME_LOST;
   }
+  if (state == PLAY && timeLimit() && now - startAt > timeLimit()) {  // le temps est écoulé
+    state = COLD; endAt = now + 2000; play(SND_FIRE, true); say("Le ramen a refroidi !", now);
+  }
+  static uint32_t lastSecond = 0;
+  if (timeLimit() && now / 1000 != lastSecond) { lastSecond = now / 1000; dirty = true; }
   if (message && now >= msgUntil) { message = nullptr; dirty = true; }
   render(now);
   if (dirty) { drawOled(now); dirty = false; }

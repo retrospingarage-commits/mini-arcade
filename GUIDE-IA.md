@@ -79,6 +79,7 @@ Commandes utiles dans le moniteur série : `u` débloque tout (pour tester), `r`
 | `src/football.cpp` | le football manga (aussi en version courte dans l'histoire, scène 26) |
 | `src/about.cpp` | la page « À propos » et son QR code |
 | `docs/index.html` | la page web ouverte par le QR code (GitHub Pages) : elle affiche ce guide et un bouton « Copier » |
+| `src/sun.cpp` | le jeu « 1, 2, 3, soleil ! » contre le garde du château (scène 10) : avancer au joystick, se figer quand il regarde |
 | `src/rhythm.cpp` | le concert de la grenouille DJ (scène 7) : jeu de rythme où il faut rejouer une suite de commandes |
 | `src/ramen.cpp` | le ramen du fantôme (scène 3) : attraper les ingrédients de la recette dans un bol, éviter le piment |
 | `src/boss.cpp` | le combat final contre le Roi Gluant (scène 11) ; ses réglages (vie du roi, vitesse des bulles…) sont en haut du fichier |
@@ -114,7 +115,7 @@ Outils disponibles dans `hw.h` :
 | Menu | encodeur ou joystick haut/bas : choisir ; bouton ou bouton de l'encodeur : valider ; bouton du joystick puis encodeur : luminosité de la matrice (gardée en mémoire). Veille réglable (Réglages) |
 | Scores | les 5 meilleurs scores de l'Aventure (initiales, points, * = fin légendaire) ; tourner l'encodeur (ou joystick gauche/droite) : page Avancement (charmes, Pinceau, trophées, fins) ; n'importe quel bouton : menu. Le menu affiche l'avancement en % (11 choses à trouver) |
 | Réglages (dernière ligne du menu) | Luminosité (échelle progressive à 16 crans, de 1 à 40) ; Veille du menu (3, 10, 30 min ou jamais) ; Rejouer l'histoire (garde les déblocages) ; Tout effacer (garde la Galerie, les scores et les réglages) — ces deux-là demandent un 2e appui pour confirmer |
-| Difficulté (dans Réglages) | facile, moyen ou difficile pour tous les jeux (gardée même après « Tout effacer ») ; chaque jeu choisit ses valeurs avec `byLevel(facile, moyen, difficile)` (`include/save.h`). Les points de l'Aventure, du casse-briques, du football et du flipper sont multipliés par 1,2 en moyen et 1,5 en difficile (`levelPoints`) ; la page Scores montre la difficulté de chaque partie (F, M, D) |
+| Difficulté (dans Réglages) | **facile** (exploration tranquille, presque tout le monde réussit), **moyen** (on échoue parfois, environ une réussite sur deux) ou **difficile** (on réussit difficilement, environ une fois sur six) ; la difficulté choisie est gardée même après « Tout effacer ». Chaque jeu règle ses valeurs avec `byLevel(facile, moyen, difficile)` (`include/save.h`) ; les points de l'Aventure, du casse-briques, du football et du flipper sont multipliés par 1,2 en moyen et 1,5 en difficile (`levelPoints`) et la page Scores montre la difficulté de chaque partie (F, M, D). Voir le tableau « Ce qui change avec la difficulté » ci-dessous |
 | À propos | QR code vers la page web de ce guide (`ABOUT_URL` dans `include/config.h`, page `docs/index.html`) ; n'importe quel bouton : menu |
 | Aventure | au début d'une partie, le prénom en 3 lettres (encodeur ou joystick haut/bas : lettre ; bouton : suivante) : Mochi l'utilise, et un meilleur score s'enregistre tout seul sous ce prénom. Ensuite : encodeur ou joystick gauche/droite : choisir la réponse ; bouton : valider ; bouton du joystick : menu |
 | Combat contre le Roi Gluant (Aventure) | encodeur ou joystick : se déplacer ; bouton (ou bouton de l'encodeur) : tirer, on peut le garder enfoncé. Pouvoirs des charmes : Bol = bouclier qui revient, Feuille = tir triple, Note = bulles ralenties ; Pinceau Arc-en-ciel (labyrinthe) = une vie de plus et un tir sur deux compte double. Bouton du joystick : abandonner |
@@ -128,6 +129,21 @@ Outils disponibles dans `hw.h` :
 | Jukebox | encodeur : choisir ; bouton : jouer ; bouton du joystick : menu |
 | Atelier | on dessine sur le téléphone ; bouton du joystick : fermer (le Wi-Fi s'éteint) |
 | Galerie | encodeur : durée de chaque dessin ; bouton : suivant ; bouton de l'encodeur : effacer le dessin affiché (un 2e appui confirme, tourner ou le bouton annule) ; bouton du joystick : menu |
+
+**Ce qui change avec la difficulté** (réglages mesurés avec des robots joueurs : un joueur humain moyen fait un peu moins bien que le robot, à ajuster avec de vraies parties) :
+
+| Jeu | Facile | Moyen | Difficile |
+|---|---|---|---|
+| « 1, 2, 3, soleil ! » | il compte 3 temps, alerte de 0,7 s, délai de grâce de 0,4 s, sans limite de chances, 90 s | 2 à 3 temps, alerte de 0,15 s, grâce de 0,08 s, 3 chances, recul de 8 cases, 50 s | 1 à 3 temps, alerte de 0,135 s, grâce de 0,07 s, 3 chances, retour au départ, 40 s |
+| Rythme de la grenouille | 3 notes à 480 ms, 4 erreurs permises | 4 notes à 380 ms, 3 erreurs | 5 notes à 300 ms, 2 erreurs |
+| Ramen | piments rares, chute lente | plus de piments, 50 s | 10 ingrédients, bol étroit, beaucoup de piments, chute rapide, 24 s |
+| Combat du roi | 40 points de vie, 5 coeurs, bulles lentes | 55 points de vie, 4 coeurs | 55 points de vie, 3 coeurs, bulles rapides et fréquentes |
+| Course | rivales lentes, peu de virages et de taches | rivales plus rapides, plus de turbo à gagner | rivales très rapides, virages marqués, 13 taches d'huile |
+| Football | défenseur d'un seul côté, gardien lent | défenseur sur tout le terrain, gardien qui lit environ 1 tir sur 4 | gardien qui lit environ 6 tirs sur 10 et défenseur rapide |
+| Flipper | flippers longs, bille sauvée 6 s | flippers plus courts, gravité plus forte, bille sauvée 3 s, record plus haut | flippers courts, forte gravité, pas de bille sauvée, record encore plus haut |
+| Casse-briques | balle normale, raquette entière, 3 vies | balle 1,57 fois plus rapide, raquette réduite, 2 vies | balle 1,68 fois plus rapide, raquette réduite, 2 vies |
+| Étoiles du Mochi-Mage | 0,9 / 0,7 / 0,55 s pour appuyer | 0,36 / 0,32 / 0,29 s | 0,315 / 0,29 / 0,27 s |
+| Labyrinthe (histoire) | sans limite de temps | 4 min 30, moins de lumière, plus de mochis gluants | 2 min 50, très peu de lumière, beaucoup de mochis gluants |
 
 **Score de l'Aventure** (calculé à chaque fin, dans `src/adventure.cpp`) : fin heureuse 300 (légendaire 1 000), +100 par
 charme et +150 par trophée possédés, bonus de rapidité 400 − 10 par scène traversée, −20 par impasse. S'il entre dans
@@ -151,7 +167,7 @@ qui expliquent la quête (scènes 47 à 49, prénom demandé la première fois),
 | Record du vieux flipper (scène 28) | rue des étals | Bille Étoile (trophée) |
 | Course des tanukis (scène 50) | route du château | Volant d'Or (trophée) |
 | Labyrinthe des sous-sols (scène 53) | château | Pinceau Arc-en-ciel (bonus du combat) |
-| Garde du château (blagues, scènes 10 et 55 à 58) | château | il adore ce qui est mou et plein de trous : une seule blague le fait rire (l'éponge), la porte du roi s'ouvre |
+| Garde du château (« 1, 2, 3, soleil ! », scène 10) | château | se faufiler jusqu'à la porte du roi sans bouger quand le garde se retourne (échec : scène 55) |
 | Sceaux du château (scène 9) | château | il faut les 3 charmes (`SEAL_CHARMS` dans `include/scenes.h`) |
 | Combat contre le roi (scène 11) | salle du trône | puis le choix de la fin (scène 46) |
 | Fins (scènes 18, 19, 20) | après le combat | La Fête des Couleurs, La Cheffe pâtissière, La Pluie arc-en-ciel |
@@ -176,7 +192,7 @@ Dans `include/scenes.h`, ajouter une ligne au tableau `SCENES`, dans cet ordre :
    4 = tout près (LED orange qui bat vite) ; -1 = utiliser la couleur ;
 6. jingle (`J_…`) ;
 7. récompense donnée en arrivant : charme, trophée, fin (0 si aucune) ;
-8. mini-jeu (`GAME_NONE`, `GAME_REFLEX`, `GAME_BREAKOUT`, `GAME_FOOTBALL`, `GAME_PINBALL`, `GAME_BOSS`, `GAME_RACE`, `GAME_MAZE`, `GAME_RAMEN`, `GAME_RHYTHM`) et scènes d'arrivée en cas de victoire et de défaite. Un choix dont la
+8. mini-jeu (`GAME_NONE`, `GAME_REFLEX`, `GAME_BREAKOUT`, `GAME_FOOTBALL`, `GAME_PINBALL`, `GAME_BOSS`, `GAME_RACE`, `GAME_MAZE`, `GAME_RAMEN`, `GAME_RHYTHM`, `GAME_SUN`) et scènes d'arrivée en cas de victoire et de défaite. Un choix dont la
    cible est `GAME` lance le mini-jeu.
 
 Quand une récompense débloque une activité, l'OLED l'annonce (« Nouveau au menu : … »).

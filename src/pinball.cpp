@@ -13,7 +13,7 @@ namespace pinball {
 constexpr float    GRAVITY      = 14.0f;   // cases/s²
 constexpr float    MAX_SPEED    = 22.0f;   // cases/s
 constexpr float    BALL_R       = 0.75f;   // rayon de la bille (cases) : elle est dessinée sur 2 x 2 pixels
-constexpr float    FLIPPER_LEN  = 3.0f;    // avec les axes en 4,2 et 11,8 : passage de 2,2 cases au milieu
+constexpr float    FLIPPER_LEN_EASY = 3.0f;  // longueur des flippers (facile) ; plus courts en moyen et difficile
 constexpr float    FLIPPER_L_X  = 4.2f, FLIPPER_R_X = 11.8f, FLIPPER_Y = 13.6f;  // axes des flippers
 constexpr uint32_t BALL_SAVE_MS = 6000;    // bille rendue si elle est perdue aussi vite
 constexpr float    RAMP_SPEED   = 10.0f;   // vitesse vers le haut qu'il faut pour monter la rampe
@@ -27,7 +27,10 @@ constexpr float    NUDGE_FULL   = 120.0f;  // impulsions d'encodeur par seconde 
 constexpr float    TILT_LIMIT   = 2.6f;    // au-delà : TILT, les flippers ne répondent plus jusqu'à la bille perdue
 constexpr int      BALLS        = 3;
 constexpr int      STORY_RECORD = 3000;    // record du vieux flipper à battre dans l'histoire
+inline int storyRecord() { return (int)(levelPoints(STORY_RECORD) * byLevel(1.0f, 1.15f, 1.35f)); }  // les points sont pondérés par la difficulté : le record aussi
 // ---------------------------------------------------------------------------
+
+inline float flipperLen() { return byLevel(FLIPPER_LEN_EASY, 2.6f, 2.25f); }
 
 const Note SND_BUMP[]   = {{880, 30}, {1320, 30}, {0, 0}};
 const Note SND_FLIP[]   = {{120, 15}, {0, 0}};
@@ -134,7 +137,7 @@ void physics(float dt, uint32_t now) {
   const int STEPS = 6;
   float h = dt / STEPS;
   for (int s = 0; s < STEPS; s++) {
-    vy += GRAVITY * byLevel(1.0f, 1.12f, 1.25f) * h;
+    vy += GRAVITY * byLevel(1.0f, 1.2f, 1.4f) * h;
     float sp = sqrtf(vx * vx + vy * vy);
     if (sp > MAX_SPEED) { vx *= MAX_SPEED / sp; vy *= MAX_SPEED / sp; }
     bx += vx * h; by += vy * h;
@@ -145,8 +148,8 @@ void physics(float dt, uint32_t now) {
     collideSegment(0, 10, FLIPPER_L_X, FLIPPER_Y, 0.5f, 0);
     collideSegment(16, 10, FLIPPER_R_X, FLIPPER_Y, 0.5f, 0);
     for (Flipper& f : flippers) {
-      float ex = f.px - f.side * cosf(f.angle) * FLIPPER_LEN, ey = f.py + sinf(f.angle) * FLIPPER_LEN;
-      float kick = f.omega < 0 ? -f.omega * FLIPPER_LEN : 0;  // le flipper se lève : il frappe la bille
+      float ex = f.px - f.side * cosf(f.angle) * flipperLen(), ey = f.py + sinf(f.angle) * flipperLen();
+      float kick = f.omega < 0 ? -f.omega * flipperLen() : 0;  // le flipper se lève : il frappe la bille
       if (collideSegment(f.px, f.py, ex, ey, 0.3f, kick, true) && kick > 0) score += levelPoints(10);
     }
     hitBumpers(now);
@@ -206,7 +209,7 @@ void drawOled() {
   oled.setCursor(0, 62);
   if (paused) oled.print("PAUSE - axe : menu");
   else if (message) oled.print(message);
-  else if (story) oled.printf("Record : %d", STORY_RECORD);
+  else if (story) oled.printf("Record : %d", storyRecord());
   else oled.printf("Meilleur : %d", best);
   oled.sendBuffer();
 }
@@ -236,7 +239,7 @@ void render(uint32_t now) {
     for (float t = 0; t <= 1; t += 0.05f) { float x, y; rampPos(t, x, y); px((int)x, (int)y, CRGB(90, 0, 140)); }
   // Flippers : épais près de l'axe, fins au bout
   for (Flipper& f : flippers)
-    for (float r = 0; r <= FLIPPER_LEN; r += 0.4f) {
+    for (float r = 0; r <= flipperLen(); r += 0.4f) {
       float x = f.px - f.side * cosf(f.angle) * r, y = f.py + sinf(f.angle) * r;
       CRGB c = tilted ? CRGB(80, 0, 0) : f.up ? CRGB(255, 140, 200) : CRGB(255, 60, 140);
       px((int)x, (int)y, c);
@@ -307,7 +310,7 @@ GameResult pinballLoop(uint32_t now) {
   if (gameOver) {
     if (now >= endUntil) {
       if (!story && score > progress.pinballBest) { progress.pinballBest = min(score, 65535); progressSave(); }
-      if (story) return score >= STORY_RECORD ? GAME_WON : GAME_LOST;
+      if (story) return score >= storyRecord() ? GAME_WON : GAME_LOST;
       return GAME_QUIT;
     }
   } else if (!paused) {
@@ -336,10 +339,10 @@ GameResult pinballLoop(uint32_t now) {
       } else if (by > 16.5f) {  // bille perdue entre les flippers
         balls--;
         play(SND_DRAIN, true);
-        if (balls <= 0 || (story && score >= STORY_RECORD)) {
+        if (balls <= 0 || (story && score >= storyRecord())) {
           gameOver = true;
           endUntil = now + 2500;
-          bool won = !story || score >= STORY_RECORD;
+          bool won = !story || score >= storyRecord();
           message = story ? (won ? "Record battu !" : "Raté...") : "Partie finie";
           if (won) play(SND_WIN, true);
         } else {
@@ -348,7 +351,7 @@ GameResult pinballLoop(uint32_t now) {
         }
         dirty = true;
       }
-      if (story && score >= STORY_RECORD && !gameOver) {  // record battu : on s'arrête là
+      if (story && score >= storyRecord() && !gameOver) {  // record battu : on s'arrête là
         gameOver = true; endUntil = now + 2500; message = "Record battu !"; play(SND_WIN, true); dirty = true;
       }
     }

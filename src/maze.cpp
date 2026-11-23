@@ -42,7 +42,9 @@ struct Slime { int room; int8_t path[10][2]; int len; float pos; float dir; uint
 Slime    slimes[MENU_SLIMES + 4];
 int      nSlimes;
 
-bool     story, hasKey, lockOpen, found, dirty;
+bool     story, hasKey, lockOpen, found, lost, dirty;
+// Temps limité dans l'histoire (0 = sans limite) : facile, moyen, difficile (estimé : à ajuster avec de vraies parties)
+inline uint32_t timeLimit() { return story ? (uint32_t)byLevel(0, 270, 170) * 1000UL : 0; }
 int      room, px, py, mx, my, entryX, entryY;  // joueuse, Mochi, point d'entrée de la salle
 uint16_t visited;
 uint32_t nextStep, startAt, endAt, hurtUntil, hintUntil, elapsed, keyFlashUntil;
@@ -296,9 +298,10 @@ void drawOled(uint32_t now) {
   const char* goal2 = !hasKey ? "clé jaune" : !lockOpen ? "porte orange" : "faux mur";
   oled.setCursor(0, 28); oled.print(goal1);
   oled.setCursor(0, 39); oled.print(goal2);
-  if (!story) {
+  if (!story || timeLimit()) {
     char buf[16];
     uint32_t t = (found ? elapsed : now - startAt) / 1000;
+    if (timeLimit()) t = max(0L, (long)(timeLimit() / 1000) - (long)t);  // histoire : temps restant
     snprintf(buf, sizeof(buf), "%lu:%02lu", (unsigned long)(t / 60), (unsigned long)(t % 60));
     oled.setCursor(0, 52);
     oled.print(buf);
@@ -364,13 +367,13 @@ void mazeBegin(bool storyMode) {
   build(story ? STORY_SEED : (esp_random() | 1));
   memset(seen, 0, sizeof(seen));
   visited = 0;
-  hasKey = lockOpen = found = false;
+  hasKey = lockOpen = found = lost = false;
   keyFlashUntil = 0;
   hint = nullptr;
   enterRoom(0, MID, MID);
   uint32_t now = millis();
   startAt = now; nextStep = now; hurtUntil = 0; hintUntil = 0;
-  say("Cherche la clé", now);
+  say("Trouve la clé", now);
 }
 
 GameResult mazeLoop(uint32_t now) {
@@ -382,6 +385,11 @@ GameResult mazeLoop(uint32_t now) {
   float dt = min((now - lastFrame) / 1000.0f, 0.05f);
   lastFrame = now;
 
+  if (lost) {  // temps écoulé
+    render(now);
+    if (dirty) { drawOled(now); dirty = false; }
+    return now < endAt ? GAME_RUNNING : GAME_LOST;
+  }
   if (found) {
     render(now);
     if (dirty) { drawOled(now); dirty = false; }
@@ -414,14 +422,19 @@ GameResult mazeLoop(uint32_t now) {
       play(GLOOP, true);
       hurtUntil = now + 1000;
       px = mx = entryX; py = my = entryY;  // retour à l'entrée de la salle
-      say("Beurk, collé !", now);
+      say("Beurk, collé!", now);
     }
   }
   if (hint && now >= hintUntil) { hint = nullptr; dirty = true; }
   static int lastHeat = -1;
   if (heat() != lastHeat) { lastHeat = heat(); dirty = true; }
+  if (timeLimit() && now - startAt > timeLimit()) {
+    lost = true; endAt = now + 2200; say("Trop tard !", now);
+    static const Note LOSE[] = {{392, 200}, {330, 200}, {262, 500}, {0, 0}};
+    play(LOSE, true);
+  }
   static uint32_t lastSecond = 0;
-  if (!story && now / 1000 != lastSecond) { lastSecond = now / 1000; dirty = true; }
+  if ((!story || timeLimit()) && now / 1000 != lastSecond) { lastSecond = now / 1000; dirty = true; }
   render(now);
   if (dirty) { drawOled(now); dirty = false; }
   return GAME_RUNNING;

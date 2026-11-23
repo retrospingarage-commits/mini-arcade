@@ -14,7 +14,8 @@ constexpr int      TEXT_LINES = 5;    // lignes de texte au-dessus de la barre d
 constexpr uint8_t  SOON       = 0;    // scène « bientôt » : la cible n'est pas encore écrite
 constexpr uint8_t  FIRST_SCENE = 47;  // 1re scène d'une nouvelle partie (on y demande le prénom)
 constexpr uint8_t  REFLEX_STARS = 3;  // étoiles à attraper au mini-jeu de réflexe
-const uint16_t     REFLEX_WINDOW[REFLEX_STARS] = {900, 700, 550};  // temps pour appuyer (ms), de plus en plus court
+// Temps pour appuyer (ms) à chaque étoile, de plus en plus court : facile, moyen, difficile (un humain réagit en 250 ms environ)
+const uint16_t     REFLEX_WINDOW[3][REFLEX_STARS] = {{900, 700, 550}, {360, 320, 290}, {315, 290, 268}};
 
 const Note SND_TICK[]  = {{1200, 8}, {0, 0}};
 const Note SND_GO[]    = {{1760, 60}, {0, 0}};
@@ -190,7 +191,7 @@ void enterScene(uint8_t id) {
 }
 
 void startGame(uint32_t now) {
-  if (scene->game == GAME_FOOTBALL || scene->game == GAME_PINBALL || scene->game == GAME_BREAKOUT || scene->game == GAME_BOSS || scene->game == GAME_RACE || scene->game == GAME_MAZE || scene->game == GAME_RAMEN || scene->game == GAME_RHYTHM) {
+  if (scene->game == GAME_FOOTBALL || scene->game == GAME_PINBALL || scene->game == GAME_BREAKOUT || scene->game == GAME_BOSS || scene->game == GAME_RACE || scene->game == GAME_MAZE || scene->game == GAME_RAMEN || scene->game == GAME_RHYTHM || scene->game == GAME_SUN) {
     phase = EXTERNAL_GAME;  // version courte du jeu complet, qui se débloque ensuite dans le menu
     if (scene->game == GAME_FOOTBALL) footballBegin(true);
     else if (scene->game == GAME_PINBALL) pinballBegin(true);
@@ -199,6 +200,7 @@ void startGame(uint32_t now) {
     else if (scene->game == GAME_MAZE) mazeBegin(true);
     else if (scene->game == GAME_RAMEN) ramenBegin();
     else if (scene->game == GAME_RHYTHM) rhythmBegin();
+    else if (scene->game == GAME_SUN) sunBegin();
     else breakoutBeginStory();
     return;
   }
@@ -212,7 +214,7 @@ void updateReflex(uint32_t now, bool pressed) {
   switch (phase) {
     case REFLEX_WAIT:
       if (pressed) { reflexWon = false; phase = REFLEX_END; phaseUntil = now + 1200; play(SND_MISS, true); dirty = true; }
-      else if (now >= phaseUntil) { phase = REFLEX_GO; phaseUntil = now + (uint32_t)(REFLEX_WINDOW[stars] * byLevel(1.0f, 0.85f, 0.7f)); play(SND_GO, true); dirty = true; }
+      else if (now >= phaseUntil) { phase = REFLEX_GO; phaseUntil = now + REFLEX_WINDOW[progress.difficulty % 3][stars]; play(SND_GO, true); dirty = true; }
       break;
     case REFLEX_GO:
       if (pressed) {
@@ -455,6 +457,7 @@ bool adventureLoop(uint32_t now) {
     else if (scene->game == GAME_MAZE)    r = mazeLoop(now);
     else if (scene->game == GAME_RAMEN)   r = ramenLoop(now);
     else if (scene->game == GAME_RHYTHM)  r = rhythmLoop(now);
+    else if (scene->game == GAME_SUN)     r = sunLoop(now);
     else r = breakoutLoop(now) ? GAME_RUNNING : breakoutWon() ? GAME_WON : GAME_LOST;
     if (r != GAME_RUNNING) {
       encBase = encoderCount();

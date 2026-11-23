@@ -37,6 +37,10 @@ GameResult ramenLoop(uint32_t now);
 void       rhythmBegin();
 GameResult rhythmLoop(uint32_t now);
 
+// « 1, 2, 3, soleil ! » (Aventure, le garde du château) : avancer au joystick, se figer quand le garde se retourne.
+void       sunBegin();
+GameResult sunLoop(uint32_t now);
+
 void       moodBegin();      // Mood light : ambiances lumineuses
 GameResult moodLoop(uint32_t now);
 void       jukeboxBegin();   // Jukebox : réécouter les jingles de l'histoire

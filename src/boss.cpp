@@ -11,8 +11,11 @@
 namespace boss {
 
 // --- Réglages ---------------------------------------------------------------
-constexpr int      KING_HP_EASY    = 60;      // vie du roi (facile ; ×1,25 en moyen, ×1,5 en difficile)
-constexpr int      HEARTS          = 3;       // vies de la joueuse
+// Selon la difficulté (facile, moyen, difficile) :
+inline int   kingHp()      { return (int)byLevel(40, 55, 55); }          // vie du roi
+inline int   hearts0()     { return (int)byLevel(5, 4, 3); }             // vies de la joueuse
+inline float bubbleSpeedK(){ return byLevel(0.85f, 1.0f, 1.15f); }        // vitesse des bulles
+inline float bubbleRateK() { return byLevel(1.3f, 1.0f, 0.85f); }        // temps entre deux bulles
 constexpr int      KING_W          = 6;       // largeur du roi (cases)
 constexpr float    PLAYER_SPEED    = 12.0f;   // cases/s au joystick
 constexpr float    ENC_STEP        = 0.5f;    // cases par impulsion de l'encodeur
@@ -48,7 +51,7 @@ uint32_t shieldBack, hurtUntil, kingFlash, nextBubble, nextShot, endAt, messageU
 const char* message;
 int32_t  encBase;
 
-int KING_HP = KING_HP_EASY;
+int KING_HP = 60;
 int phaseOf(int life) { return life > KING_HP * 2 / 3 ? 0 : life > KING_HP / 3 ? 1 : 2; }
 
 void say(const char* m, uint32_t now) { message = m; messageUntil = now + 2000; dirty = true; }
@@ -156,8 +159,8 @@ void bossBegin(uint8_t charms) {
   powers = charms;
   state = FIGHT;
   px = 7; kx = 5; kdir = 1;
-  KING_HP = (int)(KING_HP_EASY * byLevel(1.0f, 1.25f, 1.5f));
-  hp = KING_HP; hearts = HEARTS + (charms & CHARM_PINCEAU ? 1 : 0); phaseIdx = 0;  // Pinceau : une vie de plus
+  KING_HP = kingHp();
+  hp = KING_HP; hearts = hearts0() + (charms & CHARM_PINCEAU ? 1 : 0); phaseIdx = 0;  // Pinceau : une vie de plus
   shieldUp = charms & CHARM_BOL;
   for (Obj& s : shots) s.on = false;
   for (Obj& b : bubbles) b.on = false;
@@ -197,7 +200,7 @@ GameResult bossLoop(uint32_t now) {
   kx += kdir * KING_SPEED[phaseIdx] * dt;
   if (kx < 0) { kx = 0; kdir = 1; }
   if (kx > 16 - KING_W) { kx = 16 - KING_W; kdir = -1; }
-  if (now >= nextBubble) { spawnBubble(); nextBubble = now + BUBBLE_EVERY[phaseIdx] + random(0, 300); }
+  if (now >= nextBubble) { spawnBubble(); nextBubble = now + (uint32_t)((BUBBLE_EVERY[phaseIdx] + random(0, 300)) * bubbleRateK()); }
 
   // Tirs : touchent le roi
   for (Obj& s : shots) {
@@ -219,7 +222,7 @@ GameResult bossLoop(uint32_t now) {
   }
 
   // Bulles : tombent sur la joueuse
-  float speed = BUBBLE_SPEED[phaseIdx] * (powers & CHARM_NOTE ? NOTE_SLOW : 1.0f) * byLevel(1.0f, 1.15f, 1.3f);
+  float speed = BUBBLE_SPEED[phaseIdx] * (powers & CHARM_NOTE ? NOTE_SLOW : 1.0f) * bubbleSpeedK();
   for (Obj& b : bubbles) {
     if (!b.on) continue;
     b.y += speed * dt;

@@ -82,7 +82,7 @@ void loadLevel(uint8_t i) {
       glow[r][c] = 0;
       if (grid[r][c] && grid[r][c] != METAL) bricksLeft++;
     }
-  padW = LEVELS[i].paddle;
+  padW = (uint8_t)max(2, (int)LEVELS[i].paddle - (int)byLevel(0, 2, 2));  // raquette plus petite en moyen et difficile
   setState(TITLE);
 }
 
@@ -90,7 +90,7 @@ bool story = false;  // défi du tanuki dans l'Aventure : un seul niveau, puis r
 
 void newGame(uint8_t level) {
   score = 0;
-  lives = START_LIVES;
+  lives = (uint8_t)byLevel(START_LIVES, START_LIVES - 1, START_LIVES - 1);  // une vie de moins en moyen et difficile
   loadLevel(level);
 }
 
@@ -102,7 +102,7 @@ void sendUp(float a) {
 }
 
 void launch() {
-  speed = lvl().speed * byLevel(1.0f, 1.15f, 1.3f) + bricksBroken * SPEED_PER_BRICK;
+  speed = lvl().speed * byLevel(1.0f, 1.57f, 1.68f) + bricksBroken * SPEED_PER_BRICK;
   sendUp(random(-40, 41) / 100.0f);  // petit angle aléatoire au départ
   lastMove = lastFall = millis();
   play(SND_LAUNCH);
@@ -125,7 +125,7 @@ void loseLife() {
 
 // La balle garde sa direction mais prend la vitesse du moment
 void updateSpeed() {
-  speed = lvl().speed * byLevel(1.0f, 1.15f, 1.3f) + bricksBroken * SPEED_PER_BRICK;
+  speed = lvl().speed * byLevel(1.0f, 1.57f, 1.68f) + bricksBroken * SPEED_PER_BRICK;
   float n = sqrtf(vx * vx + vy * vy);
   vx *= speed / n;
   vy *= speed / n;

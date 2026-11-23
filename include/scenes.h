@@ -30,7 +30,7 @@ enum Effect : uint8_t { FX_NONE, FX_DARK, FX_FOG, FX_WAVES, FX_RAIN, FX_DRIP, FX
                         FX_STARS, FX_PORTAL, FX_FIREWORKS };
 
 // Mini-jeu lancé par un choix dont la cible est GAME
-enum MiniGame : uint8_t { GAME_NONE, GAME_REFLEX, GAME_FOOTBALL, GAME_PINBALL, GAME_BREAKOUT, GAME_BOSS, GAME_RACE, GAME_MAZE, GAME_RAMEN, GAME_RHYTHM };
+enum MiniGame : uint8_t { GAME_NONE, GAME_REFLEX, GAME_FOOTBALL, GAME_PINBALL, GAME_BREAKOUT, GAME_BOSS, GAME_RACE, GAME_MAZE, GAME_RAMEN, GAME_RHYTHM, GAME_SUN };
 constexpr uint8_t GAME = 250;
 constexpr int     SEAL_CHARMS = 3;  // charmes qu'il faut pour briser les sceaux du château et affronter le roi
 
@@ -117,9 +117,9 @@ const Scene SCENES[] = {
   {9, "Le château de mochi se dresse, tout gluant. Sa porte est fermée par 3 sceaux de couleur.",
    {{"Briser les sceaux", 10, IF_SEALS_OPEN}, {"Toucher les sceaux", 45, UNLESS_SEALS_OPEN}, {"Aux sous-sols", 53, UNLESS_PINCEAU}, {"Retour au village", 2, ALWAYS}},
    PIC_CHATEAU, FX_NONE, 0xFFFFFF, -1, J_VENT, 0, 0, 0, GAME_NONE, 0, 0},
-  {10, "Le garde mochi : Je suis mou, je déteste ce qui pique et j'adore les trous. Fais-moi rire !",
-   {{"Raconter une blague", 55, ALWAYS}, {"Foncer dans la porte", 17, ALWAYS}},
-   PIC_GARDE, FX_NONE, 0xFFFFFF, -1, J_ROULEMENT, 0, 0, 0, GAME_NONE, 0, 0},
+  {10, "Le garde : Un, deux, trois, soleil ! Avance dos tourné, fige-toi quand je regarde !",
+   {{"Relever le défi", GAME, ALWAYS}, {"Foncer dans la porte", 17, ALWAYS}},
+   PIC_GARDE, FX_NONE, 0xFFFFFF, -1, J_ROULEMENT, 0, 0, 0, GAME_SUN, 11, 55},
   {11, "Le Roi Gluant trône près d'un gâteau géant. C'est lui, le voleur de couleurs ! En garde !",
    {{"Combattre !", GAME, ALWAYS}, {"Fuir", 9, ALWAYS}},
    PIC_ROI, FX_NONE, 0xFF3C8C, -1, J_MARCHE, 0, 0, 0, GAME_BOSS, 46, 14},
@@ -243,18 +243,9 @@ const Scene SCENES[] = {
   {54, "Le Pinceau Arc-en-ciel ! Mochi : Avec lui, le roi va voir de toutes les couleurs !",
    {{"Remonter", 9, ALWAYS}},
    PIC_PINCEAU, FX_CONFETTI, 0xFFFFFF, -1, J_SPECIAL, CHARM_PINCEAU, 0, 0, GAME_NONE, 0, 0},
-  {55, "Le garde mochi attend, les bras croisés. Quelle blague lui raconter ?",
-   {{"Le clou", 56, ALWAYS}, {"Le hérisson", 57, ALWAYS}, {"L'éponge", 58, ALWAYS}, {"Pas maintenant", 10, ALWAYS}},
-   PIC_GARDE, FX_NONE, 0xFFFFFF, -1, J_ROULEMENT, 0, 0, 0, GAME_NONE, 0, 0},
-  {56, "Pourquoi le clou pleure ? On lui tape sur la tête ! Le garde grimace : Aïe, ça pique !",
-   {{"Une autre blague", 55, ALWAYS}},
+  {55, "Raté ! Le garde mochi rit : Trop lent ou trop agité, ~ ! On recommence ?",
+   {{"Réessayer", 10, ALWAYS}, {"Retour au château", 9, ALWAYS}},
    PIC_GARDE, FX_NONE, 0xFFFFFF, -1, J_TROMBONE, 0, 0, 0, GAME_NONE, 0, 0},
-  {57, "Un hérisson te fait un câlin : Aïe ! Le garde recule : Beurk, c'est tout piquant, pas drôle !",
-   {{"Une autre blague", 55, ALWAYS}},
-   PIC_GARDE, FX_NONE, 0xFFFFFF, -1, J_TROMBONE, 0, 0, 0, GAME_NONE, 0, 0},
-  {58, "Plein de trous, il garde l'eau : l'éponge ! Le garde éclate de rire et ouvre la porte !",
-   {{"Entrer !", 11, ALWAYS}},
-   PIC_GARDE, FX_CONFETTI, 0xFFFFFF, -1, J_FANFARE, 0, 0, 0, GAME_NONE, 0, 0},
   {59, "Le rythme t'a échappé ! La grenouille : Écoute bien, ~. On recommence ?",
    {{"Réessayer", 7, ALWAYS}, {"Passer son chemin", 35, ALWAYS}},
    PIC_GRENOUILLE, FX_NONE, 0x8C00FF, -1, J_TROMBONE, 0, 0, 0, GAME_NONE, 0, 0},

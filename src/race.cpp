@@ -200,7 +200,7 @@ void raceBegin(bool storyMode) {
   dist = 0; speed = 0; carX = 7; turbo = 0; turboOn = false; crashes = 0;
   for (int i = 0; i < RIVALS; i++) {
     float x = ROAD_L + (i * 5 % 11);
-    rivals[i] = {RIVAL_START[i], x, x, RIVAL_SPEED[i] - (story ? STORY_SLOWER : 0) + byLevel(0.5f, 1.3f, 2.1f), (uint8_t)(i * 32 + 60), true};
+    rivals[i] = {RIVAL_START[i], x, x, RIVAL_SPEED[i] - (story ? STORY_SLOWER : 0) + byLevel(0.5f, 1.7f, 1.8f), (uint8_t)(i * 32 + 60), true};
   }
   // Taches d'huile réparties sur la course (pas dans les 60 premières cases)
   nOils = min(oilCount() * laps / LAPS, OIL_MAX);
@@ -310,7 +310,7 @@ GameResult raceLoop(uint32_t now) {
     if (sideBySide && rel >= 3.0f && rel < 7.0f) turbo = min(100.0f, turbo + TURBO_DRAFT * dt);
     // Dépassement
     bool ahead = rel > 0;
-    if (r.ahead && !ahead) { turbo = min(100.0f, turbo + TURBO_PER_PASS * byLevel(1.0f, 0.8f, 0.6f)); play(SND_PASS); }
+    if (r.ahead && !ahead) { turbo = min(100.0f, turbo + TURBO_PER_PASS * byLevel(1.0f, 0.76f, 0.68f)); play(SND_PASS); }
     r.ahead = ahead;
   }
   place = rivalsAhead() + 1;

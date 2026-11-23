@@ -49,8 +49,8 @@ int32_t  encBase;
 bool     dirty;
 
 int   keeperCol()     { return (int)(kx + 0.5f); }  // colonne de gauche du gardien (il en occupe 2)
-float keeperSpeed()   { return (2.5f + level * 1.0f + (bonus ? 1.5f : 0)) * byLevel(0.85f, 1.0f, 1.25f); }
-float defenderSpeed() { return 3.0f + level * 1.0f; }
+float keeperSpeed()   { return (2.5f + level * 1.0f + (bonus ? 1.5f : 0)) * byLevel(0.7f, 0.85f, 1.2f); }
+float defenderSpeed() { return (3.0f + level * 1.0f) * byLevel(0.7f, 0.9f, 1.2f); }
 
 void newRound() {
   shots = goals = 0;
@@ -157,7 +157,8 @@ GameResult footballLoop(uint32_t now) {
   // Le défenseur va et vient
   dx += ddir * defenderSpeed() * dt;
   if (dx < 1) { dx = 1; ddir = 1; }
-  if (dx > 13) { dx = 13; ddir = -1; }
+  float dxMax = byLevel(6.0f, 13.0f, 13.0f);  // facile : le défenseur reste d'un seul côté
+  if (dx > dxMax) { dx = dxMax; ddir = -1; }
   // Gardien : avant le tir, il se décale un peu du côté de la joueuse ; après son temps de réaction, il court
   // vers l'endroit où le ballon va arriver (sans deviner l'effet qu'on y ajoutera)
   float target = 7.0f + (constrain(px, (float)GOAL_LEFT, (float)GOAL_RIGHT) - 7.5f) * 0.25f;
@@ -184,7 +185,7 @@ GameResult footballLoop(uint32_t now) {
           bvy = -(SHOT_SPEED_MIN + power * (SHOT_SPEED_MAX - SHOT_SPEED_MIN));
           bvx = aim * -bvy;  // tir en biais
           shotStart = now;
-          keeperReads = random(100) < byLevel(18, KEEPER_READ_CHANCE, 55) + min(level, 6) * byLevel(6, KEEPER_READ_LEVEL, 10)
+          keeperReads = random(100) < byLevel(8, KEEPER_READ_CHANCE - 10, 50) + min(level, 6) * byLevel(3, KEEPER_READ_LEVEL - 3, 10)
                                       + (bonus ? 10 : 0);  // difficulté « moyen » = les réglages ci-dessus
           reaction = keeperReads ? KEEPER_FAST_MS : KEEPER_LATE_MS + random(0, 150);
           phase = SHOT;
