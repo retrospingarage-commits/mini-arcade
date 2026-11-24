@@ -44,7 +44,10 @@ Ev    ev[MAX_EV];
 GNote ch[MAX_CH];
 int   nEv, nCh, evNext;
 
-enum Mode : uint8_t { SELECT, COUNT, PLAY, RESULT };
+enum Mode : uint8_t { SELECT, HELP, COUNT, PLAY, RESULT };
+constexpr int HELP_PAGES = 3;
+uint8_t helpPage;
+bool    helpSeen;   // l'explication n'apparaît qu'à la première partie après l'allumage
 Mode     mode;
 int      sel;                                   // morceau choisi
 uint32_t clock0, startAt, endAt, lastOled, flashUntil[8], goldUntil, spinUntil, judgeAt, modeAt;
@@ -306,6 +309,35 @@ void renderSelect(uint32_t now) {
   drawBlock(TX[d], TY[d], CHSV(d * 32, 160, 255));
 }
 
+// Explication : une lumière de démonstration qui part du centre, avec ce qu'on voit quand c'est réussi ou raté
+void renderHelp(uint32_t now) {
+  constexpr uint32_t CYCLE = 2600, TRAVEL = 1700;
+  static uint32_t lastCycle = 0xFFFF;
+  uint32_t cyc = (now - modeAt) / CYCLE, t = (now - modeAt) % CYCLE;
+  int d = (cyc * 3) % 8;
+  if (cyc != lastCycle) { lastCycle = cyc; for (int i = 0; i < 8; i++) burstAt[i] = flashUntil[i] = 0; }
+  bool arrived = t >= TRAVEL;
+  int outcome = helpPage == 1 ? (int)(cyc % 3) : 0;   // page 2 : Parfait, Bien, puis Raté tour à tour
+  if (arrived && !flashUntil[d]) {
+    flashUntil[d] = now + 400;
+    if (outcome == 2) { flashColor[d] = 0xFF0000; burstAt[d] = 0; }
+    else { flashColor[d] = outcome == 0 ? 0xFFFFFF : 0x30FF30; burstAt[d] = now; }
+  }
+  renderField(now, 0, false);
+  float p = min(1.0f, t / (float)TRAVEL);
+  if (helpPage == 2) {   // cercle doré qui grandit : on appuie sur le bouton quand il touche l'anneau
+    if (!arrived) drawRing(6.0f * p, CRGB(255, 190, 0));
+    else if (t < TRAVEL + 350) drawRing(6.0f, CRGB(255, 190, 0));
+  } else if (!arrived) {
+    float x = 8 + (TX[d] - 8) * p, y = 8 + (TY[d] - 8) * p;
+    for (int tr = 1; tr <= 2; tr++) {
+      float q = max(0.0f, p - 0.09f * tr);
+      setPixel((int)floorf(8 + (TX[d] - 8) * q), (int)floorf(8 + (TY[d] - 8) * q), CHSV(d * 32, 255, 120 / tr));
+    }
+    drawBlock(x, y, CHSV(d * 32, 140, 255));
+  }
+}
+
 void drawOled(uint32_t now) {
   oled.clearBuffer();
   oled.setFont(u8g2_font_6x10_tf);
@@ -326,6 +358,18 @@ void drawOled(uint32_t now) {
       oled.print(rk);
       oled.setDrawColor(1);
     }
+  } else if (mode == HELP) {
+    static const char* const T[HELP_PAGES] = {"Comment jouer", "Réussi ou raté ?", "Cercle et toupie"};
+    static const char* const L[HELP_PAGES][4] = {
+      {"Une lumière part du", "centre vers le bord.", "Quand elle arrive sur", "la cible : joystick !"},
+      {"Blanc : Parfait !", "Vert : Bien", "Rouge : raté (trop tôt", "ou trop tard)"},
+      {"Cercle doré : appuie", "sur le bouton à temps", "Toupie bleue : tourne", "l'encodeur vite !"}};
+    oled.setCursor(0, 11);  // bande jaune
+    oled.print(T[helpPage]);
+    for (int i = 0; i < 4; i++) { oled.setCursor(0, 25 + i * 11); oled.print(L[helpPage][i]); }
+    snprintf(buf, sizeof(buf), "%d/%d", helpPage + 1, HELP_PAGES);
+    oled.setCursor(110, 62); oled.print(buf);
+    oled.setCursor(0, 62); oled.print(helpPage + 1 < HELP_PAGES ? "Bouton : suite" : "Bouton : jouer !");
   } else if (mode == RESULT) {
     oled.setCursor(0, 11);
     oled.print(SONGS[sel].name);
@@ -377,9 +421,19 @@ GameResult loop(uint32_t now) {
       jyWas = dir;
       if (d) encBase += d * 4;
       if (step) { sel = ((sel + step) % NUM_SONGS + NUM_SONGS) % NUM_SONGS; dirty = true; beep(1200, 10); }
-      if (fire) startSong(now);
+      if (fire) {
+        if (helpSeen) startSong(now);
+        else { mode = HELP; helpPage = 0; modeAt = now; for (int i = 0; i < 8; i++) burstAt[i] = flashUntil[i] = 0; dirty = true; }
+      }
       break;
     }
+    case HELP:
+      if (quit) { mode = SELECT; dirty = true; break; }
+      if (fire) {
+        if (++helpPage >= HELP_PAGES) { helpSeen = true; startSong(now); }
+        else { modeAt = now; for (int i = 0; i < 8; i++) burstAt[i] = flashUntil[i] = 0; dirty = true; }
+      }
+      break;
     case COUNT:
       if (quit) { mode = SELECT; dirty = true; break; }
       if ((int32_t)(now - clock0) >= -300) { mode = PLAY; dirty = true; }   // les premières notes arrivent
@@ -398,6 +452,7 @@ GameResult loop(uint32_t now) {
     lastFrame = now;
     int32_t s = (int32_t)(now - clock0);
     if (mode == SELECT) renderSelect(now);
+    else if (mode == HELP) renderHelp(now);
     else if (mode == RESULT) renderResult(now);
     else {
       renderField(now, s, true);

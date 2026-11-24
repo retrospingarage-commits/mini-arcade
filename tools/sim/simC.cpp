@@ -12,8 +12,8 @@ namespace circle {
   enum NoteType : uint8_t { TAP, GOLD, SPIN };
   enum NoteState : uint8_t { PENDING, PERFECT, GOOD, MISS, ACTIVE };
   struct GNote { uint32_t t; uint16_t dur; NoteType type; uint8_t dir; NoteState state; int16_t got, need; };
-  enum Mode : uint8_t { SELECT, COUNT, PLAY, RESULT };
-  extern GNote ch[170]; extern int nCh; extern uint32_t clock0; extern Mode mode; extern int sel, score, maxScore, pct, nPerfect, nGood, nMiss, bestCombo;
+  enum Mode : uint8_t { SELECT, HELP, COUNT, PLAY, RESULT };
+  extern GNote ch[170]; extern int nCh; extern uint32_t clock0; extern Mode mode; extern bool helpSeen; extern int sel, score, maxScore, pct, nPerfect, nGood, nMiss, bestCombo;
 }
 std::mt19937 rng(7);
 double gauss(double m,double sd){ return std::normal_distribution<double>(m,sd)(rng); }
@@ -26,7 +26,7 @@ void stickDir(int dir){ // 0 haut, 1 haut-droite, 2 droite … ; -1 = centre
 // sigma : imprécision (ms) ; miss : % d'actions oubliées ; spinRate : impulsions/s que le joueur sait tourner
 int playSong(int song, double sigma, int missPct, double spinRate){
   using namespace circle;
-  sel=song; circleBegin(); fakePin[PIN_BTN1]=false; fakeMillis+=60; circleLoop(fakeMillis); fakePin[PIN_BTN1]=true; fakeMillis+=60; circleLoop(fakeMillis); // choisir
+  helpSeen=true; sel=song; circleBegin(); fakePin[PIN_BTN1]=false; fakeMillis+=60; circleLoop(fakeMillis); fakePin[PIN_BTN1]=true; fakeMillis+=60; circleLoop(fakeMillis); // choisir
   // le morceau démarre : on lance avec un appui
   fakePin[PIN_BTN1]=false; fakeMillis+=40; circleLoop(fakeMillis); fakePin[PIN_BTN1]=true; fakeMillis+=40; circleLoop(fakeMillis);
   static double jit[200]; static bool skip[200], done[200]; static uint32_t releaseAt; releaseAt=0;
