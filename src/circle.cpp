@@ -17,8 +17,8 @@ namespace circle {
 // --- Réglages (selon la difficulté : facile, moyen, difficile) ---------------
 inline int      perfectMs()  { return (int)byLevel(95, 60, 42); }       // marge d'un « Parfait » (±ms)
 inline int      goodMs()     { return (int)byLevel(190, 115, 82); }    // marge d'un « Bien » (±ms)
-inline uint32_t approachMs() { return (uint32_t)byLevel(1700, 1250, 900); }  // temps de trajet centre → anneau
-inline float    gapBeats()   { return byLevel(0.9f, 0.45f, 0.2f); }     // écart minimal entre deux notes jouées (en temps)
+inline uint32_t approachMs() { return (uint32_t)byLevel(2200, 1650, 1200); }  // temps de trajet centre → anneau
+inline float    gapBeats()   { return byLevel(1.1f, 0.65f, 0.3f); }     // écart minimal entre deux notes jouées (en temps)
 inline float    spinK()      { return byLevel(1.0f, 1.4f, 1.9f); }      // effort demandé à la toupie
 constexpr int      MIN_GAP_MS   = 160;   // jamais deux notes plus proches que ça
 constexpr float    STICK_LEVEL  = 0.55f; // le joystick poussé plus que ça compte
@@ -49,6 +49,7 @@ Mode     mode;
 int      sel;                                   // morceau choisi
 uint32_t clock0, startAt, endAt, lastOled, flashUntil[8], goldUntil, spinUntil, judgeAt, modeAt;
 uint32_t flashColor[8];
+uint32_t burstAt[8];   // début de la gerbe d'étincelles sur chaque cible (0 = aucune)
 int      score, maxScore, combo, bestCombo, nPerfect, nGood, nMiss, lastJudge, pct;  // lastJudge : 0 parfait, 1 bien, 2 raté
 bool     dirty, newRecord;
 int32_t  encBase;
@@ -130,7 +131,7 @@ void startSong(uint32_t now) {
   mode = COUNT; modeAt = now;
   clock0 = now + max(COUNT_MS, approachMs() + 500);
   evNext = 0; score = combo = bestCombo = nPerfect = nGood = nMiss = 0; lastJudge = 0; judgeAt = 0;
-  for (int d = 0; d < 8; d++) flashUntil[d] = 0;
+  for (int d = 0; d < 8; d++) flashUntil[d] = burstAt[d] = 0;
   goldUntil = spinUntil = 0;
   lastSector = -1; lastOled = 0;
   encBase = encoderCount();
@@ -190,7 +191,7 @@ void updatePlay(uint32_t now, bool gold) {
   int8_t sector = -1;
   if (hypotf(jx, jy) > STICK_LEVEL) sector = (int8_t)(((int)floorf(atan2f(jx, -jy) / (PI_F / 4) + 0.5f) + 8) % 8);
   if (sector >= 0 && sector != lastSector)
-    if (GNote* g = findPending(TAP, sector, s)) { hitNote(*g, (int32_t)g->t - s, now); flashUntil[g->dir] = now + 160; flashColor[g->dir] = g->state == PERFECT ? 0xFFFFFF : 0x40FFC0; }
+    if (GNote* g = findPending(TAP, sector, s)) { hitNote(*g, (int32_t)g->t - s, now); flashUntil[g->dir] = now + 260; burstAt[g->dir] = now; flashColor[g->dir] = g->state == PERFECT ? 0xFFFFFF : 0x30FF30; }
   lastSector = sector;
   if (gold)
     if (GNote* g = findPending(GOLD, 0, s)) { hitNote(*g, (int32_t)g->t - s, now); goldUntil = now + 220; }
@@ -212,6 +213,7 @@ void updatePlay(uint32_t now, bool gold) {
       }
     } else if (g.state == PENDING && s > (int32_t)g.t + goodMs()) {
       g.state = MISS;
+      if (g.type == TAP) { flashUntil[g.dir] = now + 260; burstAt[g.dir] = 0; flashColor[g.dir] = 0xFF0000; }
       registerJudge(2, 0, now);
     }
   }
@@ -239,6 +241,15 @@ void renderField(uint32_t now, int32_t s, bool showNotes) {
     bool flash = now < flashUntil[d];
     CRGB c = flash ? CRGB(flashColor[d]) : CRGB(CHSV(d * 32, 255, 70));
     drawBlock(TX[d], TY[d], c);
+  }
+  for (int d = 0; d < 8; d++) {   // gerbe d'étincelles autour de la cible touchée
+    if (!burstAt[d] || now - burstAt[d] > 260) continue;
+    float age = (now - burstAt[d]) / 260.0f;
+    CRGB c = CRGB(flashColor[d]).nscale8((uint8_t)(255 * (1.0f - age)));
+    for (int k = 0; k < 8; k++) {
+      float a = k * PI_F / 4, r = 1.5f + 2.5f * age;
+      setPixel((int)floorf(TX[d] + 0.5f + r * cosf(a)), (int)floorf(TY[d] + 0.5f + r * sinf(a)), c);
+    }
   }
   drawBlock(8, 8, CRGB(25, 25, 35));
   if (now < goldUntil) drawRing(6.0f, CRGB(255, 190, 0));
@@ -397,7 +408,7 @@ GameResult loop(uint32_t now) {
     }
     FastLED.show();
     // LED : couleur du dernier jugement, arc-en-ciel en grand combo
-    if (mode == PLAY && now - judgeAt < 140) setRgb(lastJudge == 0 ? CRGB(255, 255, 255) : lastJudge == 1 ? CRGB(0, 255, 160) : CRGB(255, 0, 0));
+    if (mode == PLAY && now - judgeAt < 260) setRgb(lastJudge == 0 ? CRGB(255, 255, 255) : lastJudge == 1 ? CRGB(0, 255, 160) : CRGB(255, 0, 0));
     else if (mode == PLAY && combo >= 10) setRgb(CHSV(now / 4, 255, 255));
     else setRgb(CHSV(now / 40, 200, 90));
   }
