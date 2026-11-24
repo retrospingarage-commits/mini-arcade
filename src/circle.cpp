@@ -47,7 +47,7 @@ int   nEv, nCh, evNext;
 enum Mode : uint8_t { SELECT, HELP, COUNT, PLAY, RESULT };
 constexpr int HELP_PAGES = 3;
 uint8_t helpPage;
-bool    helpSeen;   // l'explication n'apparaît qu'à la première partie après l'allumage
+bool    helpSeen;   // vrai = on saute l'explication (utilisé par le banc d'essai) ; sur la borne elle s'affiche à chaque morceau
 Mode     mode;
 int      sel;                                   // morceau choisi
 uint32_t clock0, startAt, endAt, lastOled, flashUntil[8], goldUntil, spinUntil, judgeAt, modeAt;
@@ -159,12 +159,15 @@ void hitNote(GNote& g, int dt, uint32_t now) {
   registerJudge(perfect ? 0 : 1, perfect ? PTS_PERFECT : PTS_GOOD, now);
 }
 
+inline int stickTolerance() { return (int)byLevel(1, 0, 0); }   // facile : une direction voisine compte aussi
+inline bool dirMatches(int a, int b) { int d = abs(a - b); d = min(d, 8 - d); return d <= stickTolerance(); }
+
 GNote* findPending(NoteType type, int dir, int32_t s) {
   GNote* best = nullptr;
   int bestDt = goodMs() + 1;
   for (int i = 0; i < nCh; i++) {
     GNote& g = ch[i];
-    if (g.state != PENDING || g.type != type || (type == TAP && g.dir != dir)) continue;
+    if (g.state != PENDING || g.type != type || (type == TAP && !dirMatches(g.dir, dir))) continue;
     int dt = abs((int32_t)g.t - s);
     if (dt <= goodMs() && dt < bestDt) { best = &g; bestDt = dt; }
   }
@@ -193,7 +196,7 @@ void updatePlay(uint32_t now, bool gold) {
   float jx = joyX(), jy = joyY();
   int8_t sector = -1;
   if (hypotf(jx, jy) > STICK_LEVEL) sector = (int8_t)(((int)floorf(atan2f(jx, -jy) / (PI_F / 4) + 0.5f) + 8) % 8);
-  if (sector >= 0 && sector != lastSector)
+  if (sector >= 0 && (sector != lastSector || progress.difficulty == 0))   // facile : joystick tenu dans la direction = ça compte
     if (GNote* g = findPending(TAP, sector, s)) { hitNote(*g, (int32_t)g->t - s, now); flashUntil[g->dir] = now + 260; burstAt[g->dir] = now; flashColor[g->dir] = g->state == PERFECT ? 0xFFFFFF : 0x30FF30; }
   lastSector = sector;
   if (gold)
@@ -430,7 +433,7 @@ GameResult loop(uint32_t now) {
     case HELP:
       if (quit) { mode = SELECT; dirty = true; break; }
       if (fire) {
-        if (++helpPage >= HELP_PAGES) { helpSeen = true; startSong(now); }
+        if (++helpPage >= HELP_PAGES) startSong(now);
         else { modeAt = now; for (int i = 0; i < 8; i++) burstAt[i] = flashUntil[i] = 0; dirty = true; }
       }
       break;
