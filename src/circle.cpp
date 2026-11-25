@@ -242,7 +242,7 @@ void drawRing(float radius, CRGB c) {
 
 void renderField(uint32_t now, int32_t s, bool showNotes) {
   FastLED.clear();
-  drawRing(6.0f, CRGB(5, 5, 12));
+  drawRing(6.0f, CRGB(40, 40, 90));   // l'anneau : on appuie quand la lumière le touche
   for (int d = 0; d < 8; d++) {
     bool flash = now < flashUntil[d];
     CRGB c = flash ? CRGB(flashColor[d]) : CRGB(CHSV(d * 32, 255, 70));
