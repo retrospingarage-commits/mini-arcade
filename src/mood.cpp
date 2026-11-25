@@ -1,6 +1,8 @@
 // Mood light : ambiances lumineuses sur la matrice et la LED RVB.
-// Encodeur : changer d'ambiance. Bouton de l'encodeur : passer au réglage de la luminosité (et revenir).
-// Bouton : veille (tout s'éteint, n'importe quel bouton rallume). Bouton du joystick : retour au menu.
+// Comme un petit menu de 3 lignes : Ambiance, Luminosité, Veille.
+// Joystick haut/bas : choisir la ligne. Encodeur ou joystick gauche/droite : changer la valeur de la ligne.
+// Bouton (ou bouton de l'encodeur) : ligne suivante ; sur « Veille » : tout s'éteint (n'importe quel bouton rallume).
+// Bouton du joystick : retour au menu.
 #include "hw.h"
 #include "save.h"
 #include "activities.h"
@@ -16,7 +18,9 @@ struct Particle { float x, y, vx, vy; uint8_t hue; };
 Particle parts[10];
 uint8_t  heat[16][16];        // feu de camp
 uint8_t  mood, level;
-bool     brightnessMode, sleeping, oledOn;
+uint8_t  line;                 // 0 ambiance, 1 luminosité, 2 veille
+int8_t   joyXWas, joyYWas;
+bool     sleeping, oledOn;
 uint32_t lastInput;
 int32_t  encBase;
 bool     dirty;
@@ -28,15 +32,23 @@ void resetParticles() {
 void drawOled() {
   oled.clearBuffer();
   oled.setFont(u8g2_font_6x10_tf);
-  oled.setCursor(0, 10);
+  oled.setCursor(0, 11);  // bande jaune
   oled.print("Mood light");
-  oled.setCursor(0, 30);
-  oled.print(brightnessMode ? "  " : "> ");
-  oled.print(NAMES[mood]);
-  oled.setCursor(0, 46);
-  oled.print(brightnessMode ? "> Luminosité" : "  Luminosité");
-  oled.drawFrame(0, 50, 128, 8);
-  oled.drawBox(2, 52, (brightnessStep(level) + 1) * 124 / BRIGHTNESS_STEP_COUNT, 4);
+  for (int i = 0; i < 3; i++) {   // la ligne choisie est en vidéo inverse
+    int base = 26 + i * 13;
+    if (i == line) { oled.drawBox(0, base - 9, 128, 12); oled.setDrawColor(0); }
+    oled.setCursor(2, base);
+    if (i == 0) { oled.print("< "); oled.print(NAMES[mood]); oled.print(" >"); }
+    else if (i == 1) {
+      oled.print("Lumière");
+      oled.drawFrame(50, base - 7, 76, 7);
+      oled.drawBox(52, base - 5, (brightnessStep(level) + 1) * 72 / BRIGHTNESS_STEP_COUNT, 3);
+    }
+    else oled.print("Éteindre (veille)");
+    oled.setDrawColor(1);
+  }
+  oled.setCursor(0, 63);
+  oled.print(line == 2 ? "Bouton : éteindre" : "Tourne : changer");
   oled.sendBuffer();
 }
 
@@ -106,7 +118,8 @@ void wake(uint32_t now) {
 void moodBegin() {
   mood = progress.mood % COUNT;
   level = brightnessShift(progress.moodLevel ? progress.moodLevel : 19, 0);
-  brightnessMode = sleeping = false;
+  line = 0; joyXWas = joyYWas = 0;
+  sleeping = false;
   oledOn = true;
   lastInput = millis();
   encBase = encoderCount();
@@ -133,16 +146,29 @@ GameResult moodLoop(uint32_t now) {
     if (!oledOn) oled.setPowerSave(0);
     return GAME_QUIT;
   }
-  if (b1) {  // veille
+  // Joystick : haut/bas = ligne, gauche/droite = valeur (un cran par poussée)
+  float jx = joyX(), jy = joyY();
+  int8_t jxd = jx > 0.6f ? 1 : jx < -0.6f ? -1 : 0, jyd = jy > 0.6f ? 1 : jy < -0.6f ? -1 : 0;
+  bool newJoy = (jxd && jxd != joyXWas) || (jyd && jyd != joyYWas);
+  if (!oledOn && (b1 || be || d || newJoy)) {  // écran éteint : le premier geste le rallume seulement
+    joyXWas = jxd; joyYWas = jyd;
+    wake(now);
+    return GAME_RUNNING;
+  }
+  if (jyd && jyd != joyYWas) { line = (line + 3 + jyd) % 3; wake(now); dirty = true; }
+  if (jxd && jxd != joyXWas && line < 2) d += jxd;
+  joyXWas = jxd; joyYWas = jyd;
+  if ((b1 || be) && line < 2) { line++; wake(now); dirty = true; }
+  else if ((b1 || be) && line == 2) {  // veille
+    line = 0;
     sleeping = true;
     FastLED.clear(); FastLED.show();
     setRgb(CRGB::Black);
     oled.setPowerSave(1); oledOn = false;
     return GAME_RUNNING;
   }
-  if (be) { brightnessMode = !brightnessMode; wake(now); dirty = true; }
-  if (d) {
-    if (brightnessMode) level = brightnessShift(level, d);
+  if (d && line < 2) {
+    if (line == 1) level = brightnessShift(level, d);
     else { mood = ((mood + d) % COUNT + COUNT) % COUNT; resetParticles(); }
     wake(now);
     dirty = true;

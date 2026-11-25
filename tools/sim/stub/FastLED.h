@@ -12,7 +12,7 @@ inline uint8_t random8(){return rand();} inline uint16_t random16(uint16_t l){re
 inline void fill_solid(CRGB*l,int n,const CRGB&c){for(int i=0;i<n;i++)l[i]=c;}
 inline void fadeToBlackBy(CRGB*,int,uint8_t){}
 struct WS2812B{}; enum EOrder{GRB};
-struct FastLEDT{ template<class C,int P,EOrder O> void addLeds(CRGB*,int){} void setMaxPowerInVoltsAndMilliamps(int,int){} void setBrightness(int){} void clear(){} void show(){} };
+struct FastLEDT{ template<class C,int P,EOrder O> void addLeds(CRGB*,int){} void setMaxPowerInVoltsAndMilliamps(int,int){} int bright=0; void setBrightness(int b){ bright=b; } void clear(){} void show(){} };
 extern FastLEDT FastLED;
 inline uint8_t scale8(uint8_t a,uint8_t b){return a*b/256;}
 inline uint8_t sin8(uint8_t a){return a;}

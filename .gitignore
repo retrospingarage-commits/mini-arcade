@@ -4,3 +4,5 @@
 # banc d'essai sur PC : programmes compilés
 tools/sim/simD
 tools/sim/sim8
+tools/sim/simC
+tools/sim/simM
