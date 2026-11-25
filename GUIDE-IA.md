@@ -135,7 +135,7 @@ Outils disponibles dans `hw.h` :
 
 | Jeu | Facile | Moyen | Difficile |
 |---|---|---|---|
-| « 1, 2, 3, soleil ! » | il compte 3 temps, alerte de 0,7 s, délai de grâce de 0,4 s, sans limite de chances, 90 s | 2 à 3 temps, alerte de 0,15 s, grâce de 0,08 s, 3 chances, recul de 8 cases, 50 s | 1 à 3 temps, alerte de 0,135 s, grâce de 0,07 s, 3 chances, retour au départ, 40 s |
+| « 1, 2, 3, soleil ! » | il compte 3 temps, alerte de 0,7 s, délai de grâce de 0,4 s, sans limite de chances, 90 s | il peut se retourner dès 1, 2 ou 3 temps (piège), alerte de 0,16 s, grâce de 0,08 s, 3 chances, recul de 8 cases, 50 s | il peut se retourner dès 0, 1, 2 ou 3 temps (piège), alerte de 0,15 s, grâce de 0,07 s, 3 chances, retour au départ, 40 s |
 | Rythme de la grenouille | 3 notes à 480 ms, 4 erreurs permises | 4 notes à 380 ms, 3 erreurs | 5 notes à 300 ms, 2 erreurs |
 | Ramen | piments rares, chute lente | plus de piments, 50 s | 10 ingrédients, bol étroit, beaucoup de piments, chute rapide, 24 s |
 | Combat du roi | 40 points de vie, 5 coeurs, bulles lentes | 55 points de vie, 4 coeurs | 55 points de vie, 3 coeurs, bulles rapides et fréquentes |

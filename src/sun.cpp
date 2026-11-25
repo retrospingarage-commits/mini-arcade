@@ -16,9 +16,9 @@ constexpr float    START_Y    = 14.0f;  // ligne de départ (en bas)
 constexpr float    GOAL_Y     = 5.0f;   // ligne d'arrivée (la porte est derrière le garde)
 constexpr float    MOVE_LEVEL = 0.35f;  // le joystick poussé plus que ça = on bouge
 inline uint32_t beatMs()    { return (uint32_t)byLevel(520, 330, 230); }   // temps entre deux « un, deux, trois »
-inline int      beatsMin()  { return (int)byLevel(3, 2, 1); }              // nombre de temps comptés avant l'alerte
+inline int      beatsMin()  { return (int)byLevel(3, 1, 0); }              // nombre de temps comptés avant l'alerte
 inline int      beatsMax()  { return 3; }
-inline uint32_t warnMs()    { return (uint32_t)byLevel(700, 150, 135); }   // alerte avant le demi-tour
+inline uint32_t warnMs()    { return (uint32_t)byLevel(700, 160, 150); }   // alerte avant le demi-tour
 inline uint32_t graceMs()   { return (uint32_t)byLevel(400, 80, 70); }     // délai de grâce après le demi-tour
 inline uint32_t lookMinMs() { return (uint32_t)byLevel(900, 1000, 1100); } // temps où il regarde
 inline float    pushBack()  { return byLevel(3.0f, 8.0f, 99.0f); }         // recul quand on est prise (99 = tout recommencer)
