@@ -45,7 +45,7 @@ GNote ch[MAX_CH];
 int   nEv, nCh, evNext;
 
 enum Mode : uint8_t { SELECT, HELP, COUNT, PLAY, RESULT };
-constexpr int HELP_PAGES = 3;
+constexpr int HELP_PAGES = 3;   // trois petits écrans (3 lignes chacun)
 uint8_t helpPage;
 bool    helpSeen;   // vrai = on saute l'explication (utilisé par le banc d'essai) ; sur la borne elle s'affiche à chaque morceau
 Mode     mode;
@@ -362,16 +362,17 @@ void drawOled(uint32_t now) {
       oled.setDrawColor(1);
     }
   } else if (mode == HELP) {
-    static const char* const T[HELP_PAGES] = {"Comment jouer", "Réussi ou raté ?", "Cercle et toupie"};
-    static const char* const L[HELP_PAGES][4] = {
-      {"Une lumière part du", "centre vers le bord.", "Quand elle arrive sur", "la cible : joystick !"},
-      {"Blanc : Parfait !", "Vert : Bien", "Rouge : raté (trop tôt", "ou trop tard)"},
-      {"Cercle doré : appuie", "sur le bouton à temps", "Toupie bleue : tourne", "l'encodeur vite !"}};
+    // Trois petits écrans de 3 lignes : le numéro de page en haut à droite, le conseil en bas
+    static const char* const T[HELP_PAGES] = {"Comment jouer", "Les couleurs", "Cercle et toupie"};
+    static const char* const L[HELP_PAGES][3] = {
+      {"Pousse le joystick", "quand la lumière", "touche le cercle."},
+      {"Blanc : Parfait", "Vert : Bien", "Rouge : raté"},
+      {"Doré : appuie", "Bleu : tourne", "l'encodeur vite"}};
     oled.setCursor(0, 11);  // bande jaune
     oled.print(T[helpPage]);
-    for (int i = 0; i < 4; i++) { oled.setCursor(0, 25 + i * 11); oled.print(L[helpPage][i]); }
     snprintf(buf, sizeof(buf), "%d/%d", helpPage + 1, HELP_PAGES);
-    oled.setCursor(110, 62); oled.print(buf);
+    oled.setCursor(110, 11); oled.print(buf);
+    for (int i = 0; i < 3; i++) { oled.setCursor(0, 25 + i * 11); oled.print(L[helpPage][i]); }
     oled.setCursor(0, 62); oled.print(helpPage + 1 < HELP_PAGES ? "Bouton : suite" : "Bouton : jouer !");
   } else if (mode == RESULT) {
     oled.setCursor(0, 11);
