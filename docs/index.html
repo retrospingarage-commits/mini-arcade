@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mini-arcade : guide pour ton IA</title>
+<!-- Page ouverte par le QR code « À propos » de la borne. Elle affiche GUIDE-IA.md (toujours la version à jour
+     du dépôt) et un bouton pour tout copier d'un coup et le coller dans un assistant IA. -->
+<style>
+  :root { --bg: #fff8fb; --text: #222; --accent: #ff3c8c; --card: #fff; --muted: #666; --code: #f3eef2; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #17141a; --text: #eee; --accent: #ff6aa8; --card: #221e26; --muted: #aaa; --code: #2c2731; }
+  }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.55 system-ui, sans-serif; }
+  header { background: var(--accent); color: #fff; padding: 20px 16px; text-align: center; }
+  header h1 { margin: 0 0 6px; font-size: 1.5em; }
+  header p { margin: 0; opacity: .95; }
+  main { max-width: 820px; margin: 0 auto; padding: 16px; }
+  .steps { background: var(--card); border-radius: 12px; padding: 14px 18px; box-shadow: 0 1px 4px #0002; }
+  .steps ol { margin: 6px 0 0; padding-left: 22px; }
+  button { font-size: 1.1em; padding: 14px 20px; border: 0; border-radius: 12px; background: var(--accent);
+           color: #fff; width: 100%; margin: 16px 0; cursor: pointer; }
+  #status { text-align: center; color: var(--muted); min-height: 1.4em; }
+  #guide { background: var(--card); border-radius: 12px; padding: 4px 18px 18px; box-shadow: 0 1px 4px #0002;
+           overflow-wrap: anywhere; }
+  #guide table { border-collapse: collapse; display: block; overflow-x: auto; font-size: .9em; }
+  #guide th, #guide td { border: 1px solid #8884; padding: 4px 8px; vertical-align: top; }
+  #guide code { background: var(--code); padding: 1px 4px; border-radius: 4px; }
+  #guide pre { background: var(--code); padding: 10px; border-radius: 8px; overflow-x: auto; }
+  a { color: var(--accent); }
+  footer { text-align: center; color: var(--muted); font-size: .85em; padding: 20px 16px 30px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Mini-arcade</h1>
+  <p>Le guide pour reprogrammer ta borne avec ton IA</p>
+</header>
+<main>
+  <div class="steps">
+    <strong>Comment faire :</strong>
+    <ol>
+      <li>Appuie sur le bouton rose pour copier tout le guide.</li>
+      <li>Ouvre ton assistant IA (Claude, ChatGPT, Gemini…) et colle le texte.</li>
+      <li>Dis-lui ce que tu veux changer : une scène, un jeu, un dessin, des couleurs…</li>
+    </ol>
+  </div>
+  <button id="copy" disabled>Copier tout le guide pour mon IA</button>
+  <div id="status">Chargement du guide…</div>
+  <div id="guide"></div>
+</main>
+<footer>
+  Code libre (licence MIT) : <a href="https://github.com/retrospingarage-commits/mini-arcade">le dépôt de la borne</a>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+<script>
+  // Le guide de la branche principale ; tant que la dernière version n'est pas fusionnée, on prend celui de la branche de travail
+  const BASE = "https://raw.githubusercontent.com/retrospingarage-commits/mini-arcade/";
+  const RAWS = [BASE + "main/GUIDE-IA.md", BASE + "ccr-118c22dc-37f6y7/GUIDE-IA.md"];
+  const RAW = RAWS[0];
+  const status = document.getElementById("status"), button = document.getElementById("copy");
+  let text = "";
+  const load = i => fetch(RAWS[i]).then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
+                                  .catch(e => { if (i + 1 < RAWS.length) return load(i + 1); throw e; });
+  load(0)
+    .then(md => {
+      text = md;
+      document.getElementById("guide").innerHTML = window.marked ? marked.parse(md) : "<pre>" + md.replace(/</g, "&lt;") + "</pre>";
+      button.disabled = false;
+      status.textContent = "";
+    })
+    .catch(() => { status.innerHTML = 'Impossible de charger le guide. Il est aussi ici : <a href="' + RAW + '">GUIDE-IA.md</a>'; });
+  button.addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText(text); }
+    catch (e) {  // vieux téléphones : on passe par une zone de texte cachée
+      const t = document.createElement("textarea"); t.value = text; document.body.appendChild(t);
+      t.select(); document.execCommand("copy"); t.remove();
+    }
+    status.textContent = "Copié ! Colle-le maintenant dans ton IA.";
+  });
+</script>
+</body>
+</html>

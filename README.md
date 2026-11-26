@@ -6,26 +6,46 @@ Mini borne d'arcade sur ESP32 avec une matrice LED 16x16.
 
 - ESP32 DevKit 30 broches (WROOM-32D) sur la carte « Shield capteurs v2.1 »
 - Matrice WS2812B 16x16 (alimentée en 5 V directement, pas par la carte)
-- Encodeur rotatif KY-040
-- 2 boutons
-- Écran OLED SSD1306 0,96" (128x64, I2C)
+- Encodeur rotatif KY-040 (HW-040)
+- Bouton HW-483 et joystick 2 axes (avec bouton)
+- Buzzer passif HW-508 et LED RVB HW-478
+- Écran OLED SH1106 1,3" (128x64, I2C, monochrome) ; un SSD1306 0,96" marche aussi (`OLED_SH1106` dans `include/config.h`)
 
-Le brochage complet est dans `include/config.h`.
+Le brochage complet est dans `include/config.h`, l'alimentation est décrite dans `CLAUDE.md`
+(un seul chargeur 5 V / 2,4 A pour tout, la matrice limitée à 1,5 A par le programme).
 
-## Test actuel
+## Le jeu
 
-Un point glisse sur la matrice avec de l'inertie :
+L'histoire **« Les Couleurs du Roi Gluant »** est au cœur de la borne : 58 scènes (dont 3 qui expliquent la quête au début), des chemins où l'on peut se
+perdre (la LED RVB « chauffe » quand on se rapproche du but), 3 charmes, 3 trophées. Le château du Roi Gluant
+s'ouvre avec les 3 charmes, et il faut battre le roi en combat (chaque charme y donne un pouvoir). Ensuite, on choisit sa
+fin : « La Fête des Couleurs », « La Cheffe pâtissière », « La Pluie arc-en-ciel », ou, avec les 3 charmes et les
+3 trophées, « La Légende étoilée ». En la jouant, on débloque les activités du menu :
 
-- **Encodeur** : lance le point, qui ralentit tout seul et rebondit sur les bords
-- **Bouton de l'encodeur** : recentre le point
-- **Bouton 1** : +1 au score (affiché sur l'OLED)
-- **Bouton 2** : remet le score à 0
+| Activité | Se débloque avec |
+|---|---|
+| Mood light (7 ambiances) | le Bol Magique |
+| Casse-briques (6 niveaux) | la Feuille Magique (défi du tanuki, un mini casse-briques) |
+| Cercle de rythme (jeu de rythme à 6 morceaux : joystick, bouton et encodeur) | la Note Magique (concert de la grenouille DJ) |
+| Football manga | le Ballon d'Or (finale au stade) |
+| Flipper manga | la Bille Étoile (record du vieux flipper) |
+| Course manga (doubler 8 karts, turbo) | le Volant d'Or (course des tanukis, sur la route du château) |
+| Labyrinthe (9 salles dans le noir, au joystick ; un nouveau château à chaque partie) | le Pinceau Arc-en-ciel (sous-sols du château ; il aide aussi contre le roi : une vie de plus, tirs plus forts) |
+| Atelier pixel art (dessin depuis le téléphone par Wi-Fi) et Galerie | une fin heureuse |
+| Scores, À propos (la borne s'ouvre par Wi-Fi sur une page avec le guide pour IA à copier) et Réglages (dont la difficulté : facile, moyen, difficile) | toujours disponibles |
+| Mode secret (couleurs animées, niveaux bonus) | la fin légendaire |
 
-Réglages en direct dans le moniteur série (115200 bauds) :
+Dans le menu, le **bouton du joystick** puis l'**encodeur** règlent la luminosité de la matrice (gardée en mémoire).
+Chaque fin de l'Aventure donne un **score** ; les 5 meilleurs, avec leurs initiales, sont gardés pour toujours (ligne
+**Scores** du menu). La dernière ligne, **Réglages**, règle la luminosité et la veille, et permet de rejouer l'histoire
+depuis le début ou de tout effacer (les scores restent).
+Les commandes de chaque activité sont dans `GUIDE-IA.md`.
 
-- `g <gain>` : vitesse ajoutée par cran de l'encodeur
-- `f <frottement>` : freinage (entre 0,80 et 0,999)
-- `m <vitesse max>` : vitesse maximale
+Le code est sous licence MIT (`LICENSE`). `GUIDE-IA.md` explique le matériel et le programme pour qu'une IA
+puisse aider à reprogrammer la borne.
+
+Commandes du moniteur série (115200 bauds) : `u` tout débloquer, `r` effacer la progression,
+`a <scène>` aller à une scène, `l <2-40>` luminosité, `n <1-6>` casse-briques à un niveau, `s` son, `d`/`g`/`f`/`m` ressenti de la raquette (déplacement par cran, élan, frottement, vitesse max).
 
 ## Commandes (PlatformIO)
 

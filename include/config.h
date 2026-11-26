@@ -1,21 +1,37 @@
 #pragma once
 // Brochage : carte "Shield capteurs v2.1" + ESP32 DevKit 30 broches (WROOM-32D)
 
-// Matrice WS2812B 16x16 (connecteur RELAIS : GND + D16, alimentée en direct)
-constexpr uint8_t  PIN_LED_DATA = 16;
+// Matrice WS2812B 16x16 (connecteur TEMP SOL 1 : GND + D4, alimentée en direct)
+// Attention : TEMP SOL 1, 2 et 3 partagent la même broche D4 ; ne rien brancher d'autre sur leur fil de signal.
+constexpr uint8_t  PIN_LED_DATA = 4;
 constexpr uint16_t MATRIX_W = 16;
 constexpr uint16_t MATRIX_H = 16;
 constexpr uint16_t NUM_LEDS = MATRIX_W * MATRIX_H;
 constexpr bool     MATRIX_SERPENTINE = true;   // à passer à false si l'image est déformée
-constexpr uint16_t MAX_MILLIAMPS = 2000;       // limite logicielle du courant
+constexpr bool     MATRIX_FLIP_X     = true;   // la 1re ligne de cette matrice part de la droite (sinon tout est en miroir)
+constexpr uint16_t MAX_MILLIAMPS = 1500;       // limite logicielle du courant (chargeur 2,4 A partagé avec l'ESP32)
 
-// Encodeur KY-040 (connecteur LORA : 3V3, GND, D18, D19, D23)
+// Encodeur KY-040 / HW-040 (connecteur LORA : 3V3, GND, D18, D19, D23)
 constexpr uint8_t PIN_ENC_A  = 18;  // CLK
 constexpr uint8_t PIN_ENC_B  = 19;  // DT
 constexpr uint8_t PIN_ENC_SW = 23;  // bouton de l'axe
 
-// Boutons de jeu (connecteurs PLUVIO 1 et 2, 10K vers 3V3 + 100nF si soudés)
-constexpr uint8_t PIN_BTN1 = 15;    // PLUVIO 1 (strapping : OK avec pull-up)
-constexpr uint8_t PIN_BTN2 = 36;    // PLUVIO 2 (VP) : PAS de pull-up interne, la 10K est obligatoire
+// Buzzer passif HW-508 : signal S sur D13 (connecteur EXT), GND et 3V3 pris sur TEMP SOL 2 (fil de signal D4 laissé vide)
+constexpr uint8_t PIN_BUZZER = 13;
 
-// OLED SSD1306 128x64 en I2C (connecteur T H AIR 2) : SDA = 21, SCL = 22, adresse 0x3C
+// Boutons de jeu (connecteurs PLUVIO 1 et 2, 10K vers 3V3 + 100nF si soudés)
+constexpr uint8_t PIN_BTN1 = 15;    // PLUVIO 1 : bouton HW-483 (strapping : OK avec pull-up)
+constexpr uint8_t PIN_BTN2 = 26;    // EXT (D26), à côté du joystick : bouton du joystick (pull-up interne)
+
+// Joystick analogique (connecteurs HUM SOL 1 et 2, via les 1K soudées) : à alimenter en 3V3, PAS en 5V
+constexpr uint8_t PIN_JOY_X = 32;   // HUM SOL 1 (S1)
+constexpr uint8_t PIN_JOY_Y = 34;   // HUM SOL 2 (S2), entrée seule
+
+// LED RVB HW-478 à cathode commune (connecteur RELAIS, pour elle seule : D17, D27, D33 + GND)
+constexpr uint8_t PIN_RGB_R = 17;
+constexpr uint8_t PIN_RGB_G = 27;
+constexpr uint8_t PIN_RGB_B = 33;
+
+// OLED 128x64 en I2C (connecteur T H AIR 2) : SDA = 21, SCL = 22, adresse 0x3C
+// Modèle de l'écran : 0 = SSD1306 (0,96"), 1 = SH1106 (1,3", souvent 4 broches aussi ; vérifier l'ordre VCC/GND !)
+#define OLED_SH1106 1  // cette borne a maintenant l'écran 1,3" (mettre 0 pour revenir au 0,96")

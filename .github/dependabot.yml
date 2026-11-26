@@ -1,0 +1,12 @@
+# Dependabot vérifie chaque mois si les actions GitHub (fixées par SHA dans les workflows)
+# ont une nouvelle version, et propose alors une PR. Il ne sait pas lire platformio.ini :
+# FastLED, U8g2 et la plateforme ESP32 restent à mettre à jour à la main.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      actions:
+        patterns: ["*"]
