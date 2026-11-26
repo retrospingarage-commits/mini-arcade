@@ -106,10 +106,9 @@ void drawOled() {
   if (powers & CHARM_BOL) { oled.setCursor(76, 40); oled.print(shieldUp ? "Bouclier" : "........"); }
   oled.setCursor(0, 58);
   if (message) oled.print(message);
-  else {
-    if (powers & CHARM_FEUILLE) oled.print("Tir triple ");
-    if (powers & CHARM_NOTE) oled.print("Bulles lentes");
-  }
+  else if ((powers & CHARM_FEUILLE) && (powers & CHARM_NOTE)) oled.print("Tir triple + bulles");
+  else if (powers & CHARM_FEUILLE) oled.print("Tir triple");
+  else if (powers & CHARM_NOTE) oled.print("Bulles lentes");
   oled.sendBuffer();
 }
 

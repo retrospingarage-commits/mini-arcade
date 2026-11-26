@@ -12,7 +12,7 @@ static void run(int ms){ for(int i=0;i<ms/10;i++){ fakeMillis+=10; moodLoop(fake
 static void press(int pin){ fakePin[pin]=false; run(80); fakePin[pin]=true; run(80); }
 static void joy(int x,int y){ fakeAnalogInit.v[PIN_JOY_X]=x; fakeAnalogInit.v[PIN_JOY_Y]=y; run(100); fakeAnalogInit.v[PIN_JOY_X]=2048; fakeAnalogInit.v[PIN_JOY_Y]=2048; run(100); }
 int main(){ for(auto&p:fakePin)p=true; setup(); progressReset(); fakeAnalogInit.v[PIN_JOY_X]=2048; fakeAnalogInit.v[PIN_JOY_Y]=2048;
-  moodBegin(); run(200); printf("départ : lumière %d, %d\n", FastLED.bright, progress.mood);
+  gLayoutContext="Mood light"; moodBegin(); run(200); printf("départ : lumière %d, %d\n", FastLED.bright, progress.mood);
   press(PIN_BTN1); printf("bouton -> ligne Lumière\n");
   for(int i=0;i<3;i++) notch(-1); run(100); printf("3 crans à gauche : lumière %d\n", FastLED.bright);
   for(int i=0;i<3;i++) notch(1); run(100); printf("3 crans à droite : lumière %d\n", FastLED.bright);
@@ -21,4 +21,5 @@ int main(){ for(auto&p:fakePin)p=true; setup(); progressReset(); fakeAnalogInit.
   run(9000); printf("après 9 s : écran éteint ; un bouton le rallume sans éteindre la borne\n"); press(PIN_BTN1);
   joy(2048,4095); joy(2048,4095); printf("joystick bas x2 -> Veille\n"); press(PIN_BTN1);
   printf("OLED : %s\n", oledText.substr(oledText.size()>200?oledText.size()-200:0).c_str());
+  layoutReport();
 }

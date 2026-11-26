@@ -64,7 +64,7 @@ void drawOled() {
   oled.clearBuffer();
   oled.setFont(u8g2_font_6x10_tf);
   char buf[28];
-  snprintf(buf, sizeof(buf), "Le concert  manche %d/%d", round_ + 1, ROUNDS);
+  snprintf(buf, sizeof(buf), "Concert, manche %d/%d", round_ + 1, ROUNDS);
   oled.setCursor(0, 11);  // bande jaune
   oled.print(buf);
   oled.setCursor(0, 25); oled.print("Rouge : le bouton");

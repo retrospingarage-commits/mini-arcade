@@ -382,10 +382,10 @@ void drawOled(uint32_t now) {
     snprintf(buf, sizeof(buf), "P %d   B %d   R %d", nPerfect, nGood, nMiss);
     oled.setCursor(0, 37); oled.print(buf);
     oled.setFont(u8g2_font_10x20_tf);
-    snprintf(buf, sizeof(buf), "%c  %d %%", rankOf(pct), pct);
+    snprintf(buf, sizeof(buf), "%c %d%%", rankOf(pct), pct);
     oled.setCursor(0, 58); oled.print(buf);
     oled.setFont(u8g2_font_6x10_tf);
-    if (newRecord) { oled.setCursor(84, 58); oled.print("Record !"); }
+    if (newRecord) { oled.setCursor(72, 58); oled.print("Record !"); }
   } else {
     oled.setCursor(0, 11);
     oled.print(SONGS[sel].name);

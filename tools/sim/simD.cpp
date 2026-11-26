@@ -151,7 +151,8 @@ int main(int argc,char**argv){ for(auto&p:fakePin)p=true; setup(); progressReset
   const char* only = argc>1?argv[1]:nullptr;
   printf("%-26s %8s %8s %8s\n","jeu (joueur correct)","facile","moyen","difficile");
   for(auto&g:games){ if(only && !strstr(g.name,only)) continue; printf("%-26s",g.name); fflush(stdout);
-    for(int d=0; d<3; d++){ progress.difficulty=d; int w=0; for(int k=0;k<g.n;k++){ progress.scene=1; w+=g.f(); } printf(" %5d/%-2d", w, g.n); fflush(stdout); if(!strcmp(g.name,"Ramen")) { printf("(fin: gagné %d, feu %d, froid %d, durée moy %.0f s) ", ramenEnd[1], ramenEnd[2], ramenEnd[3], ramenTime/ramenN); ramenEnd[1]=ramenEnd[2]=ramenEnd[3]=0; ramenTime=0; ramenN=0; }
+    for(int d=0; d<3; d++){ progress.difficulty=d; gLayoutContext=std::string(g.name)+" "+std::to_string(d); int w=0; for(int k=0;k<g.n;k++){ progress.scene=1; w+=g.f(); } printf(" %5d/%-2d", w, g.n); fflush(stdout); if(!strcmp(g.name,"Ramen")) { printf("(fin: gagné %d, feu %d, froid %d, durée moy %.0f s) ", ramenEnd[1], ramenEnd[2], ramenEnd[3], ramenTime/ramenN); ramenEnd[1]=ramenEnd[2]=ramenEnd[3]=0; ramenTime=0; ramenN=0; }
     if(!strcmp(g.name,"1-2-3 soleil")) { printf("(prises %d / cycles %d) ", sunCaught, sunCycles); sunCaught=sunCycles=0; } }
     printf("\n"); }
+  layoutReport();
 }
